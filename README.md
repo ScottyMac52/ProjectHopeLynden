@@ -33,6 +33,7 @@ The first step is to review the existing workflow with Project Hope, document ho
 - [Questions to Ask](Docs/project_hope_food_bank_fillable_questions.pdf)
 - [Current Spreadsheet Scan](Discovery/Spreadsheet%20Contents.pdf)
 - [Option A Requirements](Docs/Option%20A%20Requirements.md)
+- [Option A Architecture Decision](Docs/Architecture%20Decision%20-%20Option%20A.md)
 - [Initial User Stories](Docs/User%20Stories.md)
 - [Milestone 1 Candidate Stories](Docs/Milestone%201%20Stories.md)
 
