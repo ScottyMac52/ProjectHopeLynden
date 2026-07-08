@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@ViewData["Title"] - Project Hope Inventory</title>
+  <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header__content">
+      <a class="site-header__brand" asp-page="/Index">Project Hope Inventory</a>
+    </div>
+  </header>
+
+  <main class="page-shell" role="main">
+    @RenderBody()
+  </main>
+
+  @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
