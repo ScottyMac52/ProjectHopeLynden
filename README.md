@@ -32,6 +32,8 @@ The first step is to review the existing workflow with Project Hope, document ho
 - [Executive Summary PDF](Docs/Executive%20Summary.pdf)
 - [Questions to Ask](Docs/project_hope_food_bank_fillable_questions.pdf)
 - [Current Spreadsheet Scan](Discovery/Spreadsheet%20Contents.pdf)
+- [Option A Requirements](Docs/Option%20A%20Requirements.md)
+- [Initial User Stories](Docs/User%20Stories.md)
 
 ## Discovery Findings from Current Spreadsheet Scan
 
