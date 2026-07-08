@@ -1,0 +1,81 @@
+:root {
+  color-scheme: light;
+  font-family: "Segoe UI", Arial, sans-serif;
+  --background: #f7f7f3;
+  --card: #ffffff;
+  --border: #d7d7cc;
+  --text: #25251f;
+  --muted: #64645d;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+}
+
+.site-header {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-header__content {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+}
+
+.site-header__brand {
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.page-shell {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.hero {
+  margin-bottom: 2rem;
+}
+
+.hero h1 {
+  margin: 0.25rem 0 0.75rem;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+}
+
+.hero p {
+  color: var(--muted);
+  font-size: 1.15rem;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+
+.card h2 {
+  margin-top: 0;
+}
+
+.card p {
+  color: var(--muted);
+}
