@@ -31,6 +31,7 @@ The first step is to review the existing workflow with Project Hope, document ho
 - [Executive Summary Cover Sheet](Docs/Executive%20Summary.md)
 - [Executive Summary PDF](Docs/Executive%20Summary.pdf)
 - [Questions to Ask](Docs/project_hope_food_bank_fillable_questions.pdf)
+- [Current Inventory Spreadsheet Scan Notes](Docs/current-inventory-spreadsheet-scan.md)
 
 ## Initial Areas to Review
 
