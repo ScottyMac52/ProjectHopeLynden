@@ -1,4 +1,5 @@
 using ProjectHopeLynden.Domain;
+using Xunit;
 
 namespace ProjectHopeLynden.Domain.Tests;
 
