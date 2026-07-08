@@ -31,6 +31,76 @@ The first step is to review the existing workflow with Project Hope, document ho
 - [Executive Summary Cover Sheet](Docs/Executive%20Summary.md)
 - [Executive Summary PDF](Docs/Executive%20Summary.pdf)
 - [Questions to Ask](Docs/project_hope_food_bank_fillable_questions.pdf)
+- [Current Spreadsheet Scan](Discovery/Spreadsheet%20Contents.pdf)
+- [Option A Requirements](Docs/Option%20A%20Requirements.md)
+- [Option A Architecture Decision](Docs/Architecture%20Decision%20-%20Option%20A.md)
+- [Initial User Stories](Docs/User%20Stories.md)
+- [Milestone 1 Candidate Stories](Docs/Milestone%201%20Stories.md)
+
+## Discovery Findings from Current Spreadsheet Scan
+
+The scanned spreadsheet pages show that Project Hope already has a practical inventory model in place. The current workbook is not just a list of food items; it tracks categories, item names, quantities, locations, best-by dates, commodity flags, menu item flags, weekly changes, and last-updated dates.
+
+### Inventory Categories Observed
+
+The scan currently shows these inventory categories:
+
+- Dry Beans
+- Noodles
+- Dry Mix
+- Condiments
+- Snacks
+- Cereals
+- Produce
+- Eggs
+- Frozen Meat
+- Frozen Miscellaneous
+- Canned Vegetables
+- Canned Fruit
+- Soup is a MESS
+- Canned Beans
+- Tomatoes
+- Canned Meat
+- Diapers
+- Wipes
+- Formula
+
+### Data Fields Observed
+
+The repeated worksheet structure suggests the current spreadsheet is acting as the first version of the data model. Common fields include:
+
+- Item
+- Quantity
+- Location
+- Best-by date
+- Commodity indicator
+- Menu item indicator
+- One-week change
+- Last updated date
+
+### Spreadsheet Abbreviations and Notes
+
+- `LOC.` means inventory location.
+- `BB` is a date field. The exact business meaning still needs to be confirmed during discovery.
+- `COM.` means the item is a Commodity item with special reporting requirements. The Director must supply Commodity reporting to the Bellingham Food Bank.
+- `Menu Item` is not yet understood and needs to be clarified during discovery.
+- Penciled-in quantities represent the current inventory numbers.
+- Some of the same food items appear as both Commodity and non-Commodity inventory. The future database must account for this distinction instead of assuming an item name is globally one or the other.
+
+### Initial Database Implications
+
+- Commodity status should likely be tracked at the inventory lot, stock entry, or item-instance level rather than only at the item-name level.
+- The system needs to support reporting by Commodity status without losing the ability to show total available inventory for the same item.
+- Item identity, category, location, Commodity status, date tracking, and current count should be modeled separately enough to support accurate reporting and operational use.
+- Unknown fields such as `Menu Item` should remain part of discovery before the schema is finalized.
+
+### Initial Observations
+
+- Existing inventory categories should be preserved as a starting point instead of replaced blindly.
+- Category names and item lists should become configurable so Project Hope can adjust them without software changes.
+- Handwritten notes and corrections suggest that inventory updates may happen away from the spreadsheet and then get reconciled later.
+- Color coding appears to carry operational meaning and should be documented before any replacement system is designed.
+- The current spreadsheet provides a strong requirements artifact for designing an improved workflow.
 
 ## Initial Areas to Review
 
