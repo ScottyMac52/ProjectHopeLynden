@@ -1,0 +1,77 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.0.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{356A3175-4E05-4A4A-99A0-CEF061C0A328}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{EC9E4CE2-F91A-4FFC-B8AA-B9D8D0BA346F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectHopeLynden.Domain", "src\ProjectHopeLynden.Domain\ProjectHopeLynden.Domain.csproj", "{AD3BF914-37BB-44A2-A46D-65985EFD248C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectHopeLynden.Application", "src\ProjectHopeLynden.Application\ProjectHopeLynden.Application.csproj", "{30B21E0E-C2D8-4132-B48B-08259D6A51C6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectHopeLynden.Infrastructure", "src\ProjectHopeLynden.Infrastructure\ProjectHopeLynden.Infrastructure.csproj", "{865CF710-6702-4127-9B3F-42B9C73D179A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectHopeLynden.Web", "src\ProjectHopeLynden.Web\ProjectHopeLynden.Web.csproj", "{CC5BD8AF-5512-467B-AF42-3D5005BD9DD8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectHopeLynden.Domain.Tests", "tests\ProjectHopeLynden.Domain.Tests\ProjectHopeLynden.Domain.Tests.csproj", "{B62297FC-2564-47FA-A3D5-A169B7A1E00B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectHopeLynden.Application.Tests", "tests\ProjectHopeLynden.Application.Tests\ProjectHopeLynden.Application.Tests.csproj", "{606F871F-E77D-484D-ACE5-AF14F069654C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectHopeLynden.Infrastructure.Tests", "tests\ProjectHopeLynden.Infrastructure.Tests\ProjectHopeLynden.Infrastructure.Tests.csproj", "{4EE124DF-8651-40B8-85F8-7A2108B7D94E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectHopeLynden.Web.Tests", "tests\ProjectHopeLynden.Web.Tests\ProjectHopeLynden.Web.Tests.csproj", "{A178A5C5-442C-4DDD-BD71-D57C358CDBEF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AD3BF914-37BB-44A2-A46D-65985EFD248C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD3BF914-37BB-44A2-A46D-65985EFD248C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD3BF914-37BB-44A2-A46D-65985EFD248C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD3BF914-37BB-44A2-A46D-65985EFD248C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30B21E0E-C2D8-4132-B48B-08259D6A51C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30B21E0E-C2D8-4132-B48B-08259D6A51C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30B21E0E-C2D8-4132-B48B-08259D6A51C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30B21E0E-C2D8-4132-B48B-08259D6A51C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{865CF710-6702-4127-9B3F-42B9C73D179A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{865CF710-6702-4127-9B3F-42B9C73D179A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{865CF710-6702-4127-9B3F-42B9C73D179A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{865CF710-6702-4127-9B3F-42B9C73D179A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC5BD8AF-5512-467B-AF42-3D5005BD9DD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC5BD8AF-5512-467B-AF42-3D5005BD9DD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC5BD8AF-5512-467B-AF42-3D5005BD9DD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC5BD8AF-5512-467B-AF42-3D5005BD9DD8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B62297FC-2564-47FA-A3D5-A169B7A1E00B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B62297FC-2564-47FA-A3D5-A169B7A1E00B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B62297FC-2564-47FA-A3D5-A169B7A1E00B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B62297FC-2564-47FA-A3D5-A169B7A1E00B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{606F871F-E77D-484D-ACE5-AF14F069654C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{606F871F-E77D-484D-ACE5-AF14F069654C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{606F871F-E77D-484D-ACE5-AF14F069654C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{606F871F-E77D-484D-ACE5-AF14F069654C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4EE124DF-8651-40B8-85F8-7A2108B7D94E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EE124DF-8651-40B8-85F8-7A2108B7D94E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EE124DF-8651-40B8-85F8-7A2108B7D94E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EE124DF-8651-40B8-85F8-7A2108B7D94E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A178A5C5-442C-4DDD-BD71-D57C358CDBEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A178A5C5-442C-4DDD-BD71-D57C358CDBEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A178A5C5-442C-4DDD-BD71-D57C358CDBEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A178A5C5-442C-4DDD-BD71-D57C358CDBEF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AD3BF914-37BB-44A2-A46D-65985EFD248C} = {356A3175-4E05-4A4A-99A0-CEF061C0A328}
+		{30B21E0E-C2D8-4132-B48B-08259D6A51C6} = {356A3175-4E05-4A4A-99A0-CEF061C0A328}
+		{865CF710-6702-4127-9B3F-42B9C73D179A} = {356A3175-4E05-4A4A-99A0-CEF061C0A328}
+		{CC5BD8AF-5512-467B-AF42-3D5005BD9DD8} = {356A3175-4E05-4A4A-99A0-CEF061C0A328}
+		{B62297FC-2564-47FA-A3D5-A169B7A1E00B} = {EC9E4CE2-F91A-4FFC-B8AA-B9D8D0BA346F}
+		{606F871F-E77D-484D-ACE5-AF14F069654C} = {EC9E4CE2-F91A-4FFC-B8AA-B9D8D0BA346F}
+		{4EE124DF-8651-40B8-85F8-7A2108B7D94E} = {EC9E4CE2-F91A-4FFC-B8AA-B9D8D0BA346F}
+		{A178A5C5-442C-4DDD-BD71-D57C358CDBEF} = {EC9E4CE2-F91A-4FFC-B8AA-B9D8D0BA346F}
+	EndGlobalSection
+EndGlobal
