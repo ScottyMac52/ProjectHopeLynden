@@ -20,6 +20,8 @@ The purpose of the system is to replace or improve the current spreadsheet-based
 - Keep the user interface dirt simple.
 - Avoid login, authentication, authorization, or role management for the first version.
 - Allow inventory items and current counts to be edited directly from a spreadsheet-like screen.
+- Store historical inventory counts so changes can be reviewed and reported over time.
+- Support trend reports that show inventory movement over time.
 - Support Commodity and non-Commodity inventory for the same item name.
 - Support required Commodity reporting for the Director.
 - Keep deployment simple and affordable.
@@ -72,6 +74,8 @@ The user interface should look and behave like a simple spreadsheet:
 - Large readable controls.
 - No technical terminology unless it already exists in the current workflow.
 
+The reporting interface should remain simple and should initially focus on practical questions staff and the Director need answered, including Commodity totals and inventory trends over time.
+
 ## Data Requirements
 
 The current spreadsheet suggests the following core data concepts.
@@ -92,13 +96,28 @@ Likely fields:
 
 - Item
 - Category
-- Quantity
+- Current quantity
 - Location
 - BB date
 - Commodity status
 - Menu Item status
 - Last updated date
 - One-week change or history-derived change
+
+### Inventory Count History
+
+Historical inventory numbers must be stored explicitly. The system should not rely only on the current quantity.
+
+Each quantity update should create or preserve a historical count record so that reports can show how inventory changes over time. This supports trend reports such as category movement, item movement, Commodity inventory changes, and historical count comparisons.
+
+Likely fields:
+
+- Inventory entry or lot
+- Counted quantity
+- Count date/time
+- Previous quantity, if useful for reporting
+- Quantity change, if useful for reporting
+- Optional note or source, if discovered to be needed
 
 ### Location
 
@@ -120,13 +139,15 @@ The meaning of `Menu Item` is not yet known and must remain an open discovery qu
 
 ### Current Counts
 
-The penciled-in numbers on the scanned spreadsheet represent the current inventory numbers.
+The penciled-in numbers on the scanned spreadsheet represent the current inventory numbers. These current counts should be stored as the latest inventory value while also preserving historical count records for reporting over time.
 
 ## Reporting Requirements
 
 The first reporting requirement is Commodity reporting. The system should support reports that allow the Director to supply required Commodity information to the Bellingham Food Bank.
 
 The first version should also support simple operational inventory views, including total quantity by item and category. Reports should be exportable or printable if practical.
+
+Historical inventory reporting is required. The system should be able to provide trend reports over time, including historical inventory counts and changes by item, category, Commodity status, and other useful groupings discovered during implementation.
 
 ## Backup Requirements
 
@@ -140,9 +161,9 @@ Development should follow a TDD approach. Each user story should include accepta
 
 Recommended test layers:
 
-- Domain unit tests for inventory rules and Commodity handling.
-- Application/service tests for use cases such as editing counts and generating reports.
-- SQLite integration tests for persistence behavior.
+- Domain unit tests for inventory rules, historical count behavior, and Commodity handling.
+- Application/service tests for use cases such as editing counts, preserving history, and generating reports.
+- SQLite integration tests for persistence behavior, including historical inventory records.
 - Razor Page handler tests for page-level behavior.
 - Minimal browser or HTML contract tests only where they protect important workflow assumptions.
 
@@ -157,4 +178,4 @@ Coverage should be tight enough to validate developer assumptions. Domain and ap
 - How many people may update inventory at the same time?
 - Which machine should host the server install?
 - What backup location is available?
-- Should historical count changes be stored explicitly, or is current quantity enough for the first milestone?
+- What trend reports will be most valuable to staff and the Director?
