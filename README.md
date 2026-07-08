@@ -31,6 +31,56 @@ The first step is to review the existing workflow with Project Hope, document ho
 - [Executive Summary Cover Sheet](Docs/Executive%20Summary.md)
 - [Executive Summary PDF](Docs/Executive%20Summary.pdf)
 - [Questions to Ask](Docs/project_hope_food_bank_fillable_questions.pdf)
+- [Current Spreadsheet Scan](Discovery/Spreadsheet%20Contents.pdf)
+
+## Discovery Findings from Current Spreadsheet Scan
+
+The scanned spreadsheet pages show that Project Hope already has a practical inventory model in place. The current workbook is not just a list of food items; it tracks categories, item names, quantities, locations, best-by dates, commodity flags, menu item flags, weekly changes, and last-updated dates.
+
+### Inventory Categories Observed
+
+The scan currently shows these inventory categories:
+
+- Dry Beans
+- Noodles
+- Dry Mix
+- Condiments
+- Snacks
+- Cereals
+- Produce
+- Eggs
+- Frozen Meat
+- Frozen Miscellaneous
+- Canned Vegetables
+- Canned Fruit
+- Soup is a MESS
+- Canned Beans
+- Tomatoes
+- Canned Meat
+- Diapers
+- Wipes
+- Formula
+
+### Data Fields Observed
+
+The repeated worksheet structure suggests the current spreadsheet is acting as the first version of the data model. Common fields include:
+
+- Item
+- Quantity
+- Location
+- Best-by date
+- Commodity indicator
+- Menu item indicator
+- One-week change
+- Last updated date
+
+### Initial Observations
+
+- Existing inventory categories should be preserved as a starting point instead of replaced blindly.
+- Category names and item lists should become configurable so Project Hope can adjust them without software changes.
+- Handwritten notes and corrections suggest that inventory updates may happen away from the spreadsheet and then get reconciled later.
+- Color coding appears to carry operational meaning and should be documented before any replacement system is designed.
+- The current spreadsheet provides a strong requirements artifact for designing an improved workflow.
 
 ## Initial Areas to Review
 
