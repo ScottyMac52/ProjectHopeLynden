@@ -28,7 +28,8 @@ The first step is to review the existing workflow with Project Hope, document ho
 
 ## Discovery Documents
 
-- [Executive Summary](Docs/Executive%20Summary.pdf)
+- [Executive Summary Cover Sheet](Docs/Executive%20Summary.md)
+- [Executive Summary PDF](Docs/Executive%20Summary.pdf)
 - [Questions to Ask](Docs/project_hope_food_bank_fillable_questions.pdf)
 
 ## Initial Areas to Review
