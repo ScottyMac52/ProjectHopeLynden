@@ -74,6 +74,22 @@ The repeated worksheet structure suggests the current spreadsheet is acting as t
 - One-week change
 - Last updated date
 
+### Spreadsheet Abbreviations and Notes
+
+- `LOC.` means inventory location.
+- `BB` is a date field. The exact business meaning still needs to be confirmed during discovery.
+- `COM.` means the item is a Commodity item with special reporting requirements. The Director must supply Commodity reporting to the Bellingham Food Bank.
+- `Menu Item` is not yet understood and needs to be clarified during discovery.
+- Penciled-in quantities represent the current inventory numbers.
+- Some of the same food items appear as both Commodity and non-Commodity inventory. The future database must account for this distinction instead of assuming an item name is globally one or the other.
+
+### Initial Database Implications
+
+- Commodity status should likely be tracked at the inventory lot, stock entry, or item-instance level rather than only at the item-name level.
+- The system needs to support reporting by Commodity status without losing the ability to show total available inventory for the same item.
+- Item identity, category, location, Commodity status, date tracking, and current count should be modeled separately enough to support accurate reporting and operational use.
+- Unknown fields such as `Menu Item` should remain part of discovery before the schema is finalized.
+
 ### Initial Observations
 
 - Existing inventory categories should be preserved as a starting point instead of replaced blindly.
