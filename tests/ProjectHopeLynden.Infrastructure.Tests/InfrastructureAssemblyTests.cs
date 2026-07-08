@@ -1,6 +1,7 @@
 using ProjectHopeLynden.Application;
 using ProjectHopeLynden.Domain;
 using ProjectHopeLynden.Infrastructure;
+using Xunit;
 
 namespace ProjectHopeLynden.Infrastructure.Tests;
 
