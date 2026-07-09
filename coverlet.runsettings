@@ -5,7 +5,8 @@
       <DataCollector friendlyName="XPlat Code Coverage">
         <Configuration>
           <Format>cobertura</Format>
-          <ExcludeByFile>**/Persistence/Migrations/*.cs,**/Persistence/Seeding/*.cs,**/Program.cs,**/Startup/DatabaseInitializationExtensions.cs,**/Pages/*.cshtml</ExcludeByFile>
+          <ExcludeByAttribute>ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
+          <ExcludeByFile>**/Program.cs,**/Pages/*.cshtml</ExcludeByFile>
         </Configuration>
       </DataCollector>
     </DataCollectors>
