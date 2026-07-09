@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using ProjectHopeLynden.Infrastructure.Persistence;
@@ -8,6 +9,7 @@ using ProjectHopeLynden.Infrastructure.Persistence;
 namespace ProjectHopeLynden.Infrastructure.Persistence.Migrations;
 
 [DbContext(typeof(ProjectHopeDbContext))]
+[ExcludeFromCodeCoverage]
 [Migration("20260709041000_CreateInitialInventorySchema")]
 public partial class CreateInitialInventorySchema : Migration
 {
