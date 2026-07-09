@@ -81,7 +81,7 @@ public sealed class InitialInventorySeederTests
             .ToListAsync();
 
         Assert.Equal(2, history.Count);
-        Assert.Equal([20, 24], history.Select(record => record.CountedQuantity));
+        Assert.Equal(new[] { 20, 24 }, history.Select(record => record.CountedQuantity).ToArray());
         Assert.Equal(4, history[1].QuantityChange);
     }
 
