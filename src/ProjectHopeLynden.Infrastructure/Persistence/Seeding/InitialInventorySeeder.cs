@@ -22,7 +22,7 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
             currentQuantity: 24,
             isCommodity: true,
             isMenuItem: false,
-            cancellationToken);
+            cancellationToken: cancellationToken);
 
         var greenBeansNonCommodity = await EnsureInventoryEntryAsync(
             items["Green Beans"],
@@ -31,7 +31,7 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
             currentQuantity: 18,
             isCommodity: false,
             isMenuItem: false,
-            cancellationToken);
+            cancellationToken: cancellationToken);
 
         var tomatoSauceCommodity = await EnsureInventoryEntryAsync(
             items["Tomato Sauce"],
@@ -40,7 +40,7 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
             currentQuantity: 36,
             isCommodity: true,
             isMenuItem: true,
-            cancellationToken);
+            cancellationToken: cancellationToken);
 
         var cerealNonCommodity = await EnsureInventoryEntryAsync(
             items["Oat Cereal"],
@@ -49,12 +49,12 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
             currentQuantity: 12,
             isCommodity: false,
             isMenuItem: false,
-            cancellationToken);
+            cancellationToken: cancellationToken);
 
-        await EnsureHistoryAsync(greenBeansCommodity, previousQuantity: 20, currentQuantity: 24, cancellationToken);
-        await EnsureHistoryAsync(greenBeansNonCommodity, previousQuantity: 14, currentQuantity: 18, cancellationToken);
-        await EnsureHistoryAsync(tomatoSauceCommodity, previousQuantity: 30, currentQuantity: 36, cancellationToken);
-        await EnsureHistoryAsync(cerealNonCommodity, previousQuantity: 9, currentQuantity: 12, cancellationToken);
+        await EnsureHistoryAsync(greenBeansCommodity, previousQuantity: 20, currentQuantity: 24, cancellationToken: cancellationToken);
+        await EnsureHistoryAsync(greenBeansNonCommodity, previousQuantity: 14, currentQuantity: 18, cancellationToken: cancellationToken);
+        await EnsureHistoryAsync(tomatoSauceCommodity, previousQuantity: 30, currentQuantity: 36, cancellationToken: cancellationToken);
+        await EnsureHistoryAsync(cerealNonCommodity, previousQuantity: 9, currentQuantity: 12, cancellationToken: cancellationToken);
     }
 
     private async Task<Dictionary<string, Category>> EnsureCategoriesAsync(CancellationToken cancellationToken)
