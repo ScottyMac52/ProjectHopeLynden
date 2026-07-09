@@ -11,7 +11,10 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         string connectionString)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new ArgumentException("A ProjectHope persistence connection string is required.", nameof(connectionString));
+        }
 
         services.AddDbContext<ProjectHopeDbContext>(options => options.UseSqlite(connectionString));
         services.AddScoped<InitialInventorySeeder>();
