@@ -47,7 +47,7 @@ jobs:
       dotnet_version: '10.0.x'
       run_tests: true
       run_coverage: true
-      run_build_release: true
+      run_build_release: false
       ci_mode: false
       create_release: false
       enable_installer: false
