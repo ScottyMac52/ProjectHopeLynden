@@ -13,7 +13,7 @@ public sealed class InitialInventorySeederTests
     {
         await using var connection = await OpenConnectionAsync();
         await using var context = CreateContext(connection);
-        await context.Database.MigrateAsync();
+        await context.Database.EnsureCreatedAsync();
         var seeder = new InitialInventorySeeder(context);
 
         await seeder.SeedAsync();
@@ -46,7 +46,7 @@ public sealed class InitialInventorySeederTests
     {
         await using var connection = await OpenConnectionAsync();
         await using var context = CreateContext(connection);
-        await context.Database.MigrateAsync();
+        await context.Database.EnsureCreatedAsync();
         var seeder = new InitialInventorySeeder(context);
 
         await seeder.SeedAsync();
@@ -66,7 +66,7 @@ public sealed class InitialInventorySeederTests
     {
         await using var connection = await OpenConnectionAsync();
         await using var context = CreateContext(connection);
-        await context.Database.MigrateAsync();
+        await context.Database.EnsureCreatedAsync();
         var seeder = new InitialInventorySeeder(context);
 
         await seeder.SeedAsync();
@@ -86,7 +86,7 @@ public sealed class InitialInventorySeederTests
     {
         await using var connection = await OpenConnectionAsync();
         await using var context = CreateContext(connection);
-        await context.Database.MigrateAsync();
+        await context.Database.EnsureCreatedAsync();
         var seeder = new InitialInventorySeeder(context);
 
         await seeder.SeedAsync();
@@ -110,7 +110,7 @@ public sealed class InitialInventorySeederTests
     {
         await using var connection = await OpenConnectionAsync();
         await using var context = CreateContext(connection);
-        await context.Database.MigrateAsync();
+        await context.Database.EnsureCreatedAsync();
         var seeder = new InitialInventorySeeder(context);
 
         await seeder.SeedAsync();
