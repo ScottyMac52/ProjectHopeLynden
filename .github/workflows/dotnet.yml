@@ -108,7 +108,7 @@ jobs:
           reportgenerator -reports:./coverage/**/coverage.cobertura.xml `
                           -targetdir:./coverage/report `
                           -reporttypes:"Cobertura;MarkdownSummaryGithub" `
-                          -filefilters:"-*/Persistence/Migrations/*;-*\\Persistence\\Migrations\\*;-*/Persistence/Seeding/*;-*\\Persistence\\Seeding\\*;-*/Program.cs;-*\\Program.cs;-*/Startup/DatabaseInitializationExtensions.cs;-*\\Startup\\DatabaseInitializationExtensions.cs;-*/Pages/*.cshtml;-*\\Pages\\*.cshtml"
+                          -filefilters:"-*/Program.cs;-*\\Program.cs;-*/Pages/*.cshtml;-*\\Pages\\*.cshtml"
 
       - name: Assert coverage thresholds
         shell: pwsh
