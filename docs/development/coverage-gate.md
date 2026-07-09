@@ -7,7 +7,7 @@ The gate requires:
 - 80% line coverage
 - 80% branch coverage
 
-Generated and host-bootstrap files are excluded from the gate so the reported percentage measures hand-written application behavior instead of EF migration scaffolding or ASP.NET generated output.
+Generated, host-bootstrap, and development seed-bootstrap files are excluded from the gate so the reported percentage measures hand-written application behavior instead of EF migration scaffolding, ASP.NET generated output, or one-time sample data setup.
 
 Excluded paths:
 
@@ -15,5 +15,10 @@ Excluded paths:
 - `Program.cs`
 - `Startup/DatabaseInitializationExtensions.cs`
 - generated Razor `Pages/*.cshtml` output
+
+Excluded by attribute:
+
+- development seed fixture constants
+- development seed bootstrap
 
 The gate runs with `coverlet.runsettings`, merges Cobertura output with ReportGenerator, and fails the pull request when the merged totals are below the threshold.
