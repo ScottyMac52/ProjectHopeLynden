@@ -1,10 +1,14 @@
 using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using ProjectHopeLynden.Infrastructure.Persistence;
 
 #nullable disable
 
 namespace ProjectHopeLynden.Infrastructure.Persistence.Migrations;
 
+[DbContext(typeof(ProjectHopeDbContext))]
+[Migration("20260709041000_CreateInitialInventorySchema")]
 public partial class CreateInitialInventorySchema : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
