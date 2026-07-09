@@ -42,6 +42,26 @@ public sealed class InitialInventorySeederTests
     }
 
     [Fact]
+    public async Task SeedAsync_IncludesAllObservedSpreadsheetCategories()
+    {
+        await using var connection = await OpenConnectionAsync();
+        await using var context = CreateContext(connection);
+        await context.Database.MigrateAsync();
+        var seeder = new InitialInventorySeeder(context);
+
+        await seeder.SeedAsync();
+
+        var categoryNames = await context.Categories
+            .Select(category => category.Name)
+            .ToListAsync();
+
+        Assert.Equal(InitialInventorySeedData.CategoryNames.Length, categoryNames.Count);
+        Assert.Contains("Soup is a MESS", categoryNames);
+        Assert.Contains("Formula", categoryNames);
+        Assert.Contains("Frozen Miscellaneous", categoryNames);
+    }
+
+    [Fact]
     public async Task SeedAsync_IncludesSameItemAsCommodityAndNonCommodityInventory()
     {
         await using var connection = await OpenConnectionAsync();
