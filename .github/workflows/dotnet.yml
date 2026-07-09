@@ -102,6 +102,10 @@ jobs:
               --settings coverlet.runsettings `
               --results-directory ./coverage `
               --logger "console;verbosity=normal"
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "Tests failed for $testProjectPath"
+            }
           }
 
       - name: Install ReportGenerator
