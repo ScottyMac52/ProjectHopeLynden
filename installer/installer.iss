@@ -4,7 +4,7 @@
 #define AppExeName "ProjectHopeLynden.Web.exe"
 
 [Setup]
-AppId={{8C4F365B-094E-4D69-B53E-0903E4F1CF50}
+AppId={{8C4F365B-094E-4D69-B53E-0903E4F1CF50}}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher={#AppPublisher}
