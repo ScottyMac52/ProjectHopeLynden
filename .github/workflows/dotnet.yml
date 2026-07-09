@@ -39,6 +39,113 @@ jobs:
       skip_projects: ''
     secrets: inherit
 
+  coverage-threshold:
+    name: Coverage Gate (80% line / 80% branch)
+    if: github.event_name == 'pull_request'
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        shell: pwsh
+        run: dotnet restore ProjectHopeLynden.sln
+
+      - name: Build
+        shell: pwsh
+        run: dotnet build ProjectHopeLynden.sln --no-restore -c Release
+
+      - name: Run test projects with coverage
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $testProjects = @(Get-ChildItem -Path . -Recurse -Filter *.csproj -File |
+            Where-Object {
+              $_.FullName -notmatch '\\bin\\' -and
+              $_.FullName -notmatch '\\obj\\'
+            } |
+            ForEach-Object {
+              $content = Get-Content $_.FullName -Raw
+
+              if (
+                $content -match '<IsTestProject>\s*true\s*</IsTestProject>' -or
+                $content -match 'Microsoft\.NET\.Test\.Sdk' -or
+                $_.BaseName -match '(?i)(test|tests)$'
+              ) {
+                $_
+              }
+            })
+
+          if ($testProjects.Count -eq 0) {
+            throw "No test projects were found."
+          }
+
+          foreach ($testProject in $testProjects) {
+            $testProjectPath = Resolve-Path $testProject.FullName -Relative
+            $testProjectPath = $testProjectPath.TrimStart('.\')
+
+            Write-Host "Running tests for $testProjectPath"
+
+            dotnet test "$testProjectPath" `
+              --no-build `
+              -c Release `
+              --collect:"XPlat Code Coverage" `
+              --settings coverlet.runsettings `
+              --results-directory ./coverage `
+              --logger "console;verbosity=normal"
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "Tests failed for $testProjectPath"
+            }
+          }
+
+      - name: Install ReportGenerator
+        shell: pwsh
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Generate merged Cobertura report
+        shell: pwsh
+        run: |
+          reportgenerator -reports:./coverage/**/coverage.cobertura.xml `
+                          -targetdir:./coverage/report `
+                          -reporttypes:"Cobertura;MarkdownSummaryGithub" `
+                          -filefilters:"-*/Persistence/Migrations/*;-*\\Persistence\\Migrations\\*;-*/Program.cs;-*\\Program.cs;-*/Startup/DatabaseInitializationExtensions.cs;-*\\Startup\\DatabaseInitializationExtensions.cs;-*/Pages/*.cshtml;-*\\Pages\\*.cshtml"
+
+      - name: Assert coverage thresholds
+        shell: pwsh
+        run: |
+          ./build/Assert-CoverageThreshold.ps1 `
+            -CoverageFile ./coverage/report/Cobertura.xml `
+            -LineThreshold 80 `
+            -BranchThreshold 80
+
+      - name: Publish coverage gate summary
+        if: always()
+        shell: pwsh
+        run: |
+          "## Coverage Gate" >> $env:GITHUB_STEP_SUMMARY
+          if (Test-Path ./coverage/report/SummaryGithub.md) {
+            Get-Content ./coverage/report/SummaryGithub.md >> $env:GITHUB_STEP_SUMMARY
+          } else {
+            "No coverage summary was generated." >> $env:GITHUB_STEP_SUMMARY
+          }
+
+      - name: Upload coverage gate report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-gate-report
+          path: ./coverage/report
+
   build-on-main:
     name: Build on Main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
