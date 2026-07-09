@@ -17,6 +17,6 @@ public sealed class ProjectHopeDbContextFactoryTests
         Assert.NotNull(context);
         Assert.True(context.Database.IsSqlite());
         Assert.NotNull(connectionString);
-        Assert.Contains("ProjectHopeLynden.db", connectionString, StringComparison.Ordinal);
+        Assert.Contains("ProjectHopeLynden.db", connectionString);
     }
 }
