@@ -18,7 +18,7 @@ public sealed class WebApplicationSmokeTests
                 .WithWebHostBuilder(builder =>
                 {
                     builder.UseEnvironment(Environments.Development);
-                    builder.ConfigureAppConfiguration(configurationBuilder =>
+                    builder.ConfigureAppConfiguration((_, configurationBuilder) =>
                     {
                         configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
                         {
