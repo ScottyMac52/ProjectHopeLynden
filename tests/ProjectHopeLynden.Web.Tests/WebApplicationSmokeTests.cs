@@ -27,7 +27,10 @@ public sealed class WebApplicationSmokeTests
                     });
                 });
 
-            using var client = factory.CreateClient();
+            using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
+            {
+                BaseAddress = new Uri("https://localhost"),
+            });
 
             var response = await client.GetAsync("/");
             var body = await response.Content.ReadAsStringAsync();
