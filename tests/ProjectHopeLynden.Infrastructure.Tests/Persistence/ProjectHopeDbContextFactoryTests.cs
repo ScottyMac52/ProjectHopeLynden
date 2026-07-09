@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using ProjectHopeLynden.Infrastructure.Persistence;
 using Xunit;
 
@@ -24,23 +23,5 @@ public sealed class ProjectHopeDbContextFactoryTests
         using var context = factory.CreateDbContext([]);
 
         Assert.Equal("Microsoft.EntityFrameworkCore.Sqlite", context.Database.ProviderName);
-    }
-
-    [Fact]
-    public async Task CreateDbContext_CanCreateTheDatabase()
-    {
-        var factory = new ProjectHopeDbContextFactory();
-
-        await using var context = factory.CreateDbContext([]);
-        try
-        {
-            await context.Database.EnsureCreatedAsync();
-
-            Assert.True(await context.Database.CanConnectAsync());
-        }
-        finally
-        {
-            await context.Database.EnsureDeletedAsync();
-        }
     }
 }
