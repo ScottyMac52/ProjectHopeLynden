@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace ProjectHopeLynden.Infrastructure.Persistence.Seeding;
 
+[ExcludeFromCodeCoverage]
 public static class InitialInventorySeedData
 {
     public static readonly string[] CategoryNames =
