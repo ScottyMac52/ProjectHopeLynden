@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using ProjectHopeLynden.Domain.Inventory;
 
 namespace ProjectHopeLynden.Infrastructure.Persistence.Seeding;
 
+[ExcludeFromCodeCoverage]
 public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
 {
     private static readonly DateTime FirstCountDate = new(2026, 7, 1, 9, 0, 0, DateTimeKind.Utc);
