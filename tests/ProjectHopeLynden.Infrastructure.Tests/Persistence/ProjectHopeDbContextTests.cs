@@ -182,16 +182,27 @@ public sealed class ProjectHopeDbContextTests
         string itemName,
         bool isCommodity)
     {
-        var item = await context.Items.SingleOrDefaultAsync(existing => existing.Name == itemName)
-            ?? new Item { Name = itemName };
+        var item = await context.Items.SingleOrDefaultAsync(existing => existing.Name == itemName);
+        if (item is null)
+        {
+            item = new Item { Name = itemName };
+            context.Items.Add(item);
+        }
 
-        var category = await context.Categories.SingleOrDefaultAsync(existing => existing.Name == "Canned Goods")
-            ?? new Category { Name = "Canned Goods" };
+        var category = await context.Categories.SingleOrDefaultAsync(existing => existing.Name == "Canned Goods");
+        if (category is null)
+        {
+            category = new Category { Name = "Canned Goods" };
+            context.Categories.Add(category);
+        }
 
-        var location = await context.Locations.SingleOrDefaultAsync(existing => existing.Name == "Pantry Shelf")
-            ?? new Location { Name = "Pantry Shelf" };
+        var location = await context.Locations.SingleOrDefaultAsync(existing => existing.Name == "Pantry Shelf");
+        if (location is null)
+        {
+            location = new Location { Name = "Pantry Shelf" };
+            context.Locations.Add(location);
+        }
 
-        context.AddRange(item, category, location);
         await context.SaveChangesAsync();
 
         var entry = new InventoryEntry
