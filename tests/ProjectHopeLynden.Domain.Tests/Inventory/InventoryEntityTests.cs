@@ -96,7 +96,7 @@ public sealed class InventoryEntityTests
         Assert.Null(entry.BestByDate);
         Assert.False(entry.IsCommodity);
         Assert.False(entry.IsMenuItem);
-        Assert.Equal(default, entry.LastUpdatedAtUtc);
+        Assert.Equal(default(DateTime), entry.LastUpdatedAtUtc);
         Assert.Empty(entry.CountHistory);
     }
 
@@ -150,7 +150,7 @@ public sealed class InventoryEntityTests
         Assert.Equal(0, history.Id);
         Assert.Equal(0, history.InventoryEntryId);
         Assert.Equal(0, history.CountedQuantity);
-        Assert.Equal(default, history.CountedAtUtc);
+        Assert.Equal(default(DateTime), history.CountedAtUtc);
         Assert.Null(history.PreviousQuantity);
         Assert.Null(history.QuantityChange);
     }
