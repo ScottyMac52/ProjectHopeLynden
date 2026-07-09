@@ -4,9 +4,6 @@ on:
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - '**/*.md'
-      - '.github/workflows/**'
 
   push:
     branches:
@@ -15,7 +12,6 @@ on:
       - 'v*.*.*.*'
     paths-ignore:
       - '**/*.md'
-      - '.github/workflows/**'
 
   workflow_dispatch:
 
