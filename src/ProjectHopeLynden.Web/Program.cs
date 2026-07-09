@@ -1,4 +1,5 @@
 using ProjectHopeLynden.Infrastructure.DependencyInjection;
+using ProjectHopeLynden.Web.Startup;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,8 @@ builder.Services.AddRazorPages();
 builder.Services.AddProjectHopePersistence(databaseConnectionString);
 
 var app = builder.Build();
+
+await app.InitializeProjectHopeDatabaseAsync();
 
 if (!app.Environment.IsDevelopment())
 {

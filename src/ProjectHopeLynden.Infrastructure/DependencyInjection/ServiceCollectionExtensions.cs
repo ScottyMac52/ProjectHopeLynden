@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectHopeLynden.Infrastructure.Persistence;
+using ProjectHopeLynden.Infrastructure.Persistence.Seeding;
 
 namespace ProjectHopeLynden.Infrastructure.DependencyInjection;
 
@@ -13,6 +14,7 @@ public static class ServiceCollectionExtensions
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
         services.AddDbContext<ProjectHopeDbContext>(options => options.UseSqlite(connectionString));
+        services.AddScoped<InitialInventorySeeder>();
 
         return services;
     }
