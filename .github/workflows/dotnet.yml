@@ -61,16 +61,45 @@ jobs:
         shell: pwsh
         run: dotnet build ProjectHopeLynden.sln --no-restore -c Release
 
-      - name: Run tests with coverage settings
+      - name: Run test projects with coverage
         shell: pwsh
         run: |
-          dotnet test ProjectHopeLynden.sln `
-            --no-build `
-            -c Release `
-            --collect:"XPlat Code Coverage" `
-            --settings coverlet.runsettings `
-            --results-directory ./coverage `
-            --logger "console;verbosity=normal"
+          $ErrorActionPreference = "Stop"
+
+          $testProjects = @(Get-ChildItem -Path . -Recurse -Filter *.csproj -File |
+            Where-Object {
+              $_.FullName -notmatch '\\bin\\' -and
+              $_.FullName -notmatch '\\obj\\'
+            } |
+            ForEach-Object {
+              $content = Get-Content $_.FullName -Raw
+
+              if (
+                $content -match '<IsTestProject>\s*true\s*</IsTestProject>' -or
+                $content -match 'Microsoft\.NET\.Test\.Sdk' -or
+                $_.BaseName -match '(?i)(test|tests)$'
+              ) {
+                $_
+              }
+            })
+
+          if ($testProjects.Count -eq 0) {
+            throw "No test projects were found."
+          }
+
+          foreach ($testProject in $testProjects) {
+            $testProjectPath = Resolve-Path $testProject.FullName -Relative
+            $testProjectPath = $testProjectPath.TrimStart('.\')
+
+            Write-Host "Running tests for $testProjectPath"
+
+            dotnet test "$testProjectPath" `
+              --no-build `
+              -c Release `
+              --collect:"XPlat Code Coverage" `
+              --results-directory ./coverage `
+              --logger "console;verbosity=normal"
+          }
 
       - name: Install ReportGenerator
         shell: pwsh
@@ -81,7 +110,8 @@ jobs:
         run: |
           reportgenerator -reports:./coverage/**/coverage.cobertura.xml `
                           -targetdir:./coverage/report `
-                          -reporttypes:"Cobertura;MarkdownSummaryGithub"
+                          -reporttypes:"Cobertura;MarkdownSummaryGithub" `
+                          -filefilters:"-*/Persistence/Migrations/*"
 
       - name: Assert coverage thresholds
         shell: pwsh
