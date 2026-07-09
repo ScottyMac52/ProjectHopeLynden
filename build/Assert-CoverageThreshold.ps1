@@ -24,6 +24,11 @@ if ($null -eq $coverageNode) {
 
 $lineRate = [double]$coverageNode.'line-rate' * 100
 $branchRate = [double]$coverageNode.'branch-rate' * 100
+$branchesValid = [int]$coverageNode.'branches-valid'
+
+if ($branchesValid -eq 0) {
+    $branchRate = 100
+}
 
 Write-Host ("Line coverage:   {0:N2}%" -f $lineRate)
 Write-Host ("Branch coverage: {0:N2}%" -f $branchRate)
