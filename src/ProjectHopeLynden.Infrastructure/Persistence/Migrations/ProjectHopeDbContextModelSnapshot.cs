@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using ProjectHopeLynden.Domain.Inventory;
@@ -8,6 +9,7 @@ using ProjectHopeLynden.Infrastructure.Persistence;
 namespace ProjectHopeLynden.Infrastructure.Persistence.Migrations;
 
 [DbContext(typeof(ProjectHopeDbContext))]
+[ExcludeFromCodeCoverage]
 public sealed class ProjectHopeDbContextModelSnapshot : ModelSnapshot
 {
     protected override void BuildModel(ModelBuilder modelBuilder)
