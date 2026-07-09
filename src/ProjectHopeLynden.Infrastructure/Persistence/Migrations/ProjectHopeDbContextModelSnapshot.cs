@@ -50,6 +50,7 @@ public sealed class ProjectHopeDbContextModelSnapshot : ModelSnapshot
 
             entity.HasKey(entry => entry.Id);
             entity.Property(entry => entry.Id).ValueGeneratedOnAdd();
+            entity.Property(entry => entry.BestByDate);
             entity.Property(entry => entry.CurrentQuantity).IsRequired();
             entity.Property(entry => entry.LastUpdatedAtUtc).IsRequired();
             entity.Property(entry => entry.IsCommodity).IsRequired();
