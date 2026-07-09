@@ -42,6 +42,24 @@ dotnet test ProjectHopeLynden.sln
 dotnet run --project src/ProjectHopeLynden.Web/ProjectHopeLynden.Web.csproj
 ```
 
+## Build and Release
+
+This repository uses the shared GitHub workflow in `ScottyMac52/shared-github-workflows`.
+
+- Pull requests run CI tests and coverage.
+- Pushes to `main` run tests, coverage, and release-mode build artifacts.
+- Version tags in `vX.X.X.X` format create a GitHub Release.
+- Tagged releases generate both a ZIP artifact and an Inno Setup `setup.exe` installer.
+
+Create a tagged release with:
+
+```bash
+git tag v0.0.1.0
+git push origin v0.0.1.0
+```
+
+The installer installs the ASP.NET Core server component and includes a checked-by-default option to preserve an existing Project Hope Lynden database if one is present. The current preservation script protects the conventional database locations under `{commonappdata}\ProjectHopeLynden\ProjectHopeLynden.db` and `{app}\ProjectHopeLynden.db` so we have a safe path before the EF Core storage location is finalized.
+
 ## Project Status
 
 This project is currently in the **discovery and planning** phase.
@@ -138,20 +156,3 @@ The repeated worksheet structure suggests the current spreadsheet is acting as t
 ## Design Principles
 
 - Start simple.
-- Minimize recurring costs.
-- Avoid vendor lock-in where possible.
-- Make backup and recovery part of the design from the beginning.
-- Prefer solutions that Project Hope can operate without depending on one volunteer forever.
-- Use incremental improvements so the organization gets value early.
-
-## Proposed Next Steps
-
-1. Complete the discovery meeting and capture answers to the prepared questions.
-2. Document the current workflow from intake through distribution.
-3. Identify the highest-risk and highest-effort parts of the current Excel process.
-4. Decide on a minimal first milestone.
-5. Create issues for the first implementation tasks.
-
-## Repository Workflow
-
-All changes should be made on feature or documentation branches and submitted through pull requests for review before merging to `main`.

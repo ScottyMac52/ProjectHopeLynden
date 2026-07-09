@@ -1,31 +1,74 @@
-name: .NET
+name: CI / Build / Release
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '**/*.md'
+      - '.github/workflows/**'
+
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*.*.*.*'
+    paths-ignore:
+      - '**/*.md'
+      - '.github/workflows/**'
+
+  workflow_dispatch:
 
 jobs:
-  build-and-test:
-    runs-on: windows-latest
+  ci:
+    name: CI (Tests + Coverage)
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    uses: ScottyMac52/shared-github-workflows/.github/workflows/reusable-build-and-release.yml@main
+    with:
+      dotnet_version: '10.0.x'
+      run_tests: true
+      run_coverage: true
+      run_build_release: false
+      ci_mode: true
+      create_release: false
+      enable_installer: false
+      skip_projects: ''
+    secrets: inherit
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  build-on-main:
+    name: Build on Main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+    uses: ScottyMac52/shared-github-workflows/.github/workflows/reusable-build-and-release.yml@main
+    with:
+      dotnet_version: '10.0.x'
+      run_tests: true
+      run_coverage: true
+      run_build_release: true
+      ci_mode: false
+      create_release: false
+      enable_installer: false
+      skip_projects: ''
+    secrets: inherit
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.0.x
-
-      - name: Restore
-        run: dotnet restore ProjectHopeLynden.sln
-
-      - name: Build
-        run: dotnet build ProjectHopeLynden.sln --configuration Release --no-restore
-
-      - name: Test
-        run: dotnet test ProjectHopeLynden.sln --configuration Release --no-build --collect:"XPlat Code Coverage"
+  release:
+    name: Full Build + Release (Tag only)
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    uses: ScottyMac52/shared-github-workflows/.github/workflows/reusable-build-and-release.yml@main
+    with:
+      dotnet_version: '10.0.x'
+      run_tests: true
+      run_coverage: true
+      run_build_release: true
+      ci_mode: false
+      create_release: true
+      enable_installer: true
+      installer_iss_path: 'installer/installer.iss'
+      app_publisher: 'Project Hope Food Bank of Lynden'
+      skip_projects: ''
+    secrets: inherit
