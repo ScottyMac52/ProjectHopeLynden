@@ -23,11 +23,10 @@ public sealed class DatabaseInitializationExtensionsTests
 
             await using var scope = app.Services.CreateAsyncScope();
             var context = scope.ServiceProvider.GetRequiredService<ProjectHopeDbContext>();
+            var appliedMigrations = await context.Database.GetAppliedMigrationsAsync();
 
             Assert.True(await context.Database.CanConnectAsync());
-            Assert.Contains(
-                "Categories",
-                await context.Database.SqlQueryRaw<string>("SELECT name AS Value FROM sqlite_master WHERE type = 'table';").ToListAsync());
+            Assert.Contains("20260709041000_CreateInitialInventorySchema", appliedMigrations);
         }
         finally
         {
