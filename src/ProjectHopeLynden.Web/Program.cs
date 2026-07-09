@@ -1,6 +1,12 @@
+using ProjectHopeLynden.Infrastructure.DependencyInjection;
+
 var builder = WebApplication.CreateBuilder(args);
 
+var databaseConnectionString = builder.Configuration.GetConnectionString("ProjectHopeDatabase")
+    ?? throw new InvalidOperationException("The ProjectHopeDatabase connection string is not configured.");
+
 builder.Services.AddRazorPages();
+builder.Services.AddProjectHopePersistence(databaseConnectionString);
 
 var app = builder.Build();
 
