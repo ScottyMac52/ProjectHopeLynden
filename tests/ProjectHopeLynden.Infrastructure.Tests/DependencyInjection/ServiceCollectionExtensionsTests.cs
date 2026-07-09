@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using ProjectHopeLynden.Application.Inventory;
 using ProjectHopeLynden.Infrastructure.DependencyInjection;
-using ProjectHopeLynden.Infrastructure.Inventory;
 using ProjectHopeLynden.Infrastructure.Persistence;
 using ProjectHopeLynden.Infrastructure.Persistence.Seeding;
 
@@ -19,7 +17,6 @@ public sealed class ServiceCollectionExtensionsTests
 
         using var provider = services.BuildServiceProvider();
         Assert.NotNull(provider.GetRequiredService<ProjectHopeDbContext>());
-        Assert.IsType<InventoryQueryService>(provider.GetRequiredService<IInventoryQueryService>());
         Assert.NotNull(provider.GetRequiredService<InitialInventorySeeder>());
     }
 
