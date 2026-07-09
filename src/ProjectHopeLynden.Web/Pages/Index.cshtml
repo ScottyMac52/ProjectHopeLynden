@@ -1,0 +1,28 @@
+@page
+@model IndexModel
+@{
+  ViewData["Title"] = Model.PageTitle;
+}
+
+<section class="hero">
+  <p class="eyebrow">Project Hope Food Bank of Lynden</p>
+  <h1>@Model.PageTitle</h1>
+  <p>@Model.Summary</p>
+</section>
+
+<section class="card-grid" aria-label="Milestone 1 application areas">
+  <article class="card">
+    <h2>Inventory</h2>
+    <p>Spreadsheet-like inventory views will be added here first.</p>
+  </article>
+
+  <article class="card">
+    <h2>Commodity Reporting</h2>
+    <p>Commodity and non-Commodity records will stay distinct for reporting.</p>
+  </article>
+
+  <article class="card">
+    <h2>History</h2>
+    <p>Historical inventory counts will support trend reporting over time.</p>
+  </article>
+</section>

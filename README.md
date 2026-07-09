@@ -20,6 +20,28 @@ The current system is based on Excel spreadsheets. The goal is not to replace th
 - Excel-based inventory tracking.
 - Additional architecture decisions are pending discovery.
 
+## Source Layout
+
+The application uses a conventional `src` and `tests` layout:
+
+- `src/ProjectHopeLynden.Domain` - core business concepts and rules.
+- `src/ProjectHopeLynden.Application` - application use cases and workflow orchestration.
+- `src/ProjectHopeLynden.Infrastructure` - persistence and external implementation details.
+- `src/ProjectHopeLynden.Web` - ASP.NET Core Razor Pages web application.
+- `tests/ProjectHopeLynden.Domain.Tests` - domain tests.
+- `tests/ProjectHopeLynden.Application.Tests` - application tests.
+- `tests/ProjectHopeLynden.Infrastructure.Tests` - infrastructure tests.
+- `tests/ProjectHopeLynden.Web.Tests` - web and Razor Page tests.
+
+## Development Commands
+
+```bash
+dotnet restore ProjectHopeLynden.sln
+dotnet build ProjectHopeLynden.sln
+dotnet test ProjectHopeLynden.sln
+dotnet run --project src/ProjectHopeLynden.Web/ProjectHopeLynden.Web.csproj
+```
+
 ## Project Status
 
 This project is currently in the **discovery and planning** phase.
