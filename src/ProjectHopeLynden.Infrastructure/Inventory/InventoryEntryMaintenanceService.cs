@@ -174,7 +174,7 @@ public sealed class InventoryEntryMaintenanceService(ProjectHopeDbContext contex
             return "Current quantity is required.";
         }
 
-        if (request.CurrentQuantity < 0)
+        if (request.CurrentQuantity is < 0)
         {
             return "Current quantity must be zero or greater.";
         }
