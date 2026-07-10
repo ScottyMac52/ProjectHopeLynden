@@ -128,6 +128,219 @@ public sealed class InventoryEntryMaintenanceServiceTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task CreateEntryAsync_RejectsMissingCategoryWithoutSaving()
+    {
+        var location = await AddLocationAsync("Shelf");
+        var service = new InventoryEntryMaintenanceService(context);
+
+        var result = await service.CreateEntryAsync(
+            new InventoryEntrySaveRequest(
+                "Green Beans",
+                CategoryId: null,
+                LocationId: location.Id,
+                CurrentQuantity: 12,
+                BestByDate: null,
+                IsCommodity: false,
+                IsMenuItem: false),
+            new DateTime(2026, 7, 13, 9, 0, 0, DateTimeKind.Utc));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("Category is required.", result.ErrorMessage);
+        Assert.False(await context.InventoryEntries.AnyAsync());
+    }
+
+    [Fact]
+    public async Task CreateEntryAsync_RejectsMissingLocationWithoutSaving()
+    {
+        var category = await AddCategoryAsync("Canned Vegetables");
+        var service = new InventoryEntryMaintenanceService(context);
+
+        var result = await service.CreateEntryAsync(
+            new InventoryEntrySaveRequest(
+                "Green Beans",
+                category.Id,
+                LocationId: null,
+                CurrentQuantity: 12,
+                BestByDate: null,
+                IsCommodity: false,
+                IsMenuItem: false),
+            new DateTime(2026, 7, 13, 9, 0, 0, DateTimeKind.Utc));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("Location is required.", result.ErrorMessage);
+        Assert.False(await context.InventoryEntries.AnyAsync());
+    }
+
+    [Fact]
+    public async Task CreateEntryAsync_RejectsMissingCurrentQuantityWithoutSaving()
+    {
+        var category = await AddCategoryAsync("Canned Vegetables");
+        var location = await AddLocationAsync("Shelf");
+        var service = new InventoryEntryMaintenanceService(context);
+
+        var result = await service.CreateEntryAsync(
+            new InventoryEntrySaveRequest(
+                "Green Beans",
+                category.Id,
+                location.Id,
+                CurrentQuantity: null,
+                BestByDate: null,
+                IsCommodity: false,
+                IsMenuItem: false),
+            new DateTime(2026, 7, 13, 9, 0, 0, DateTimeKind.Utc));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("Current quantity is required.", result.ErrorMessage);
+        Assert.False(await context.InventoryEntries.AnyAsync());
+    }
+
+    [Fact]
+    public async Task CreateEntryAsync_RejectsNegativeCurrentQuantityWithoutSaving()
+    {
+        var category = await AddCategoryAsync("Canned Vegetables");
+        var location = await AddLocationAsync("Shelf");
+        var service = new InventoryEntryMaintenanceService(context);
+
+        var result = await service.CreateEntryAsync(
+            new InventoryEntrySaveRequest(
+                "Green Beans",
+                category.Id,
+                location.Id,
+                CurrentQuantity: -1,
+                BestByDate: null,
+                IsCommodity: false,
+                IsMenuItem: false),
+            new DateTime(2026, 7, 13, 9, 0, 0, DateTimeKind.Utc));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("Current quantity must be zero or greater.", result.ErrorMessage);
+        Assert.False(await context.InventoryEntries.AnyAsync());
+    }
+
+    [Fact]
+    public async Task CreateEntryAsync_RejectsUnknownCategoryWithoutSaving()
+    {
+        var location = await AddLocationAsync("Shelf");
+        var service = new InventoryEntryMaintenanceService(context);
+
+        var result = await service.CreateEntryAsync(
+            new InventoryEntrySaveRequest(
+                "Green Beans",
+                CategoryId: 404,
+                LocationId: location.Id,
+                CurrentQuantity: 12,
+                BestByDate: null,
+                IsCommodity: false,
+                IsMenuItem: false),
+            new DateTime(2026, 7, 13, 9, 0, 0, DateTimeKind.Utc));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("Category is required.", result.ErrorMessage);
+        Assert.False(await context.InventoryEntries.AnyAsync());
+    }
+
+    [Fact]
+    public async Task CreateEntryAsync_RejectsUnknownLocationWithoutSaving()
+    {
+        var category = await AddCategoryAsync("Canned Vegetables");
+        var service = new InventoryEntryMaintenanceService(context);
+
+        var result = await service.CreateEntryAsync(
+            new InventoryEntrySaveRequest(
+                "Green Beans",
+                category.Id,
+                LocationId: 404,
+                CurrentQuantity: 12,
+                BestByDate: null,
+                IsCommodity: false,
+                IsMenuItem: false),
+            new DateTime(2026, 7, 13, 9, 0, 0, DateTimeKind.Utc));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("Location is required.", result.ErrorMessage);
+        Assert.False(await context.InventoryEntries.AnyAsync());
+    }
+
+    [Fact]
+    public async Task UpdateEntryAsync_ReturnsFailureWhenInventoryEntryIsMissing()
+    {
+        var category = await AddCategoryAsync("Canned Vegetables");
+        var location = await AddLocationAsync("Shelf");
+        var service = new InventoryEntryMaintenanceService(context);
+
+        var result = await service.UpdateEntryAsync(
+            inventoryEntryId: 404,
+            new InventoryEntrySaveRequest(
+                "Green Beans",
+                category.Id,
+                location.Id,
+                CurrentQuantity: null,
+                BestByDate: null,
+                IsCommodity: false,
+                IsMenuItem: false),
+            new DateTime(2026, 7, 14, 10, 30, 0, DateTimeKind.Utc));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("Inventory entry was not found.", result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task UpdateEntryAsync_RejectsUnknownCategoryWithoutChangingEntry()
+    {
+        var category = await AddCategoryAsync("Canned Vegetables");
+        var location = await AddLocationAsync("Shelf");
+        var entry = await AddInventoryEntryAsync("Green Beans", category, location, quantity: 24, isCommodity: true, isMenuItem: false);
+        var service = new InventoryEntryMaintenanceService(context);
+
+        var result = await service.UpdateEntryAsync(
+            entry.Id,
+            new InventoryEntrySaveRequest(
+                "Green Beans",
+                CategoryId: 404,
+                location.Id,
+                CurrentQuantity: null,
+                BestByDate: null,
+                IsCommodity: false,
+                IsMenuItem: true),
+            new DateTime(2026, 7, 14, 10, 30, 0, DateTimeKind.Utc));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("Category is required.", result.ErrorMessage);
+
+        var savedEntry = await context.InventoryEntries.AsNoTracking().SingleAsync(inventoryEntry => inventoryEntry.Id == entry.Id);
+        Assert.True(savedEntry.IsCommodity);
+        Assert.False(savedEntry.IsMenuItem);
+    }
+
+    [Fact]
+    public async Task UpdateEntryAsync_RejectsUnknownLocationWithoutChangingEntry()
+    {
+        var category = await AddCategoryAsync("Canned Vegetables");
+        var location = await AddLocationAsync("Shelf");
+        var entry = await AddInventoryEntryAsync("Green Beans", category, location, quantity: 24, isCommodity: true, isMenuItem: false);
+        var service = new InventoryEntryMaintenanceService(context);
+
+        var result = await service.UpdateEntryAsync(
+            entry.Id,
+            new InventoryEntrySaveRequest(
+                "Green Beans",
+                category.Id,
+                LocationId: 404,
+                CurrentQuantity: null,
+                BestByDate: null,
+                IsCommodity: false,
+                IsMenuItem: true),
+            new DateTime(2026, 7, 14, 10, 30, 0, DateTimeKind.Utc));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("Location is required.", result.ErrorMessage);
+
+        var savedEntry = await context.InventoryEntries.AsNoTracking().SingleAsync(inventoryEntry => inventoryEntry.Id == entry.Id);
+        Assert.True(savedEntry.IsCommodity);
+        Assert.False(savedEntry.IsMenuItem);
+    }
+
+    [Fact]
     public async Task UpdateEntryAsync_KeepsCommodityStatusSpecificToInventoryEntry()
     {
         var category = await AddCategoryAsync("Canned Vegetables");
