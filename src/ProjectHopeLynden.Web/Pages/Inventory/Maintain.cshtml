@@ -1,0 +1,102 @@
+@page
+@model MaintainModel
+@{
+    ViewData["Title"] = Model.PageTitle;
+}
+
+<section class="hero hero--branded">
+    <p class="eyebrow">Project Hope Food Bank of Lynden</p>
+    <h1>@Model.PageTitle</h1>
+    <p>@Model.Summary</p>
+</section>
+
+@if (Model.EntryWasNotFound)
+{
+    <section class="card" aria-live="polite">
+        <p class="card__kicker">Inventory row unavailable</p>
+        <h2>Inventory row not found</h2>
+        <p>The requested inventory row could not be found. Return to inventory and choose another row.</p>
+        <p><a class="button-link" asp-page="/Inventory/Index">Back to inventory</a></p>
+    </section>
+}
+else
+{
+    @if (Model.SaveFailed)
+    {
+        <section class="card status-message status-message--error" aria-live="polite">
+            <p>@Model.SaveMessage</p>
+        </section>
+    }
+
+    <section class="card" aria-label="Inventory row maintenance form">
+        <form method="post" asp-page-handler="Save" class="inventory-entry-form">
+            <input type="hidden" asp-for="InventoryEntryId" />
+            <input type="hidden" asp-for="CategoryId" />
+
+            <div class="form-grid">
+                <label>
+                    <span>Item name</span>
+                    <input asp-for="ItemName" autocomplete="off" />
+                </label>
+
+                <label>
+                    <span>Category</span>
+                    <select asp-for="SelectedCategoryId">
+                        <option value="">Choose category</option>
+                        @foreach (var category in Model.Options.Categories)
+                        {
+                            <option value="@category.Id">@category.Name</option>
+                        }
+                    </select>
+                </label>
+
+                <label>
+                    <span>Location</span>
+                    <select asp-for="LocationId">
+                        <option value="">Choose location</option>
+                        @foreach (var location in Model.Options.Locations)
+                        {
+                            <option value="@location.Id">@location.Name</option>
+                        }
+                    </select>
+                </label>
+
+                <label>
+                    <span>BB Date</span>
+                    <input asp-for="BestByDate" type="date" />
+                </label>
+            </div>
+
+            @if (Model.IsEditing)
+            {
+                <section class="form-note" aria-label="Current quantity note">
+                    <strong>Current quantity: @Model.CurrentQuantity</strong>
+                    <span>Use the inventory table quantity editor for count changes so history stays intact.</span>
+                </section>
+            }
+            else
+            {
+                <label class="form-field--short">
+                    <span>Current quantity</span>
+                    <input asp-for="CurrentQuantity" type="number" min="0" />
+                </label>
+            }
+
+            <div class="checkbox-row">
+                <label>
+                    <input asp-for="IsCommodity" />
+                    <span>Commodity</span>
+                </label>
+                <label>
+                    <input asp-for="IsMenuItem" />
+                    <span>Menu Item</span>
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit">Save inventory row</button>
+                <a asp-page="/Inventory/Index" asp-route-categoryId="@(Model.SelectedCategoryId ?? Model.CategoryId)">Cancel</a>
+            </div>
+        </form>
+    </section>
+}
