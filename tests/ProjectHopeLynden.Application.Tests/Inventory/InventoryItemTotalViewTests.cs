@@ -1,4 +1,5 @@
 using ProjectHopeLynden.Application.Inventory;
+using Xunit;
 
 namespace ProjectHopeLynden.Application.Tests.Inventory;
 
