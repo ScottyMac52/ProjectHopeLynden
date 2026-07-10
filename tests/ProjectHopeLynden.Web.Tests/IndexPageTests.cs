@@ -18,6 +18,6 @@ public sealed class IndexPageTests
     {
         var model = new IndexModel();
 
-        Assert.Contains("Project Hope Food Bank of Lynden", model.Summary);
+        Assert.Contains("dignity and compassion", model.Summary);
     }
 }
