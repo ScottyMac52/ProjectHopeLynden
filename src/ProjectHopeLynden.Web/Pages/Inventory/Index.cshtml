@@ -1,0 +1,89 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Inventory by Category";
+}
+
+<section class="hero">
+    <p class="eyebrow">Project Hope Food Bank of Lynden</p>
+    <h1>Inventory by Category</h1>
+    <p>View current inventory counts in a spreadsheet-like category layout.</p>
+</section>
+
+<section class="card" aria-label="Inventory category selector">
+    @if (Model.Categories.Count == 0)
+    {
+        <p>No inventory categories have been added yet.</p>
+    }
+    else
+    {
+        <form method="get" class="category-selector">
+            <label for="categoryId">Category</label>
+            <select id="categoryId" name="categoryId">
+                @foreach (var category in Model.Categories)
+                {
+                    if (category.Id == Model.CategoryId)
+                    {
+                        <option value="@category.Id" selected>@category.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                }
+            </select>
+            <button type="submit">View</button>
+        </form>
+    }
+</section>
+
+@if (Model.CategoryWasNotFound)
+{
+    <section class="card" aria-live="polite">
+        <h2>Category not found</h2>
+        <p>The selected category could not be found. Choose another category from the list.</p>
+    </section>
+}
+else if (Model.Inventory is not null)
+{
+    <section class="card" aria-label="Inventory entries for @Model.Inventory.CategoryName">
+        <h2>@Model.Inventory.CategoryName</h2>
+
+        @if (!Model.Inventory.HasEntries)
+        {
+            <p>No inventory entries have been recorded for this category yet.</p>
+        }
+        else
+        {
+            <div class="table-wrapper">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Item</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Commodity</th>
+                            <th scope="col">BB Date</th>
+                            <th scope="col">Menu Item</th>
+                            <th scope="col">Last Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entry in Model.Inventory.Entries)
+                        {
+                            <tr>
+                                <td>@entry.ItemName</td>
+                                <td>@entry.LocationName</td>
+                                <td>@entry.CurrentQuantity</td>
+                                <td>@(entry.IsCommodity ? "Yes" : "No")</td>
+                                <td>@(entry.BestByDate?.ToString("yyyy-MM-dd") ?? "")</td>
+                                <td>@(entry.IsMenuItem ? "Yes" : "No")</td>
+                                <td>@entry.LastUpdatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+}

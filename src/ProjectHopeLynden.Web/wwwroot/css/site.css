@@ -79,3 +79,45 @@ body {
 .card p {
   color: var(--muted);
 }
+
+.category-selector {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.category-selector label {
+  display: flex;
+  flex-basis: 100%;
+  font-weight: 700;
+}
+
+.category-selector select,
+.category-selector button {
+  font: inherit;
+  padding: 0.55rem 0.75rem;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.inventory-table {
+  border-collapse: collapse;
+  min-width: 880px;
+  width: 100%;
+}
+
+.inventory-table th,
+.inventory-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.inventory-table th {
+  background: #f0f0ea;
+  font-weight: 700;
+}
