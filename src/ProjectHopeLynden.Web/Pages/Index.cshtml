@@ -4,26 +4,45 @@
   ViewData["Title"] = Model.PageTitle;
 }
 
-<section class="hero">
+<section class="hero hero--branded">
   <p class="eyebrow">Project Hope Food Bank of Lynden</p>
   <h1>@Model.PageTitle</h1>
   <p>@Model.Summary</p>
+  <p class="hero__supporting-text">@Model.ImpactStatement</p>
+</section>
+
+<section class="impact-strip" aria-label="Project Hope service context">
+  <article>
+    <strong>Food Bank</strong>
+    <span>Organized counts for shelf, pantry, freezer, and back-room inventory.</span>
+  </article>
+  <article>
+    <strong>Commodity Care</strong>
+    <span>Separate Commodity and non-Commodity records without hiding available food.</span>
+  </article>
+  <article>
+    <strong>History</strong>
+    <span>Preserve count changes so trends can support better planning.</span>
+  </article>
 </section>
 
 <section class="card-grid" aria-label="Milestone 1 application areas">
-  <article class="card">
+  <article class="card card--featured">
+    <p class="card__kicker">Start here</p>
     <h2>Inventory</h2>
-    <p>View current counts grouped by category in a spreadsheet-like layout.</p>
-    <p><a asp-page="/Inventory/Index">View inventory by category</a></p>
+    <p>View and update current counts grouped by category in a familiar spreadsheet-like layout.</p>
+    <p><a class="button-link" asp-page="/Inventory/Index">View inventory by category</a></p>
   </article>
 
   <article class="card">
-    <h2>Commodity Reporting</h2>
-    <p>Commodity and non-Commodity records will stay distinct for reporting.</p>
+    <p class="card__kicker">Reporting</p>
+    <h2>Commodity Records</h2>
+    <p>Keep Commodity and non-Commodity inventory distinct for future Director reporting.</p>
   </article>
 
   <article class="card">
-    <h2>History</h2>
+    <p class="card__kicker">Stewardship</p>
+    <h2>Inventory History</h2>
     <p>Historical inventory counts will support trend reporting over time.</p>
   </article>
 </section>
