@@ -1,0 +1,85 @@
+@page
+@model HistoryModel
+@{
+    ViewData["Title"] = Model.PageTitle;
+}
+
+<section class="hero hero--branded">
+    <p class="eyebrow">Project Hope Food Bank of Lynden</p>
+    <h1>@Model.PageTitle</h1>
+    <p>@Model.Summary</p>
+</section>
+
+@if (Model.EntryWasNotFound)
+{
+    <section class="card" aria-live="polite">
+        <p class="card__kicker">History unavailable</p>
+        <h2>Inventory entry not found</h2>
+        <p>The requested inventory entry could not be found. Return to inventory and choose another row.</p>
+        <p><a class="button-link" asp-page="/Inventory/Index">Back to inventory</a></p>
+    </section>
+}
+else if (Model.History is not null)
+{
+    <section class="card history-summary" aria-label="Inventory entry summary">
+        <p class="card__kicker">Inventory entry</p>
+        <h2>@Model.History.ItemName</h2>
+        <dl class="history-summary__grid">
+            <div>
+                <dt>Category</dt>
+                <dd>@Model.History.CategoryName</dd>
+            </div>
+            <div>
+                <dt>Location</dt>
+                <dd>@Model.History.LocationName</dd>
+            </div>
+            <div>
+                <dt>Commodity</dt>
+                <dd>@(Model.History.IsCommodity ? "Yes" : "No")</dd>
+            </div>
+            <div>
+                <dt>Current Quantity</dt>
+                <dd>@Model.History.CurrentQuantity</dd>
+            </div>
+        </dl>
+        <p><a asp-page="/Inventory/Index" asp-route-categoryId="@Model.History.CategoryId">Back to @Model.History.CategoryName</a></p>
+    </section>
+
+    <section class="card" aria-label="Historical counts for @Model.History.ItemName">
+        <div class="section-heading">
+            <p class="card__kicker">Count history</p>
+            <h2>Stored inventory counts</h2>
+        </div>
+
+        @if (!Model.History.HasHistory)
+        {
+            <p>No historical count records have been stored for this inventory entry yet.</p>
+        }
+        else
+        {
+            <div class="table-wrapper">
+                <table class="inventory-table history-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Counted At</th>
+                            <th scope="col">Previous Quantity</th>
+                            <th scope="col">Counted Quantity</th>
+                            <th scope="col">Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var record in Model.History.Records)
+                        {
+                            <tr>
+                                <td>@record.CountedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@(record.PreviousQuantity?.ToString() ?? "")</td>
+                                <td>@record.CountedQuantity</td>
+                                <td>@(record.QuantityChange?.ToString("+0;-0;0") ?? "")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+}
