@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using ProjectHopeLynden.Application.Inventory;
 using ProjectHopeLynden.Web.Pages.Inventory;
 
