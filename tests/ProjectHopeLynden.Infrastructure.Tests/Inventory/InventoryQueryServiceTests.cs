@@ -103,6 +103,47 @@ public sealed class InventoryQueryServiceTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetInventoryForCategoryAsync_ReturnsSeparateRowsForSameItemCommodityAndNonCommodity()
+    {
+        var lastUpdatedAtUtc = new DateTime(2026, 7, 12, 9, 0, 0, DateTimeKind.Utc);
+        var cannedVegetables = new Category { Name = "Canned Vegetables" };
+        var shelf = new Location { Name = "Shelf" };
+        var backRoom = new Location { Name = "Back Room" };
+        var greenBeans = new Item { Name = "Green Beans" };
+
+        context.InventoryEntries.AddRange(
+            new InventoryEntry
+            {
+                Category = cannedVegetables,
+                Item = greenBeans,
+                Location = shelf,
+                CurrentQuantity = 24,
+                IsCommodity = true,
+                LastUpdatedAtUtc = lastUpdatedAtUtc,
+            },
+            new InventoryEntry
+            {
+                Category = cannedVegetables,
+                Item = greenBeans,
+                Location = backRoom,
+                CurrentQuantity = 6,
+                IsCommodity = false,
+                LastUpdatedAtUtc = lastUpdatedAtUtc.AddMinutes(15),
+            });
+        await context.SaveChangesAsync();
+
+        var service = new InventoryQueryService(context);
+
+        var inventory = await service.GetInventoryForCategoryAsync(cannedVegetables.Id);
+
+        Assert.NotNull(inventory);
+        Assert.Equal(2, inventory.Entries.Count);
+        Assert.All(inventory.Entries, entry => Assert.Equal("Green Beans", entry.ItemName));
+        Assert.Contains(inventory.Entries, entry => entry.IsCommodity && entry.CurrentQuantity == 24 && entry.LocationName == "Shelf");
+        Assert.Contains(inventory.Entries, entry => !entry.IsCommodity && entry.CurrentQuantity == 6 && entry.LocationName == "Back Room");
+    }
+
+    [Fact]
     public async Task GetInventoryForCategoryAsync_ReturnsEmptyViewForCategoryWithoutEntries()
     {
         var category = new Category { Name = "Dry Beans" };
