@@ -82,7 +82,7 @@ else if (Model.Inventory is not null)
                                 <td>@entry.ItemName</td>
                                 <td>@entry.LocationName</td>
                                 <td>
-                                    <form method="post" asp-page-handler="UpdateQuantity" class="quantity-form">
+                                    <form method="post" asp-page-handler="UpdateQuantity" class="quantity-form" aria-label="Update quantity for @entry.ItemName">
                                         <input type="hidden" asp-for="CategoryId" />
                                         <input type="hidden" name="InventoryEntryId" value="@entry.Id" />
                                         <label class="visually-hidden" for="quantity-@entry.Id">Quantity for @entry.ItemName</label>
