@@ -8,6 +8,28 @@ namespace ProjectHopeLynden.Web.Tests.Pages.Inventory;
 public sealed class IndexModelTests
 {
     [Fact]
+    public void PageTitle_ReturnsBrandedInventoryTitle()
+    {
+        var service = new StubInventoryQueryService([], inventory: null);
+        var quantityService = new StubInventoryQuantityService();
+        var model = new IndexModel(service, quantityService);
+
+        Assert.Equal("Inventory Stewardship", model.PageTitle);
+    }
+
+    [Fact]
+    public void Summary_ReturnsProjectHopeInventorySupportMessage()
+    {
+        var service = new StubInventoryQueryService([], inventory: null);
+        var quantityService = new StubInventoryQuantityService();
+        var model = new IndexModel(service, quantityService);
+
+        Assert.Equal(
+            "Keep food bank shelves, Commodity records, and guest support work connected in one local view.",
+            model.Summary);
+    }
+
+    [Fact]
     public async Task OnGetAsync_SelectsFirstCategoryWhenNoCategoryIsProvided()
     {
         var categories = new[]

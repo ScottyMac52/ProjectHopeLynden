@@ -8,6 +8,10 @@ public sealed class IndexModel(
     IInventoryQueryService inventoryQueryService,
     IInventoryQuantityService inventoryQuantityService) : PageModel
 {
+    public string PageTitle { get; } = "Inventory Stewardship";
+
+    public string Summary { get; } = "Keep food bank shelves, Commodity records, and guest support work connected in one local view.";
+
     public IReadOnlyList<InventoryCategoryListItem> Categories { get; private set; } = [];
 
     public CategoryInventoryView? Inventory { get; private set; }
