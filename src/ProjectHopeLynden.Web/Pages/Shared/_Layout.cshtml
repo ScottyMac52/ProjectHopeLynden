@@ -9,13 +9,30 @@
 <body>
   <header class="site-header">
     <div class="site-header__content">
-      <a class="site-header__brand" asp-page="/Index">Project Hope Inventory</a>
+      <a class="site-header__brand" asp-page="/Index" aria-label="Project Hope Inventory home">
+        <span class="site-header__brand-mark" aria-hidden="true">PH</span>
+        <span>
+          <span class="site-header__brand-title">Project Hope Inventory</span>
+          <span class="site-header__brand-subtitle">Food Bank of Lynden</span>
+        </span>
+      </a>
+      <nav class="site-header__nav" aria-label="Primary navigation">
+        <a asp-page="/Index">Home</a>
+        <a asp-page="/Inventory/Index">Inventory</a>
+      </nav>
     </div>
   </header>
 
   <main class="page-shell" role="main">
     @RenderBody()
   </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__content">
+      <p>Project Hope Inventory supports local food bank work with simple, accountable inventory tools.</p>
+      <p>Built for Project Hope Food Bank of Lynden.</p>
+    </div>
+  </footer>
 
   @await RenderSectionAsync("Scripts", required: false)
 </body>
