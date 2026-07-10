@@ -50,6 +50,7 @@ else if (Model.History is not null)
             <p class="card__kicker">Count history</p>
             <h2>Stored inventory counts</h2>
             <p>Counts are shown from oldest to newest so inventory movement can be reviewed over time.</p>
+            <p>Each history list belongs to one inventory row, keeping Commodity and non-Commodity counts separate.</p>
         </div>
 
         @if (!Model.History.HasHistory)
