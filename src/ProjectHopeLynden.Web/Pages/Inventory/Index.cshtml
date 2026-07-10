@@ -37,6 +37,13 @@
     }
 </section>
 
+@if (Model.QuantityUpdateFailed)
+{
+    <section class="card status-message status-message--error" aria-live="polite">
+        <p>@Model.QuantityUpdateMessage</p>
+    </section>
+}
+
 @if (Model.CategoryWasNotFound)
 {
     <section class="card" aria-live="polite">
@@ -74,7 +81,15 @@ else if (Model.Inventory is not null)
                             <tr>
                                 <td>@entry.ItemName</td>
                                 <td>@entry.LocationName</td>
-                                <td>@entry.CurrentQuantity</td>
+                                <td>
+                                    <form method="post" asp-page-handler="UpdateQuantity" class="quantity-form" aria-label="Update quantity for @entry.ItemName">
+                                        <input type="hidden" asp-for="CategoryId" />
+                                        <input type="hidden" name="InventoryEntryId" value="@entry.Id" />
+                                        <label class="visually-hidden" for="quantity-@entry.Id">Quantity for @entry.ItemName</label>
+                                        <input id="quantity-@entry.Id" name="UpdatedQuantity" type="number" min="0" value="@entry.CurrentQuantity" />
+                                        <button type="submit">Save</button>
+                                    </form>
+                                </td>
                                 <td>@(entry.IsCommodity ? "Yes" : "No")</td>
                                 <td>@(entry.BestByDate?.ToString("yyyy-MM-dd") ?? "")</td>
                                 <td>@(entry.IsMenuItem ? "Yes" : "No")</td>
