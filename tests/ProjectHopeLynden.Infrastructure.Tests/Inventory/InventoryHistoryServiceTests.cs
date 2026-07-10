@@ -58,7 +58,7 @@ public sealed class InventoryHistoryServiceTests : IAsyncLifetime
         Assert.True(history.IsCommodity);
         Assert.Equal(19, history.CurrentQuantity);
         Assert.True(history.HasHistory);
-        Assert.Equal([12, 14, 19], history.Records.Select(record => record.CountedQuantity).ToArray());
+        Assert.Equal(new[] { 12, 14, 19 }, history.Records.Select(record => record.CountedQuantity).ToArray());
     }
 
     [Fact]
