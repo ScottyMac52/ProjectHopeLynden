@@ -33,6 +33,7 @@
                 }
             </select>
             <button type="submit">View</button>
+            <a class="button-link" asp-page="/Inventory/Maintain" asp-route-categoryId="@Model.CategoryId">Add inventory row</a>
         </form>
     }
 </section>
@@ -62,6 +63,7 @@ else if (Model.Inventory is not null)
         @if (!Model.Inventory.HasEntries)
         {
             <p>No inventory entries have been recorded for this category yet.</p>
+            <p><a class="button-link" asp-page="/Inventory/Maintain" asp-route-categoryId="@Model.Inventory.CategoryId">Add the first row</a></p>
         }
         else
         {
@@ -77,6 +79,7 @@ else if (Model.Inventory is not null)
                             <th scope="col">Menu Item</th>
                             <th scope="col">Last Updated</th>
                             <th scope="col">History</th>
+                            <th scope="col">Details</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -99,6 +102,7 @@ else if (Model.Inventory is not null)
                                 <td>@(entry.IsMenuItem ? "Yes" : "No")</td>
                                 <td>@entry.LastUpdatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
                                 <td><a asp-page="/Inventory/History" asp-route-inventoryEntryId="@entry.Id">View history</a></td>
+                                <td><a asp-page="/Inventory/Maintain" asp-route-inventoryEntryId="@entry.Id">Edit details</a></td>
                             </tr>
                         }
                     </tbody>
