@@ -1,13 +1,13 @@
 @page
 @model IndexModel
 @{
-    ViewData["Title"] = "Inventory by Category";
+    ViewData["Title"] = Model.PageTitle;
 }
 
-<section class="hero">
+<section class="hero hero--branded">
     <p class="eyebrow">Project Hope Food Bank of Lynden</p>
-    <h1>Inventory by Category</h1>
-    <p>View current inventory counts in a spreadsheet-like category layout.</p>
+    <h1>@Model.PageTitle</h1>
+    <p>@Model.Summary</p>
 </section>
 
 <section class="card" aria-label="Inventory category selector">
@@ -54,7 +54,10 @@
 else if (Model.Inventory is not null)
 {
     <section class="card" aria-label="Inventory entries for @Model.Inventory.CategoryName">
-        <h2>@Model.Inventory.CategoryName</h2>
+        <div class="section-heading">
+            <p class="card__kicker">Category view</p>
+            <h2>@Model.Inventory.CategoryName</h2>
+        </div>
 
         @if (!Model.Inventory.HasEntries)
         {
