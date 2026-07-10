@@ -24,6 +24,22 @@ public sealed class MaintainModelTests
     }
 
     [Fact]
+    public async Task OnGetAsync_DefaultsNewEntryWhenNoCategoryOrLocationOptionsExist()
+    {
+        var options = new InventoryEntryFormOptions([], []);
+        var service = new StubInventoryEntryMaintenanceService(options);
+        var model = new MaintainModel(service);
+
+        await model.OnGetAsync();
+
+        Assert.False(model.IsEditing);
+        Assert.Same(options, model.Options);
+        Assert.Null(model.SelectedCategoryId);
+        Assert.Null(model.LocationId);
+        Assert.Equal(0, model.CurrentQuantity);
+    }
+
+    [Fact]
     public async Task OnGetAsync_LoadsExistingEntryForEdit()
     {
         var options = CreateOptions();
@@ -89,6 +105,27 @@ public sealed class MaintainModelTests
     }
 
     [Fact]
+    public async Task OnPostSaveAsync_RedirectsToSelectedCategoryWhenSaveResultDoesNotIncludeCategory()
+    {
+        var options = CreateOptions();
+        var result = new InventoryEntrySaveResult(true, null, InventoryEntryId: 14, CategoryId: null);
+        var service = new StubInventoryEntryMaintenanceService(options, saveResult: result);
+        var model = new MaintainModel(service)
+        {
+            ItemName = "Green Beans",
+            SelectedCategoryId = 2,
+            LocationId = 4,
+            CurrentQuantity = 24,
+            IsCommodity = true,
+        };
+
+        var actionResult = await model.OnPostSaveAsync();
+
+        var redirect = Assert.IsType<RedirectToPageResult>(actionResult);
+        Assert.Equal(2, redirect.RouteValues?["categoryId"]);
+    }
+
+    [Fact]
     public async Task OnPostSaveAsync_UpdatesExistingEntryAndRedirectsToSavedCategory()
     {
         var options = CreateOptions();
@@ -131,6 +168,26 @@ public sealed class MaintainModelTests
         Assert.IsType<PageResult>(actionResult);
         Assert.True(model.SaveFailed);
         Assert.Equal("Item name is required.", model.SaveMessage);
+        Assert.Same(options, model.Options);
+    }
+
+    [Fact]
+    public async Task OnPostSaveAsync_UsesFallbackMessageWhenSaveFailsWithoutMessage()
+    {
+        var options = CreateOptions();
+        var result = new InventoryEntrySaveResult(false, null, null, null);
+        var service = new StubInventoryEntryMaintenanceService(options, saveResult: result);
+        var model = new MaintainModel(service)
+        {
+            SelectedCategoryId = 2,
+            LocationId = 4,
+        };
+
+        var actionResult = await model.OnPostSaveAsync();
+
+        Assert.IsType<PageResult>(actionResult);
+        Assert.True(model.SaveFailed);
+        Assert.Equal("Inventory row could not be saved.", model.SaveMessage);
         Assert.Same(options, model.Options);
     }
 
