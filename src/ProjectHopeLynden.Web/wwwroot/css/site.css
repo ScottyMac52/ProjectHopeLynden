@@ -270,13 +270,18 @@ button:focus,
 .category-selector select,
 .category-selector button,
 .quantity-form input,
-.quantity-form button {
+.quantity-form button,
+.inventory-entry-form input,
+.inventory-entry-form select,
+.inventory-entry-form button {
   font: inherit;
   padding: 0.55rem 0.75rem;
 }
 
 .category-selector select,
-.quantity-form input {
+.quantity-form input,
+.inventory-entry-form input,
+.inventory-entry-form select {
   background: #ffffff;
   border: 1px solid var(--border);
   border-radius: 0.65rem;
@@ -290,7 +295,7 @@ button:focus,
 .inventory-table {
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 880px;
+  min-width: 980px;
   width: 100%;
 }
 
@@ -328,6 +333,63 @@ button:focus,
 
 .quantity-form input {
   max-width: 6rem;
+}
+
+.inventory-entry-form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.form-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.inventory-entry-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 800;
+}
+
+.inventory-entry-form label span {
+  color: var(--brand-blue-dark);
+}
+
+.form-field--short {
+  max-width: 14rem;
+}
+
+.checkbox-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.checkbox-row label {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.45rem;
+}
+
+.form-note {
+  background: #fbf7ee;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.85rem 1rem;
+}
+
+.form-note span {
+  color: var(--muted);
+}
+
+.form-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
 }
 
 .status-message {
