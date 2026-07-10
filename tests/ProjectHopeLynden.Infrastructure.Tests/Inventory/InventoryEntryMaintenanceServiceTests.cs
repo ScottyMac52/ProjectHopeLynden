@@ -115,7 +115,7 @@ public sealed class InventoryEntryMaintenanceServiceTests : IAsyncLifetime
             new InventoryEntrySaveRequest(
                 "   ",
                 CategoryId: null,
-                location.Id,
+                LocationId: location.Id,
                 CurrentQuantity: 12,
                 BestByDate: null,
                 IsCommodity: false,
