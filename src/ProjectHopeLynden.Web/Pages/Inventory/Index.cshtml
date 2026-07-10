@@ -76,6 +76,7 @@ else if (Model.Inventory is not null)
                             <th scope="col">BB Date</th>
                             <th scope="col">Menu Item</th>
                             <th scope="col">Last Updated</th>
+                            <th scope="col">History</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -97,6 +98,7 @@ else if (Model.Inventory is not null)
                                 <td>@(entry.BestByDate?.ToString("yyyy-MM-dd") ?? "")</td>
                                 <td>@(entry.IsMenuItem ? "Yes" : "No")</td>
                                 <td>@entry.LastUpdatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td><a asp-page="/Inventory/History" asp-route-inventoryEntryId="@entry.Id">View history</a></td>
                             </tr>
                         }
                     </tbody>
