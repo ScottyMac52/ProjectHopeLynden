@@ -5,7 +5,7 @@ public sealed record CommodityInventoryEntryListItem(
     string ItemName,
     string CategoryName,
     string LocationName,
-    int CurrentQuantity,
+    double CurrentQuantity,
     DateTime? BestByDate,
     bool IsMenuItem,
     DateTime LastUpdatedAtUtc);
