@@ -1,0 +1,28 @@
+name: Inspect issue 44 attachment
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - reopened
+
+permissions:
+  contents: read
+
+jobs:
+  download-attachment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download issue attachment
+        run: |
+          curl --fail --location \
+            --output issue-44.png \
+            https://github.com/user-attachments/assets/38902993-cc89-4879-a0af-d30855d95893
+          file issue-44.png
+      - name: Upload attachment
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-44-attachment
+          path: issue-44.png
+          if-no-files-found: error
