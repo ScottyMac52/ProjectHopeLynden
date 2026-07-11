@@ -78,7 +78,7 @@ public sealed class InitialInventorySeederTests
         Assert.Equal(11, categoryCounts["Dry Beans"]);
         Assert.Equal(11, categoryCounts["Noodles"]);
         Assert.Equal(9, categoryCounts["Dry Mix"]);
-        Assert.Equal(35, await context.InventoryEntries.CountAsync());
+        Assert.Equal(131, await context.InventoryEntries.CountAsync());
 
         var kraft = await context.InventoryEntries
             .Include(entry => entry.Item)
