@@ -1,11 +1,11 @@
 name: Inspect issues 46 through 50 attachments
 
 on:
-  push:
+  pull_request:
     branches:
-      - issue-44-add-seed-data
-    paths:
-      - .github/workflows/inspect-issues-46-50.yml
+      - main
+    types:
+      - reopened
 
 permissions:
   contents: read
