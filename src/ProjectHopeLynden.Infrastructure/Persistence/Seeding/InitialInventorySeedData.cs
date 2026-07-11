@@ -34,31 +34,61 @@ public static class InitialInventorySeedData
         "Back Room",
         "Freezer",
         "Pantry Area",
+        "Pull Room",
+        "FC",
+        "Crypt",
     ];
 
     public static readonly InventorySeedEntry[] InventoryEntries =
     [
-        new("Pinto Beans", "Dry Beans", "Pantry Area", 16, 12, BestBy(2027, 6, 30), false, false),
-        new("Spaghetti", "Noodles", "Shelf", 20, 18, BestBy(2027, 4, 30), false, true),
-        new("Pancake Mix", "Dry Mix", "Pantry Area", 8, 10, BestBy(2027, 2, 28), false, true),
-        new("Ketchup", "Condiments", "Shelf", 14, 12, BestBy(2027, 8, 31), false, false),
-        new("Granola Bars", "Snacks", "Shelf", 30, 24, BestBy(2027, 3, 31), false, false),
-        new("Oat Cereal", "Cereals", "Shelf", 12, 9, BestBy(2027, 5, 31), false, false),
-        new("Potatoes", "Produce", "Back Room", 40, 32, BestBy(2026, 7, 22), false, true),
-        new("Dozen Eggs", "Eggs", "Back Room", 10, 8, BestBy(2026, 7, 25), false, true),
-        new("Ground Beef", "Frozen Meat", "Freezer", 15, 12, BestBy(2026, 10, 31), false, true),
-        new("Frozen Mixed Vegetables", "Frozen Miscellaneous", "Freezer", 18, 20, BestBy(2027, 1, 31), false, false),
-        new("Green Beans", "Canned Vegetables", "Shelf", 24, 20, BestBy(2028, 1, 31), true, false),
-        new("Green Beans", "Canned Vegetables", "Back Room", 18, 14, BestBy(2028, 1, 31), false, false),
-        new("Canned Peaches", "Canned Fruit", "Pantry Area", 22, 18, BestBy(2027, 12, 31), false, false),
-        new("Chicken Noodle Soup", "Soup is a MESS", "Shelf", 25, 20, BestBy(2027, 11, 30), false, true),
-        new("Black Beans", "Canned Beans", "Pantry Area", 28, 24, BestBy(2028, 2, 29), true, false),
-        new("Tomato Sauce", "Tomatoes", "Pantry Area", 36, 30, BestBy(2028, 3, 31), true, true),
-        new("Canned Tuna", "Canned Meat", "Shelf", 24, 20, BestBy(2028, 1, 31), false, true),
-        new("Size 4 Diapers", "Diapers", "Back Room", 6, 5, null, false, false),
-        new("Baby Wipes", "Wipes", "Back Room", 9, 7, null, false, false),
-        new("Infant Formula", "Formula", "Pantry Area", 4, 6, BestBy(2027, 1, 31), false, false),
+        // Existing synthetic rows retained for Commodity and history workflow coverage.
+        new("Green Beans", "Canned Vegetables", "Shelf", 24, 20, null, true, false, At(2026, 7, 8)),
+        new("Green Beans", "Canned Vegetables", "Back Room", 18, 14, null, false, false, At(2026, 7, 8)),
+        new("Tomato Sauce", "Tomatoes", "Pantry Area", 36, 30, null, true, true, At(2026, 7, 8)),
+        new("Oat Cereal", "Cereals", "Shelf", 12, 9, null, false, false, At(2026, 7, 8)),
+
+        // Dry Beans - issue #44 spreadsheet data.
+        new("Black American Premium", "Dry Beans", "Back Room", 6, null, null, true, false, At(2026, 6, 10)),
+        new("Black, Soranco", "Dry Beans", "Back Room", 2, 5, null, true, false, At(2026, 6, 24)),
+        new("Garbanzo", "Dry Beans", "Back Room", 7, null, null, false, true, At(2026, 6, 24)),
+        new("Great Northern", "Dry Beans", "Back Room", 1, 6, null, false, false, At(2026, 6, 24)),
+        new("Great Northern", "Dry Beans", "Back Room", 18, 21, null, true, true, At(2026, 6, 10)),
+        new("Navy Beans", "Dry Beans", "Back Room", 10, null, null, false, false, At(2026, 6, 24)),
+        new("Pinto", "Dry Beans", "Back Room", 0, 3, null, true, true, At(2026, 6, 10)),
+        new("Pinto", "Dry Beans", "Back Room", 1, 4, null, false, false, At(2026, 6, 10)),
+        new("Pinto, Jack's Bean Co", "Dry Beans", "Back Room", 10, null, null, true, false, At(2026, 6, 10)),
+        new("Red Kidney, Dark Morrison Farms", "Dry Beans", "Pull Room", 8, 11, null, true, false, At(2026, 6, 10)),
+        new("Red Small", "Dry Beans", "Back Room", 1, 4, null, true, false, At(2026, 6, 10)),
+
+        // Noodles - issue #44 spreadsheet data.
+        new("Mac & Cheese", "Noodles", "Back Room", 39, null, null, false, false, At(2026, 6, 24)),
+        new("Mac & Cheese Kraft", "Noodles", "Back Room", 42, null, BestBy(2026, 4, 1), false, true, At(2026, 6, 24)),
+        new("Mac & Cheese Premium Pantry", "Noodles", "Back Room", 13, null, null, true, false, At(2026, 6, 10)),
+        new("Penne Chickpea Barilla", "Noodles", "FC", 17, null, null, false, false, At(2026, 6, 10)),
+        new("Penne Rigate Dreamfields", "Noodles", "Crypt", 53, null, BestBy(2027, 3, 1), false, false, At(2026, 6, 10)),
+        new("Potato Flakes Jack & the Beanstalk", "Noodles", "Crypt", 20, null, BestBy(2028, 10, 1), false, false, At(2026, 6, 10)),
+        new("Ramen Misc.", "Noodles", "Back Room", 0, null, null, false, true, At(2026, 6, 10)),
+        new("Rice Meal", "Noodles", "Back Room", 4, null, null, false, false, At(2026, 6, 10)),
+        new("Rice Misc.", "Noodles", "Back Room", 2, null, null, false, false, At(2026, 6, 10)),
+        new("White Rice Long Grain Flickertail, IB", "Noodles", "Back Room", 23, null, null, false, false, At(2026, 6, 10)),
+        new("White Rice Long Grain Flickertail, UP", "Noodles", "Back Room", 9, null, null, false, false, At(2026, 6, 24)),
+
+        // Dry Mix - issue #44 spreadsheet data. Holiday rows are menu items until that label is modeled separately.
+        new("Cake Mix Misc.", "Dry Mix", "Back Room", 1.5, null, null, false, false, At(2026, 6, 3)),
+        new("Cookie Mix Everything Trader Joe's", "Dry Mix", "Back Room", 4, null, BestBy(2026, 3, 1), false, false, At(2026, 6, 3)),
+        new("Cookie Mix Misc.", "Dry Mix", "Back Room", 3, null, null, false, false, At(2026, 6, 3)),
+        new("Cornbread Mix Jiffy", "Dry Mix", "FC", 20, 24, null, false, true, At(2026, 6, 24)),
+        new("Frosting", "Dry Mix", "Back Room", 1, null, null, false, false, At(2026, 6, 3)),
+        new("Masa Flour El Maizal", "Dry Mix", "Pull Room", 0.5, null, null, false, false, At(2026, 6, 24)),
+        new("Potatoes Instant Misc.", "Dry Mix", "Back Room", 1.5, null, null, false, false, At(2026, 6, 3)),
+        new("Stuffing Misc.", "Dry Mix", "Crypt", 7, null, null, false, true, At(2026, 6, 24)),
+        new("Stuffing Pepperidge Farm", "Dry Mix", "Crypt", 22, null, null, false, true, At(2026, 6, 24)),
     ];
+
+    private static DateTime At(int year, int month, int day)
+    {
+        return new DateTime(year, month, day, 9, 0, 0, DateTimeKind.Utc);
+    }
 
     private static DateTime BestBy(int year, int month, int day)
     {
@@ -69,9 +99,10 @@ public static class InitialInventorySeedData
         string ItemName,
         string CategoryName,
         string LocationName,
-        int CurrentQuantity,
-        int PreviousQuantity,
+        double CurrentQuantity,
+        double? PreviousQuantity,
         DateTime? BestByDate,
         bool IsCommodity,
-        bool IsMenuItem);
+        bool IsMenuItem,
+        DateTime LastUpdatedAtUtc);
 }
