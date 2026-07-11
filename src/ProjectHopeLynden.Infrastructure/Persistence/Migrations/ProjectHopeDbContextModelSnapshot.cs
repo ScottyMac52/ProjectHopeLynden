@@ -44,17 +44,17 @@ public sealed class ProjectHopeDbContextModelSnapshot : ModelSnapshot
             entity.Property<DateTime>("CountedAtUtc")
                 .HasColumnType("TEXT");
 
-            entity.Property<int>("CountedQuantity")
-                .HasColumnType("INTEGER");
+            entity.Property<double>("CountedQuantity")
+                .HasColumnType("REAL");
 
             entity.Property<int>("InventoryEntryId")
                 .HasColumnType("INTEGER");
 
-            entity.Property<int?>("PreviousQuantity")
-                .HasColumnType("INTEGER");
+            entity.Property<double?>("PreviousQuantity")
+                .HasColumnType("REAL");
 
-            entity.Property<int?>("QuantityChange")
-                .HasColumnType("INTEGER");
+            entity.Property<double?>("QuantityChange")
+                .HasColumnType("REAL");
 
             entity.HasKey("Id");
 
@@ -79,8 +79,8 @@ public sealed class ProjectHopeDbContextModelSnapshot : ModelSnapshot
             entity.Property<int>("CategoryId")
                 .HasColumnType("INTEGER");
 
-            entity.Property<int>("CurrentQuantity")
-                .HasColumnType("INTEGER");
+            entity.Property<double>("CurrentQuantity")
+                .HasColumnType("REAL");
 
             entity.Property<bool>("IsCommodity")
                 .HasColumnType("INTEGER");
