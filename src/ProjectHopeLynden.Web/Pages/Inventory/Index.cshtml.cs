@@ -25,7 +25,7 @@ public sealed class IndexModel(
     public int? InventoryEntryId { get; set; }
 
     [BindProperty]
-    public int? UpdatedQuantity { get; set; }
+    public double? UpdatedQuantity { get; set; }
 
     public async Task OnGetAsync()
     {

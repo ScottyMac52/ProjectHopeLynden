@@ -4,7 +4,7 @@ public sealed record InventoryEntrySaveRequest(
     string? ItemName,
     int? CategoryId,
     int? LocationId,
-    int? CurrentQuantity,
+    double? CurrentQuantity,
     DateTime? BestByDate,
     bool IsCommodity,
     bool IsMenuItem);

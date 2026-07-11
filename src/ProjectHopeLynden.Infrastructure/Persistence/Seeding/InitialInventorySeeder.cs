@@ -7,56 +7,32 @@ namespace ProjectHopeLynden.Infrastructure.Persistence.Seeding;
 [ExcludeFromCodeCoverage]
 public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
 {
-    private static readonly DateTime FirstCountDate = new(2026, 7, 1, 9, 0, 0, DateTimeKind.Utc);
-
-    private static readonly DateTime SecondCountDate = new(2026, 7, 8, 9, 0, 0, DateTimeKind.Utc);
-
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         var categories = await EnsureCategoriesAsync(cancellationToken);
         var locations = await EnsureLocationsAsync(cancellationToken);
         var items = await EnsureItemsAsync(cancellationToken);
 
-        var greenBeansCommodity = await EnsureInventoryEntryAsync(
-            items["Green Beans"],
-            categories["Canned Vegetables"],
-            locations["Shelf"],
-            currentQuantity: 24,
-            isCommodity: true,
-            isMenuItem: false,
-            cancellationToken: cancellationToken);
+        foreach (var seedEntry in InitialInventorySeedData.InventoryEntries)
+        {
+            var inventoryEntry = await EnsureInventoryEntryAsync(
+                items[seedEntry.ItemName],
+                categories[seedEntry.CategoryName],
+                locations[seedEntry.LocationName],
+                seedEntry.CurrentQuantity,
+                seedEntry.BestByDate,
+                seedEntry.IsCommodity,
+                seedEntry.IsMenuItem,
+                seedEntry.LastUpdatedAtUtc,
+                cancellationToken);
 
-        var greenBeansNonCommodity = await EnsureInventoryEntryAsync(
-            items["Green Beans"],
-            categories["Canned Vegetables"],
-            locations["Back Room"],
-            currentQuantity: 18,
-            isCommodity: false,
-            isMenuItem: false,
-            cancellationToken: cancellationToken);
-
-        var tomatoSauceCommodity = await EnsureInventoryEntryAsync(
-            items["Tomato Sauce"],
-            categories["Tomatoes"],
-            locations["Pantry Area"],
-            currentQuantity: 36,
-            isCommodity: true,
-            isMenuItem: true,
-            cancellationToken: cancellationToken);
-
-        var cerealNonCommodity = await EnsureInventoryEntryAsync(
-            items["Oat Cereal"],
-            categories["Cereals"],
-            locations["Shelf"],
-            currentQuantity: 12,
-            isCommodity: false,
-            isMenuItem: false,
-            cancellationToken: cancellationToken);
-
-        await EnsureHistoryAsync(greenBeansCommodity, previousQuantity: 20, currentQuantity: 24, cancellationToken: cancellationToken);
-        await EnsureHistoryAsync(greenBeansNonCommodity, previousQuantity: 14, currentQuantity: 18, cancellationToken: cancellationToken);
-        await EnsureHistoryAsync(tomatoSauceCommodity, previousQuantity: 30, currentQuantity: 36, cancellationToken: cancellationToken);
-        await EnsureHistoryAsync(cerealNonCommodity, previousQuantity: 9, currentQuantity: 12, cancellationToken: cancellationToken);
+            await EnsureHistoryAsync(
+                inventoryEntry,
+                seedEntry.PreviousQuantity,
+                seedEntry.CurrentQuantity,
+                seedEntry.LastUpdatedAtUtc,
+                cancellationToken);
+        }
     }
 
     private async Task<Dictionary<string, Category>> EnsureCategoriesAsync(CancellationToken cancellationToken)
@@ -103,12 +79,9 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
 
     private async Task<Dictionary<string, Item>> EnsureItemsAsync(CancellationToken cancellationToken)
     {
-        var seedItemNames = new[]
-        {
-            "Green Beans",
-            "Tomato Sauce",
-            "Oat Cereal",
-        };
+        var seedItemNames = InitialInventorySeedData.InventoryEntries
+            .Select(entry => entry.ItemName)
+            .Distinct(StringComparer.OrdinalIgnoreCase);
 
         var items = await context.Items.ToListAsync(cancellationToken);
         var itemLookup = items.ToDictionary(item => item.Name, StringComparer.OrdinalIgnoreCase);
@@ -133,9 +106,11 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
         Item item,
         Category category,
         Location location,
-        int currentQuantity,
+        double currentQuantity,
+        DateTime? bestByDate,
         bool isCommodity,
         bool isMenuItem,
+        DateTime lastUpdatedAtUtc,
         CancellationToken cancellationToken)
     {
         var existingEntry = await context.InventoryEntries.SingleOrDefaultAsync(
@@ -156,9 +131,10 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
             CategoryId = category.Id,
             LocationId = location.Id,
             CurrentQuantity = currentQuantity,
+            BestByDate = bestByDate,
             IsCommodity = isCommodity,
             IsMenuItem = isMenuItem,
-            LastUpdatedAtUtc = SecondCountDate,
+            LastUpdatedAtUtc = lastUpdatedAtUtc,
         };
 
         context.InventoryEntries.Add(entry);
@@ -169,8 +145,9 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
 
     private async Task EnsureHistoryAsync(
         InventoryEntry inventoryEntry,
-        int previousQuantity,
-        int currentQuantity,
+        double? previousQuantity,
+        double currentQuantity,
+        DateTime countedAtUtc,
         CancellationToken cancellationToken)
     {
         var hasHistory = await context.InventoryCountHistory.AnyAsync(
@@ -182,23 +159,26 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
             return;
         }
 
-        context.InventoryCountHistory.AddRange(
-            new InventoryCountHistory
+        if (previousQuantity.HasValue)
+        {
+            context.InventoryCountHistory.Add(new InventoryCountHistory
             {
                 InventoryEntryId = inventoryEntry.Id,
-                CountedQuantity = previousQuantity,
-                CountedAtUtc = FirstCountDate,
+                CountedQuantity = previousQuantity.Value,
+                CountedAtUtc = countedAtUtc.AddDays(-7),
                 PreviousQuantity = null,
                 QuantityChange = null,
-            },
-            new InventoryCountHistory
-            {
-                InventoryEntryId = inventoryEntry.Id,
-                CountedQuantity = currentQuantity,
-                CountedAtUtc = SecondCountDate,
-                PreviousQuantity = previousQuantity,
-                QuantityChange = currentQuantity - previousQuantity,
             });
+        }
+
+        context.InventoryCountHistory.Add(new InventoryCountHistory
+        {
+            InventoryEntryId = inventoryEntry.Id,
+            CountedQuantity = currentQuantity,
+            CountedAtUtc = countedAtUtc,
+            PreviousQuantity = previousQuantity,
+            QuantityChange = previousQuantity.HasValue ? currentQuantity - previousQuantity.Value : null,
+        });
 
         await context.SaveChangesAsync(cancellationToken);
     }

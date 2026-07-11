@@ -71,7 +71,7 @@ public sealed class IndexModelTests
         var model = new IndexModel(new StubInventoryQueryService([], []), quantityService)
         {
             InventoryEntryId = 14,
-            UpdatedQuantity = 25,
+            UpdatedQuantity = 1.5,
         };
 
         var result = await model.OnPostUpdateQuantityAsync();
@@ -79,15 +79,15 @@ public sealed class IndexModelTests
         var redirect = Assert.IsType<RedirectToPageResult>(result);
         Assert.Null(redirect.RouteValues);
         Assert.Equal(14, quantityService.RequestedInventoryEntryId);
-        Assert.Equal(25, quantityService.RequestedQuantity);
+        Assert.Equal(1.5, quantityService.RequestedQuantity);
     }
 
     [Theory]
-    [InlineData(null, 25, "Inventory entry is required.")]
+    [InlineData(null, 25.0, "Inventory entry is required.")]
     [InlineData(14, null, "Quantity is required.")]
     public async Task OnPostUpdateQuantityAsync_ReloadsOverviewForMissingInput(
         int? inventoryEntryId,
-        int? updatedQuantity,
+        double? updatedQuantity,
         string expectedMessage)
     {
         var inventory = new CategoryInventoryView(2, "Cereals", []);
@@ -179,11 +179,11 @@ public sealed class IndexModelTests
     {
         public int? RequestedInventoryEntryId { get; private set; }
 
-        public int? RequestedQuantity { get; private set; }
+        public double? RequestedQuantity { get; private set; }
 
         public Task<InventoryQuantityUpdateResult> UpdateCurrentQuantityAsync(
             int inventoryEntryId,
-            int quantity,
+            double quantity,
             DateTime countedAtUtc,
             CancellationToken cancellationToken = default)
         {

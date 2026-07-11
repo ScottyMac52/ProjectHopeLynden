@@ -9,7 +9,7 @@ public sealed class InventoryQuantityService(ProjectHopeDbContext context) : IIn
 {
     public async Task<InventoryQuantityUpdateResult> UpdateCurrentQuantityAsync(
         int inventoryEntryId,
-        int quantity,
+        double quantity,
         DateTime countedAtUtc,
         CancellationToken cancellationToken = default)
     {

@@ -8,11 +8,11 @@ public sealed class InventoryCountHistory
 
     public InventoryEntry InventoryEntry { get; set; } = null!;
 
-    public int CountedQuantity { get; set; }
+    public double CountedQuantity { get; set; }
 
     public DateTime CountedAtUtc { get; set; }
 
-    public int? PreviousQuantity { get; set; }
+    public double? PreviousQuantity { get; set; }
 
-    public int? QuantityChange { get; set; }
+    public double? QuantityChange { get; set; }
 }

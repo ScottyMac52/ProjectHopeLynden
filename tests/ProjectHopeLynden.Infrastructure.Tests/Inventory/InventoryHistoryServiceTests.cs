@@ -56,9 +56,9 @@ public sealed class InventoryHistoryServiceTests : IAsyncLifetime
         Assert.Equal("Canned Vegetables", history.CategoryName);
         Assert.Equal("Shelf", history.LocationName);
         Assert.True(history.IsCommodity);
-        Assert.Equal(19, history.CurrentQuantity);
+        Assert.Equal(19d, history.CurrentQuantity);
         Assert.True(history.HasHistory);
-        Assert.Equal(new[] { 12, 14, 19 }, history.Records.Select(record => record.CountedQuantity).ToArray());
+        Assert.Equal(new[] { 12d, 14d, 19d }, history.Records.Select(record => record.CountedQuantity).ToArray());
     }
 
     [Fact]
@@ -132,19 +132,19 @@ public sealed class InventoryHistoryServiceTests : IAsyncLifetime
         Assert.NotNull(commodityHistory);
         Assert.True(commodityHistory.IsCommodity);
         var commodityRecord = Assert.Single(commodityHistory.Records);
-        Assert.Equal(24, commodityRecord.CountedQuantity);
+        Assert.Equal(24d, commodityRecord.CountedQuantity);
 
         Assert.NotNull(nonCommodityHistory);
         Assert.False(nonCommodityHistory.IsCommodity);
         var nonCommodityRecord = Assert.Single(nonCommodityHistory.Records);
-        Assert.Equal(6, nonCommodityRecord.CountedQuantity);
+        Assert.Equal(6d, nonCommodityRecord.CountedQuantity);
     }
 
     private async Task<InventoryEntry> AddInventoryEntryAsync(
         string itemName,
         string categoryName,
         string locationName,
-        int currentQuantity,
+        double currentQuantity,
         bool isCommodity)
     {
         var entry = new InventoryEntry
@@ -164,8 +164,8 @@ public sealed class InventoryHistoryServiceTests : IAsyncLifetime
 
     private static InventoryCountHistory CreateHistory(
         InventoryEntry entry,
-        int countedQuantity,
-        int previousQuantity,
+        double countedQuantity,
+        double previousQuantity,
         DateTime countedAtUtc)
     {
         return new InventoryCountHistory

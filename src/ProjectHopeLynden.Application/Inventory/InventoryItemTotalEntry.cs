@@ -5,6 +5,6 @@ public sealed record InventoryItemTotalEntry(
     string ItemName,
     string CategoryName,
     string LocationName,
-    int CurrentQuantity,
+    double CurrentQuantity,
     bool IsCommodity,
     DateTime LastUpdatedAtUtc);

@@ -36,7 +36,7 @@ public sealed class MaintainModel(IInventoryEntryMaintenanceService entryMainten
     public int? LocationId { get; set; }
 
     [BindProperty]
-    public int? CurrentQuantity { get; set; }
+    public double? CurrentQuantity { get; set; }
 
     [BindProperty]
     public DateTime? BestByDate { get; set; }

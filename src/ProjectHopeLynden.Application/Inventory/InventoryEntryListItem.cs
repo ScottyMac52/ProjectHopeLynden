@@ -4,7 +4,7 @@ public sealed record InventoryEntryListItem(
     int Id,
     string ItemName,
     string LocationName,
-    int CurrentQuantity,
+    double CurrentQuantity,
     bool IsCommodity,
     DateTime? BestByDate,
     bool IsMenuItem,

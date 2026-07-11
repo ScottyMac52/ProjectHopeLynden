@@ -70,7 +70,7 @@ else
                                                 <input type="hidden" name="CategoryId" value="@inventory.CategoryId" />
                                                 <input type="hidden" name="InventoryEntryId" value="@entry.Id" />
                                                 <label class="visually-hidden" for="quantity-@entry.Id">Quantity for @entry.ItemName</label>
-                                                <input id="quantity-@entry.Id" name="UpdatedQuantity" type="number" min="0" value="@entry.CurrentQuantity" />
+                                                <input id="quantity-@entry.Id" name="UpdatedQuantity" type="number" min="0" step="0.5" value="@entry.CurrentQuantity" />
                                                 <button type="submit">Save</button>
                                             </form>
                                         </td>

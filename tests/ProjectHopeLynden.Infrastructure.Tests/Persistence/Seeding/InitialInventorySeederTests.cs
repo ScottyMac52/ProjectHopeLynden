@@ -62,6 +62,80 @@ public sealed class InitialInventorySeederTests
     }
 
     [Fact]
+    public async Task SeedAsync_IncludesIssue44SpreadsheetRows()
+    {
+        await using var connection = await OpenConnectionAsync();
+        await using var context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+        var seeder = new InitialInventorySeeder(context);
+
+        await seeder.SeedAsync();
+
+        var categoryCounts = await context.InventoryEntries
+            .GroupBy(entry => entry.Category.Name)
+            .ToDictionaryAsync(group => group.Key, group => group.Count());
+
+        Assert.Equal(11, categoryCounts["Dry Beans"]);
+        Assert.Equal(11, categoryCounts["Noodles"]);
+        Assert.Equal(9, categoryCounts["Dry Mix"]);
+        Assert.Equal(131, await context.InventoryEntries.CountAsync());
+
+        var kraft = await context.InventoryEntries
+            .Include(entry => entry.Item)
+            .Include(entry => entry.Location)
+            .SingleAsync(entry => entry.Item.Name == "Mac & Cheese Kraft");
+
+        Assert.Equal(42d, kraft.CurrentQuantity);
+        Assert.Equal("Back Room", kraft.Location.Name);
+        Assert.Equal(new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc), kraft.BestByDate);
+        Assert.False(kraft.IsCommodity);
+        Assert.True(kraft.IsMenuItem);
+    }
+
+    [Fact]
+    public async Task SeedAsync_PreservesFractionalSpreadsheetQuantities()
+    {
+        await using var connection = await OpenConnectionAsync();
+        await using var context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+        var seeder = new InitialInventorySeeder(context);
+
+        await seeder.SeedAsync();
+
+        var dryMixQuantities = await context.InventoryEntries
+            .Where(entry => entry.Category.Name == "Dry Mix")
+            .ToDictionaryAsync(entry => entry.Item.Name, entry => entry.CurrentQuantity);
+
+        Assert.Equal(1.5d, dryMixQuantities["Cake Mix Misc."]);
+        Assert.Equal(0.5d, dryMixQuantities["Masa Flour El Maizal"]);
+        Assert.Equal(1.5d, dryMixQuantities["Potatoes Instant Misc."]);
+    }
+
+    [Fact]
+    public async Task SeedAsync_PreservesPenciledCountChangesAsHistory()
+    {
+        await using var connection = await OpenConnectionAsync();
+        await using var context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+        var seeder = new InitialInventorySeeder(context);
+
+        await seeder.SeedAsync();
+
+        var soranco = await context.InventoryEntries
+            .Include(entry => entry.Item)
+            .SingleAsync(entry => entry.Item.Name == "Black, Soranco");
+
+        var history = await context.InventoryCountHistory
+            .Where(record => record.InventoryEntryId == soranco.Id)
+            .OrderBy(record => record.CountedAtUtc)
+            .ToListAsync();
+
+        Assert.Equal(2d, soranco.CurrentQuantity);
+        Assert.Equal(new[] { 5d, 2d }, history.Select(record => record.CountedQuantity).ToArray());
+        Assert.Equal(-3d, history[1].QuantityChange);
+    }
+
+    [Fact]
     public async Task SeedAsync_IncludesSameItemAsCommodityAndNonCommodityInventory()
     {
         await using var connection = await OpenConnectionAsync();
@@ -101,8 +175,8 @@ public sealed class InitialInventorySeederTests
             .ToListAsync();
 
         Assert.Equal(2, history.Count);
-        Assert.Equal(new[] { 20, 24 }, history.Select(record => record.CountedQuantity).ToArray());
-        Assert.Equal(4, history[1].QuantityChange);
+        Assert.Equal(new[] { 20d, 24d }, history.Select(record => record.CountedQuantity).ToArray());
+        Assert.Equal(4d, history[1].QuantityChange);
     }
 
     [Fact]
