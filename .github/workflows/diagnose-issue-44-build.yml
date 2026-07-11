@@ -1,0 +1,37 @@
+name: Diagnose issue 44 build
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - reopened
+
+permissions:
+  contents: read
+
+jobs:
+  capture-build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore
+        shell: pwsh
+        run: dotnet restore ProjectHopeLynden.sln
+      - name: Capture build output
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          dotnet build ProjectHopeLynden.sln --no-restore *> build.log
+          $exitCode = $LASTEXITCODE
+          Add-Content build.log "BUILD_EXIT_CODE=$exitCode"
+          exit 0
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-44-build-log
+          path: build.log
+          if-no-files-found: error
