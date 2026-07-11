@@ -1,9 +1,9 @@
 name: Inspect issue 44 attachment
 
 on:
-  push:
+  pull_request:
     branches:
-      - issue-44-add-seed-data
+      - main
     paths:
       - .github/workflows/inspect-issue-44.yml
   workflow_dispatch:
