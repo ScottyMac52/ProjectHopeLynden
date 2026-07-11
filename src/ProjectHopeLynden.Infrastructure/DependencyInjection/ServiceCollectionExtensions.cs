@@ -24,6 +24,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IInventoryHistoryService, InventoryHistoryService>();
         services.AddScoped<IInventoryCommodityService, InventoryCommodityService>();
         services.AddScoped<IInventoryEntryMaintenanceService, InventoryEntryMaintenanceService>();
+        services.AddScoped<IInventoryCategoryService, InventoryCategoryService>();
         services.AddScoped<InitialInventorySeeder>();
 
         return services;
