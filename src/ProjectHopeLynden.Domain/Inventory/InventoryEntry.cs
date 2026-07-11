@@ -16,7 +16,7 @@ public sealed class InventoryEntry
 
     public Location Location { get; set; } = null!;
 
-    public int CurrentQuantity { get; set; }
+    public double CurrentQuantity { get; set; }
 
     public DateTime? BestByDate { get; set; }
 
