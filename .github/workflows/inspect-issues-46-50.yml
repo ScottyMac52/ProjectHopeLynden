@@ -1,0 +1,31 @@
+name: Inspect issues 46 through 50 attachments
+
+on:
+  push:
+    branches:
+      - issue-44-add-seed-data
+    paths:
+      - .github/workflows/inspect-issues-46-50.yml
+
+permissions:
+  contents: read
+
+jobs:
+  download-attachments:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download issue attachments
+        run: |
+          mkdir issue-images
+          curl --fail --location --output issue-images/issue-46.png https://github.com/user-attachments/assets/8d43fe4c-705d-4101-8e66-c61a5c7f014b
+          curl --fail --location --output issue-images/issue-47.png https://github.com/user-attachments/assets/a1451ac7-e063-4b0e-b3b4-63888e5ccab1
+          curl --fail --location --output issue-images/issue-48.png https://github.com/user-attachments/assets/295427b7-e13a-46cd-9eda-6eb3854cf7a0
+          curl --fail --location --output issue-images/issue-49.png https://github.com/user-attachments/assets/45691395-76a1-4619-bb29-6d933391a5e7
+          curl --fail --location --output issue-images/issue-50.png https://github.com/user-attachments/assets/39f7cb1d-0d8b-4954-9b56-457038db5ddc
+          file issue-images/*
+      - name: Upload attachments
+        uses: actions/upload-artifact@v4
+        with:
+          name: issues-46-50-attachments
+          path: issue-images
+          if-no-files-found: error
