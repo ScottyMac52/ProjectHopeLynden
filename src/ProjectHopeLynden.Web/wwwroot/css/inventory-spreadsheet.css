@@ -1,0 +1,163 @@
+.inventory-hero {
+  margin-bottom: 1rem;
+}
+
+.inventory-toolbar {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+}
+
+.inventory-toolbar--hero {
+  background: transparent;
+  border: 0;
+  justify-content: flex-start;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.button-link--light {
+  background: #ffffff;
+  color: var(--brand-blue-dark);
+}
+
+.button-link--secondary {
+  background: #ffffff;
+  border: 1px solid var(--brand-blue);
+  color: var(--brand-blue);
+}
+
+.category-create-form {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.category-create-form label {
+  font-weight: 800;
+}
+
+.category-create-form input,
+.category-create-form button,
+.spreadsheet-quantity-form input,
+.spreadsheet-quantity-form button {
+  font: inherit;
+  padding: 0.4rem 0.55rem;
+}
+
+.category-create-form input,
+.spreadsheet-quantity-form input {
+  background: #ffffff;
+  border: 1px solid #9aa3aa;
+  border-radius: 0;
+  color: var(--text);
+}
+
+.spreadsheet-shell {
+  background: #ffffff;
+  border: 1px solid #8e969c;
+  box-shadow: 0 4px 14px rgba(36, 49, 58, 0.08);
+}
+
+.spreadsheet-scroll {
+  max-height: calc(100vh - 15rem);
+  overflow: auto;
+}
+
+.spreadsheet-table {
+  border-collapse: collapse;
+  min-width: 1120px;
+  width: 100%;
+}
+
+.spreadsheet-table th,
+.spreadsheet-table td {
+  border: 1px solid #b8bec3;
+  font-size: 0.88rem;
+  padding: 0.35rem 0.45rem;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.spreadsheet-table thead th {
+  background: #e2e5e7;
+  border-color: #8e969c;
+  color: #16242d;
+  font-weight: 800;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+.spreadsheet-table tbody tr:not(.spreadsheet-category-row):nth-child(even) td {
+  background: #f7f8f8;
+}
+
+.spreadsheet-table tbody tr:not(.spreadsheet-category-row):hover td {
+  background: #fff5cf;
+}
+
+.spreadsheet-category-row th,
+.spreadsheet-category-row td {
+  background: #d9ead3;
+  border-color: #7f9977;
+  color: #183414;
+  font-weight: 800;
+}
+
+.spreadsheet-category-row td {
+  text-align: right;
+}
+
+.spreadsheet-empty-row td {
+  color: var(--muted);
+  font-style: italic;
+  padding-left: 1rem;
+}
+
+.spreadsheet-table__quantity {
+  min-width: 9.5rem;
+}
+
+.spreadsheet-table__center {
+  font-size: 1rem;
+  text-align: center !important;
+}
+
+.spreadsheet-quantity-form {
+  align-items: center;
+  display: flex;
+  gap: 0.35rem;
+}
+
+.spreadsheet-quantity-form input {
+  width: 5rem;
+}
+
+.spreadsheet-quantity-form button {
+  border-radius: 0.25rem;
+  font-size: 0.78rem;
+  padding: 0.32rem 0.45rem;
+}
+
+@media (max-width: 640px) {
+  .inventory-toolbar,
+  .category-create-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .spreadsheet-scroll {
+    max-height: none;
+  }
+}
