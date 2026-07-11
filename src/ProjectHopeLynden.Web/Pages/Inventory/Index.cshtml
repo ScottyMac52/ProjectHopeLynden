@@ -10,34 +10,6 @@
     <p>@Model.Summary</p>
 </section>
 
-<section class="card" aria-label="Inventory category selector">
-    @if (Model.Categories.Count == 0)
-    {
-        <p>No inventory categories have been added yet.</p>
-    }
-    else
-    {
-        <form method="get" class="category-selector">
-            <label for="categoryId">Category</label>
-            <select id="categoryId" name="categoryId">
-                @foreach (var category in Model.Categories)
-                {
-                    if (category.Id == Model.CategoryId)
-                    {
-                        <option value="@category.Id" selected>@category.Name</option>
-                    }
-                    else
-                    {
-                        <option value="@category.Id">@category.Name</option>
-                    }
-                }
-            </select>
-            <button type="submit">View</button>
-            <a class="button-link" asp-page="/Inventory/Maintain" asp-route-categoryId="@Model.CategoryId">Add inventory row</a>
-        </form>
-    }
-</section>
-
 @if (Model.QuantityUpdateFailed)
 {
     <section class="card status-message status-message--error" aria-live="polite">
@@ -45,69 +17,76 @@
     </section>
 }
 
-@if (Model.CategoryWasNotFound)
+@if (Model.CategoryInventories.Count == 0)
 {
-    <section class="card" aria-live="polite">
-        <h2>Category not found</h2>
-        <p>The selected category could not be found. Choose another category from the list.</p>
+    <section class="card">
+        <p>No inventory categories have been added yet.</p>
+        <p><a class="button-link" asp-page="/Inventory/Maintain">Add inventory row</a></p>
     </section>
 }
-else if (Model.Inventory is not null)
+else
 {
-    <section class="card" aria-label="Inventory entries for @Model.Inventory.CategoryName">
-        <div class="section-heading">
-            <p class="card__kicker">Category view</p>
-            <h2>@Model.Inventory.CategoryName</h2>
-        </div>
+    <section class="inventory-overview" aria-label="Complete inventory spreadsheet overview">
+        @foreach (var inventory in Model.CategoryInventories)
+        {
+            <article class="card inventory-category" aria-label="Inventory entries for @inventory.CategoryName">
+                <div class="section-heading inventory-category__heading">
+                    <div>
+                        <p class="card__kicker">Category</p>
+                        <h2>@inventory.CategoryName</h2>
+                    </div>
+                    <a class="button-link" asp-page="/Inventory/Maintain" asp-route-categoryId="@inventory.CategoryId">Add row</a>
+                </div>
 
-        @if (!Model.Inventory.HasEntries)
-        {
-            <p>No inventory entries have been recorded for this category yet.</p>
-            <p><a class="button-link" asp-page="/Inventory/Maintain" asp-route-categoryId="@Model.Inventory.CategoryId">Add the first row</a></p>
-        }
-        else
-        {
-            <div class="table-wrapper">
-                <table class="inventory-table">
-                    <thead>
-                        <tr>
-                            <th scope="col">Item</th>
-                            <th scope="col">Location</th>
-                            <th scope="col">Quantity</th>
-                            <th scope="col">Commodity</th>
-                            <th scope="col">BB Date</th>
-                            <th scope="col">Menu Item</th>
-                            <th scope="col">Last Updated</th>
-                            <th scope="col">History</th>
-                            <th scope="col">Details</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var entry in Model.Inventory.Entries)
-                        {
-                            <tr>
-                                <td>@entry.ItemName</td>
-                                <td>@entry.LocationName</td>
-                                <td>
-                                    <form method="post" asp-page-handler="UpdateQuantity" class="quantity-form" aria-label="Update quantity for @entry.ItemName">
-                                        <input type="hidden" asp-for="CategoryId" />
-                                        <input type="hidden" name="InventoryEntryId" value="@entry.Id" />
-                                        <label class="visually-hidden" for="quantity-@entry.Id">Quantity for @entry.ItemName</label>
-                                        <input id="quantity-@entry.Id" name="UpdatedQuantity" type="number" min="0" value="@entry.CurrentQuantity" />
-                                        <button type="submit">Save</button>
-                                    </form>
-                                </td>
-                                <td>@(entry.IsCommodity ? "Yes" : "No")</td>
-                                <td>@(entry.BestByDate?.ToString("yyyy-MM-dd") ?? "")</td>
-                                <td>@(entry.IsMenuItem ? "Yes" : "No")</td>
-                                <td>@entry.LastUpdatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
-                                <td><a asp-page="/Inventory/History" asp-route-inventoryEntryId="@entry.Id">View history</a></td>
-                                <td><a asp-page="/Inventory/Maintain" asp-route-inventoryEntryId="@entry.Id">Edit details</a></td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+                @if (!inventory.HasEntries)
+                {
+                    <p>No inventory entries have been recorded for this category yet.</p>
+                }
+                else
+                {
+                    <div class="table-wrapper">
+                        <table class="inventory-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Item</th>
+                                    <th scope="col">Location</th>
+                                    <th scope="col">Quantity</th>
+                                    <th scope="col">Commodity</th>
+                                    <th scope="col">BB Date</th>
+                                    <th scope="col">Menu Item</th>
+                                    <th scope="col">Last Updated</th>
+                                    <th scope="col">History</th>
+                                    <th scope="col">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var entry in inventory.Entries)
+                                {
+                                    <tr>
+                                        <td>@entry.ItemName</td>
+                                        <td>@entry.LocationName</td>
+                                        <td>
+                                            <form method="post" asp-page-handler="UpdateQuantity" class="quantity-form" aria-label="Update quantity for @entry.ItemName">
+                                                <input type="hidden" name="CategoryId" value="@inventory.CategoryId" />
+                                                <input type="hidden" name="InventoryEntryId" value="@entry.Id" />
+                                                <label class="visually-hidden" for="quantity-@entry.Id">Quantity for @entry.ItemName</label>
+                                                <input id="quantity-@entry.Id" name="UpdatedQuantity" type="number" min="0" value="@entry.CurrentQuantity" />
+                                                <button type="submit">Save</button>
+                                            </form>
+                                        </td>
+                                        <td>@(entry.IsCommodity ? "Yes" : "No")</td>
+                                        <td>@(entry.BestByDate?.ToString("yyyy-MM-dd") ?? "")</td>
+                                        <td>@(entry.IsMenuItem ? "Yes" : "No")</td>
+                                        <td>@entry.LastUpdatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                                        <td><a asp-page="/Inventory/History" asp-route-inventoryEntryId="@entry.Id">View history</a></td>
+                                        <td><a asp-page="/Inventory/Maintain" asp-route-inventoryEntryId="@entry.Id">Edit details</a></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </article>
         }
     </section>
 }
