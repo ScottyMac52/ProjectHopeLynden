@@ -84,6 +84,7 @@ public sealed class ProjectHopeDbContext(DbContextOptions<ProjectHopeDbContext> 
             entity.HasKey(entry => entry.Id);
 
             entity.Property(entry => entry.CurrentQuantity)
+                .HasColumnType("REAL")
                 .IsRequired();
 
             entity.Property(entry => entry.LastUpdatedAtUtc)
@@ -128,7 +129,14 @@ public sealed class ProjectHopeDbContext(DbContextOptions<ProjectHopeDbContext> 
             entity.HasKey(history => history.Id);
 
             entity.Property(history => history.CountedQuantity)
+                .HasColumnType("REAL")
                 .IsRequired();
+
+            entity.Property(history => history.PreviousQuantity)
+                .HasColumnType("REAL");
+
+            entity.Property(history => history.QuantityChange)
+                .HasColumnType("REAL");
 
             entity.Property(history => history.CountedAtUtc)
                 .IsRequired();
