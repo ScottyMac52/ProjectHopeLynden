@@ -7,10 +7,6 @@ namespace ProjectHopeLynden.Infrastructure.Persistence.Seeding;
 [ExcludeFromCodeCoverage]
 public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
 {
-    private static readonly DateTime FirstCountDate = new(2026, 7, 1, 9, 0, 0, DateTimeKind.Utc);
-
-    private static readonly DateTime SecondCountDate = new(2026, 7, 8, 9, 0, 0, DateTimeKind.Utc);
-
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         var categories = await EnsureCategoriesAsync(cancellationToken);
@@ -27,12 +23,14 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
                 seedEntry.BestByDate,
                 seedEntry.IsCommodity,
                 seedEntry.IsMenuItem,
+                seedEntry.LastUpdatedAtUtc,
                 cancellationToken);
 
             await EnsureHistoryAsync(
                 inventoryEntry,
                 seedEntry.PreviousQuantity,
                 seedEntry.CurrentQuantity,
+                seedEntry.LastUpdatedAtUtc,
                 cancellationToken);
         }
     }
@@ -108,10 +106,11 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
         Item item,
         Category category,
         Location location,
-        int currentQuantity,
+        double currentQuantity,
         DateTime? bestByDate,
         bool isCommodity,
         bool isMenuItem,
+        DateTime lastUpdatedAtUtc,
         CancellationToken cancellationToken)
     {
         var existingEntry = await context.InventoryEntries.SingleOrDefaultAsync(
@@ -135,7 +134,7 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
             BestByDate = bestByDate,
             IsCommodity = isCommodity,
             IsMenuItem = isMenuItem,
-            LastUpdatedAtUtc = SecondCountDate,
+            LastUpdatedAtUtc = lastUpdatedAtUtc,
         };
 
         context.InventoryEntries.Add(entry);
@@ -146,8 +145,9 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
 
     private async Task EnsureHistoryAsync(
         InventoryEntry inventoryEntry,
-        int previousQuantity,
-        int currentQuantity,
+        double? previousQuantity,
+        double currentQuantity,
+        DateTime countedAtUtc,
         CancellationToken cancellationToken)
     {
         var hasHistory = await context.InventoryCountHistory.AnyAsync(
@@ -159,23 +159,26 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
             return;
         }
 
-        context.InventoryCountHistory.AddRange(
-            new InventoryCountHistory
+        if (previousQuantity.HasValue)
+        {
+            context.InventoryCountHistory.Add(new InventoryCountHistory
             {
                 InventoryEntryId = inventoryEntry.Id,
-                CountedQuantity = previousQuantity,
-                CountedAtUtc = FirstCountDate,
+                CountedQuantity = previousQuantity.Value,
+                CountedAtUtc = countedAtUtc.AddDays(-7),
                 PreviousQuantity = null,
                 QuantityChange = null,
-            },
-            new InventoryCountHistory
-            {
-                InventoryEntryId = inventoryEntry.Id,
-                CountedQuantity = currentQuantity,
-                CountedAtUtc = SecondCountDate,
-                PreviousQuantity = previousQuantity,
-                QuantityChange = currentQuantity - previousQuantity,
             });
+        }
+
+        context.InventoryCountHistory.Add(new InventoryCountHistory
+        {
+            InventoryEntryId = inventoryEntry.Id,
+            CountedQuantity = currentQuantity,
+            CountedAtUtc = countedAtUtc,
+            PreviousQuantity = previousQuantity,
+            QuantityChange = previousQuantity.HasValue ? currentQuantity - previousQuantity.Value : null,
+        });
 
         await context.SaveChangesAsync(cancellationToken);
     }
