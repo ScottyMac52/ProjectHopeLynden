@@ -17,46 +17,24 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
         var locations = await EnsureLocationsAsync(cancellationToken);
         var items = await EnsureItemsAsync(cancellationToken);
 
-        var greenBeansCommodity = await EnsureInventoryEntryAsync(
-            items["Green Beans"],
-            categories["Canned Vegetables"],
-            locations["Shelf"],
-            currentQuantity: 24,
-            isCommodity: true,
-            isMenuItem: false,
-            cancellationToken: cancellationToken);
+        foreach (var seedEntry in InitialInventorySeedData.InventoryEntries)
+        {
+            var inventoryEntry = await EnsureInventoryEntryAsync(
+                items[seedEntry.ItemName],
+                categories[seedEntry.CategoryName],
+                locations[seedEntry.LocationName],
+                seedEntry.CurrentQuantity,
+                seedEntry.BestByDate,
+                seedEntry.IsCommodity,
+                seedEntry.IsMenuItem,
+                cancellationToken);
 
-        var greenBeansNonCommodity = await EnsureInventoryEntryAsync(
-            items["Green Beans"],
-            categories["Canned Vegetables"],
-            locations["Back Room"],
-            currentQuantity: 18,
-            isCommodity: false,
-            isMenuItem: false,
-            cancellationToken: cancellationToken);
-
-        var tomatoSauceCommodity = await EnsureInventoryEntryAsync(
-            items["Tomato Sauce"],
-            categories["Tomatoes"],
-            locations["Pantry Area"],
-            currentQuantity: 36,
-            isCommodity: true,
-            isMenuItem: true,
-            cancellationToken: cancellationToken);
-
-        var cerealNonCommodity = await EnsureInventoryEntryAsync(
-            items["Oat Cereal"],
-            categories["Cereals"],
-            locations["Shelf"],
-            currentQuantity: 12,
-            isCommodity: false,
-            isMenuItem: false,
-            cancellationToken: cancellationToken);
-
-        await EnsureHistoryAsync(greenBeansCommodity, previousQuantity: 20, currentQuantity: 24, cancellationToken: cancellationToken);
-        await EnsureHistoryAsync(greenBeansNonCommodity, previousQuantity: 14, currentQuantity: 18, cancellationToken: cancellationToken);
-        await EnsureHistoryAsync(tomatoSauceCommodity, previousQuantity: 30, currentQuantity: 36, cancellationToken: cancellationToken);
-        await EnsureHistoryAsync(cerealNonCommodity, previousQuantity: 9, currentQuantity: 12, cancellationToken: cancellationToken);
+            await EnsureHistoryAsync(
+                inventoryEntry,
+                seedEntry.PreviousQuantity,
+                seedEntry.CurrentQuantity,
+                cancellationToken);
+        }
     }
 
     private async Task<Dictionary<string, Category>> EnsureCategoriesAsync(CancellationToken cancellationToken)
@@ -103,12 +81,9 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
 
     private async Task<Dictionary<string, Item>> EnsureItemsAsync(CancellationToken cancellationToken)
     {
-        var seedItemNames = new[]
-        {
-            "Green Beans",
-            "Tomato Sauce",
-            "Oat Cereal",
-        };
+        var seedItemNames = InitialInventorySeedData.InventoryEntries
+            .Select(entry => entry.ItemName)
+            .Distinct(StringComparer.OrdinalIgnoreCase);
 
         var items = await context.Items.ToListAsync(cancellationToken);
         var itemLookup = items.ToDictionary(item => item.Name, StringComparer.OrdinalIgnoreCase);
@@ -134,6 +109,7 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
         Category category,
         Location location,
         int currentQuantity,
+        DateTime? bestByDate,
         bool isCommodity,
         bool isMenuItem,
         CancellationToken cancellationToken)
@@ -156,6 +132,7 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
             CategoryId = category.Id,
             LocationId = location.Id,
             CurrentQuantity = currentQuantity,
+            BestByDate = bestByDate,
             IsCommodity = isCommodity,
             IsMenuItem = isMenuItem,
             LastUpdatedAtUtc = SecondCountDate,
