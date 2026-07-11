@@ -83,7 +83,7 @@ public sealed class IndexModelTests
     }
 
     [Theory]
-    [InlineData(null, 25, "Inventory entry is required.")]
+    [InlineData(null, 25.0, "Inventory entry is required.")]
     [InlineData(14, null, "Quantity is required.")]
     public async Task OnPostUpdateQuantityAsync_ReloadsOverviewForMissingInput(
         int? inventoryEntryId,
