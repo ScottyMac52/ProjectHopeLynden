@@ -62,6 +62,65 @@ public sealed class InitialInventorySeederTests
     }
 
     [Fact]
+    public async Task SeedAsync_PopulatesEveryObservedSpreadsheetCategory()
+    {
+        await using var connection = await OpenConnectionAsync();
+        await using var context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+        var seeder = new InitialInventorySeeder(context);
+
+        await seeder.SeedAsync();
+
+        var populatedCategoryNames = await context.InventoryEntries
+            .Select(entry => entry.Category.Name)
+            .Distinct()
+            .OrderBy(categoryName => categoryName)
+            .ToArrayAsync();
+
+        var expectedCategoryNames = InitialInventorySeedData.CategoryNames
+            .OrderBy(categoryName => categoryName)
+            .ToArray();
+
+        Assert.Equal(expectedCategoryNames, populatedCategoryNames);
+        Assert.Equal(InitialInventorySeedData.CategoryNames.Length + 1, await context.InventoryEntries.CountAsync());
+    }
+
+    [Fact]
+    public async Task SeedAsync_IncludesRepresentativeFoodAndHouseholdData()
+    {
+        await using var connection = await OpenConnectionAsync();
+        await using var context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+        var seeder = new InitialInventorySeeder(context);
+
+        await seeder.SeedAsync();
+
+        var pintoBeans = await context.InventoryEntries
+            .Include(entry => entry.Item)
+            .Include(entry => entry.Category)
+            .Include(entry => entry.Location)
+            .SingleAsync(entry => entry.Item.Name == "Pinto Beans");
+
+        Assert.Equal("Dry Beans", pintoBeans.Category.Name);
+        Assert.Equal("Pantry Area", pintoBeans.Location.Name);
+        Assert.Equal(16, pintoBeans.CurrentQuantity);
+        Assert.Equal(new DateTime(2027, 6, 30, 0, 0, 0, DateTimeKind.Utc), pintoBeans.BestByDate);
+        Assert.False(pintoBeans.IsCommodity);
+
+        var diapers = await context.InventoryEntries
+            .Include(entry => entry.Item)
+            .Include(entry => entry.Category)
+            .Include(entry => entry.Location)
+            .SingleAsync(entry => entry.Item.Name == "Size 4 Diapers");
+
+        Assert.Equal("Diapers", diapers.Category.Name);
+        Assert.Equal("Back Room", diapers.Location.Name);
+        Assert.Equal(6, diapers.CurrentQuantity);
+        Assert.Null(diapers.BestByDate);
+        Assert.False(diapers.IsCommodity);
+    }
+
+    [Fact]
     public async Task SeedAsync_IncludesSameItemAsCommodityAndNonCommodityInventory()
     {
         await using var connection = await OpenConnectionAsync();
