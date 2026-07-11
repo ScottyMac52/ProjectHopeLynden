@@ -7,7 +7,7 @@ public sealed record InventoryEntryHistoryView(
     string CategoryName,
     string LocationName,
     bool IsCommodity,
-    int CurrentQuantity,
+    double CurrentQuantity,
     IReadOnlyList<InventoryCountHistoryListItem> Records)
 {
     public bool HasHistory => Records.Count > 0;
