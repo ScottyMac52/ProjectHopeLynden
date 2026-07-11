@@ -2,9 +2,9 @@ namespace ProjectHopeLynden.Application.Inventory;
 
 public sealed record InventoryItemTotalView(
     string ItemName,
-    int OperationalTotalQuantity,
-    int CommodityQuantity,
-    int NonCommodityQuantity,
+    double OperationalTotalQuantity,
+    double CommodityQuantity,
+    double NonCommodityQuantity,
     IReadOnlyList<InventoryItemTotalEntry> Entries)
 {
     public bool HasCommodityInventory => CommodityQuantity > 0;
