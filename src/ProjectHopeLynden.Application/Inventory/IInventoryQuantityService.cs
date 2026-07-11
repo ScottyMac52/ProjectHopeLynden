@@ -4,7 +4,7 @@ public interface IInventoryQuantityService
 {
     Task<InventoryQuantityUpdateResult> UpdateCurrentQuantityAsync(
         int inventoryEntryId,
-        int quantity,
+        double quantity,
         DateTime countedAtUtc,
         CancellationToken cancellationToken = default);
 }
