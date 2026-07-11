@@ -8,21 +8,17 @@ public sealed class IndexModel(
     IInventoryQueryService inventoryQueryService,
     IInventoryQuantityService inventoryQuantityService) : PageModel
 {
-    public string PageTitle { get; } = "Inventory Stewardship";
+    public string PageTitle { get; } = "Inventory Overview";
 
-    public string Summary { get; } = "Keep food bank shelves, Commodity records, and guest support work connected in one local view.";
+    public string Summary { get; } = "Review every Project Hope inventory category in one familiar spreadsheet-style view.";
 
-    public IReadOnlyList<InventoryCategoryListItem> Categories { get; private set; } = [];
-
-    public CategoryInventoryView? Inventory { get; private set; }
-
-    public bool CategoryWasNotFound { get; private set; }
+    public IReadOnlyList<CategoryInventoryView> CategoryInventories { get; private set; } = [];
 
     public bool QuantityUpdateFailed { get; private set; }
 
     public string? QuantityUpdateMessage { get; private set; }
 
-    [BindProperty(SupportsGet = true)]
+    [BindProperty]
     public int? CategoryId { get; set; }
 
     [BindProperty]
@@ -58,7 +54,7 @@ public sealed class IndexModel(
             return await ReloadWithQuantityErrorAsync(result.ErrorMessage ?? "Quantity update failed.");
         }
 
-        return RedirectToPage(new { categoryId = CategoryId });
+        return RedirectToPage();
     }
 
     private async Task<PageResult> ReloadWithQuantityErrorAsync(string message)
@@ -71,16 +67,18 @@ public sealed class IndexModel(
 
     private async Task LoadInventoryAsync()
     {
-        Categories = await inventoryQueryService.GetCategoriesAsync();
+        var categories = await inventoryQueryService.GetCategoriesAsync();
+        var inventories = new List<CategoryInventoryView>(categories.Count);
 
-        var selectedCategoryId = CategoryId ?? Categories.FirstOrDefault()?.Id;
-        if (selectedCategoryId is null)
+        foreach (var category in categories)
         {
-            return;
+            var inventory = await inventoryQueryService.GetInventoryForCategoryAsync(category.Id);
+            if (inventory is not null)
+            {
+                inventories.Add(inventory);
+            }
         }
 
-        CategoryId = selectedCategoryId.Value;
-        Inventory = await inventoryQueryService.GetInventoryForCategoryAsync(selectedCategoryId.Value);
-        CategoryWasNotFound = Inventory is null;
+        CategoryInventories = inventories;
     }
 }

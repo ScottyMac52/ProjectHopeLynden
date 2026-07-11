@@ -8,111 +8,68 @@ namespace ProjectHopeLynden.Web.Tests.Pages.Inventory;
 public sealed class IndexModelTests
 {
     [Fact]
-    public void PageTitle_ReturnsBrandedInventoryTitle()
+    public void PageCopy_DescribesSpreadsheetOverview()
     {
-        var service = new StubInventoryQueryService([], inventory: null);
-        var quantityService = new StubInventoryQuantityService();
-        var model = new IndexModel(service, quantityService);
+        var model = new IndexModel(new StubInventoryQueryService([], []), new StubInventoryQuantityService());
 
-        Assert.Equal("Inventory Stewardship", model.PageTitle);
+        Assert.Equal("Inventory Overview", model.PageTitle);
+        Assert.Contains("every Project Hope inventory category", model.Summary);
     }
 
     [Fact]
-    public void Summary_ReturnsProjectHopeInventorySupportMessage()
-    {
-        var service = new StubInventoryQueryService([], inventory: null);
-        var quantityService = new StubInventoryQuantityService();
-        var model = new IndexModel(service, quantityService);
-
-        Assert.Equal(
-            "Keep food bank shelves, Commodity records, and guest support work connected in one local view.",
-            model.Summary);
-    }
-
-    [Fact]
-    public async Task OnGetAsync_SelectsFirstCategoryWhenNoCategoryIsProvided()
-    {
-        var categories = new[]
-        {
-            new InventoryCategoryListItem(2, "Cereals"),
-        };
-        var inventory = new CategoryInventoryView(2, "Cereals", []);
-        var service = new StubInventoryQueryService(categories, inventory);
-        var quantityService = new StubInventoryQuantityService();
-        var model = new IndexModel(service, quantityService);
-
-        await model.OnGetAsync();
-
-        Assert.Equal(2, model.CategoryId);
-        Assert.Same(categories, model.Categories);
-        Assert.Same(inventory, model.Inventory);
-        Assert.False(model.CategoryWasNotFound);
-    }
-
-    [Fact]
-    public async Task OnGetAsync_LoadsRequestedCategoryInventory()
+    public async Task OnGetAsync_LoadsEveryCategoryInCategoryOrder()
     {
         var categories = new[]
         {
             new InventoryCategoryListItem(1, "Canned Vegetables"),
             new InventoryCategoryListItem(2, "Cereals"),
         };
-        var inventory = new CategoryInventoryView(2, "Cereals", []);
-        var service = new StubInventoryQueryService(categories, inventory);
-        var quantityService = new StubInventoryQuantityService();
-        var model = new IndexModel(service, quantityService) { CategoryId = 2 };
+        var canned = new CategoryInventoryView(1, "Canned Vegetables", []);
+        var cereals = new CategoryInventoryView(2, "Cereals", []);
+        var service = new StubInventoryQueryService(categories, [canned, cereals]);
+        var model = new IndexModel(service, new StubInventoryQuantityService());
 
         await model.OnGetAsync();
 
-        Assert.Equal(2, model.CategoryId);
-        Assert.Same(inventory, model.Inventory);
-        Assert.False(model.CategoryWasNotFound);
-        Assert.Equal(2, service.RequestedCategoryId);
+        Assert.Equal(["Canned Vegetables", "Cereals"], model.CategoryInventories.Select(view => view.CategoryName).ToArray());
+        Assert.Equal([1, 2], service.RequestedCategoryIds);
     }
 
     [Fact]
-    public async Task OnGetAsync_SetsNotFoundWhenRequestedCategoryDoesNotExist()
+    public async Task OnGetAsync_SkipsCategoryThatDisappearsDuringLoad()
     {
         var categories = new[]
         {
             new InventoryCategoryListItem(1, "Canned Vegetables"),
+            new InventoryCategoryListItem(2, "Cereals"),
         };
-        var service = new StubInventoryQueryService(categories, inventory: null);
-        var quantityService = new StubInventoryQuantityService();
-        var model = new IndexModel(service, quantityService) { CategoryId = 99 };
+        var canned = new CategoryInventoryView(1, "Canned Vegetables", []);
+        var service = new StubInventoryQueryService(categories, [canned, null]);
+        var model = new IndexModel(service, new StubInventoryQuantityService());
 
         await model.OnGetAsync();
 
-        Assert.Equal(99, model.CategoryId);
-        Assert.Null(model.Inventory);
-        Assert.True(model.CategoryWasNotFound);
-        Assert.Equal(99, service.RequestedCategoryId);
+        Assert.Same(canned, Assert.Single(model.CategoryInventories));
     }
 
     [Fact]
-    public async Task OnGetAsync_LeavesInventoryEmptyWhenNoCategoriesExist()
+    public async Task OnGetAsync_LeavesOverviewEmptyWhenNoCategoriesExist()
     {
-        var service = new StubInventoryQueryService([], inventory: null);
-        var quantityService = new StubInventoryQuantityService();
-        var model = new IndexModel(service, quantityService);
+        var service = new StubInventoryQueryService([], []);
+        var model = new IndexModel(service, new StubInventoryQuantityService());
 
         await model.OnGetAsync();
 
-        Assert.Empty(model.Categories);
-        Assert.Null(model.CategoryId);
-        Assert.Null(model.Inventory);
-        Assert.False(model.CategoryWasNotFound);
-        Assert.Null(service.RequestedCategoryId);
+        Assert.Empty(model.CategoryInventories);
+        Assert.Empty(service.RequestedCategoryIds);
     }
 
     [Fact]
-    public async Task OnPostUpdateQuantityAsync_UpdatesQuantityAndRedirectsToSelectedCategory()
+    public async Task OnPostUpdateQuantityAsync_UpdatesQuantityAndRedirectsToOverview()
     {
-        var service = new StubInventoryQueryService([], inventory: null);
         var quantityService = new StubInventoryQuantityService();
-        var model = new IndexModel(service, quantityService)
+        var model = new IndexModel(new StubInventoryQueryService([], []), quantityService)
         {
-            CategoryId = 2,
             InventoryEntryId = 14,
             UpdatedQuantity = 25,
         };
@@ -120,26 +77,50 @@ public sealed class IndexModelTests
         var result = await model.OnPostUpdateQuantityAsync();
 
         var redirect = Assert.IsType<RedirectToPageResult>(result);
-        Assert.NotNull(redirect.RouteValues);
-        Assert.Equal(2, redirect.RouteValues["categoryId"]);
+        Assert.Null(redirect.RouteValues);
         Assert.Equal(14, quantityService.RequestedInventoryEntryId);
         Assert.Equal(25, quantityService.RequestedQuantity);
     }
 
-    [Fact]
-    public async Task OnPostUpdateQuantityAsync_ReloadsInventoryWhenQuantityUpdateFails()
+    [Theory]
+    [InlineData(null, 25, "Inventory entry is required.")]
+    [InlineData(14, null, "Quantity is required.")]
+    public async Task OnPostUpdateQuantityAsync_ReloadsOverviewForMissingInput(
+        int? inventoryEntryId,
+        int? updatedQuantity,
+        string expectedMessage)
     {
-        var categories = new[]
-        {
-            new InventoryCategoryListItem(2, "Cereals"),
-        };
         var inventory = new CategoryInventoryView(2, "Cereals", []);
-        var service = new StubInventoryQueryService(categories, inventory);
+        var service = new StubInventoryQueryService(
+            [new InventoryCategoryListItem(2, "Cereals")],
+            [inventory]);
+        var quantityService = new StubInventoryQuantityService();
+        var model = new IndexModel(service, quantityService)
+        {
+            InventoryEntryId = inventoryEntryId,
+            UpdatedQuantity = updatedQuantity,
+        };
+
+        var result = await model.OnPostUpdateQuantityAsync();
+
+        Assert.IsType<PageResult>(result);
+        Assert.True(model.QuantityUpdateFailed);
+        Assert.Equal(expectedMessage, model.QuantityUpdateMessage);
+        Assert.Same(inventory, Assert.Single(model.CategoryInventories));
+        Assert.Null(quantityService.RequestedInventoryEntryId);
+    }
+
+    [Fact]
+    public async Task OnPostUpdateQuantityAsync_ReloadsOverviewWhenQuantityServiceFails()
+    {
+        var inventory = new CategoryInventoryView(2, "Cereals", []);
+        var service = new StubInventoryQueryService(
+            [new InventoryCategoryListItem(2, "Cereals")],
+            [inventory]);
         var quantityService = new StubInventoryQuantityService(
             new InventoryQuantityUpdateResult(false, "Quantity must be zero or greater."));
         var model = new IndexModel(service, quantityService)
         {
-            CategoryId = 2,
             InventoryEntryId = 14,
             UpdatedQuantity = -1,
         };
@@ -149,39 +130,32 @@ public sealed class IndexModelTests
         Assert.IsType<PageResult>(result);
         Assert.True(model.QuantityUpdateFailed);
         Assert.Equal("Quantity must be zero or greater.", model.QuantityUpdateMessage);
-        Assert.Same(categories, model.Categories);
-        Assert.Same(inventory, model.Inventory);
-        Assert.Equal(2, service.RequestedCategoryId);
+        Assert.Same(inventory, Assert.Single(model.CategoryInventories));
     }
 
     [Fact]
-    public async Task OnPostUpdateQuantityAsync_RejectsMissingQuantityWithoutCallingUpdateService()
+    public async Task OnPostUpdateQuantityAsync_UsesFallbackMessageWhenFailureHasNoMessage()
     {
-        var categories = new[]
+        var quantityService = new StubInventoryQuantityService(new InventoryQuantityUpdateResult(false, null));
+        var model = new IndexModel(new StubInventoryQueryService([], []), quantityService)
         {
-            new InventoryCategoryListItem(2, "Cereals"),
-        };
-        var service = new StubInventoryQueryService(categories, new CategoryInventoryView(2, "Cereals", []));
-        var quantityService = new StubInventoryQuantityService();
-        var model = new IndexModel(service, quantityService)
-        {
-            CategoryId = 2,
             InventoryEntryId = 14,
+            UpdatedQuantity = 10,
         };
 
         var result = await model.OnPostUpdateQuantityAsync();
 
         Assert.IsType<PageResult>(result);
-        Assert.True(model.QuantityUpdateFailed);
-        Assert.Equal("Quantity is required.", model.QuantityUpdateMessage);
-        Assert.Null(quantityService.RequestedInventoryEntryId);
+        Assert.Equal("Quantity update failed.", model.QuantityUpdateMessage);
     }
 
     private sealed class StubInventoryQueryService(
         IReadOnlyList<InventoryCategoryListItem> categories,
-        CategoryInventoryView? inventory) : IInventoryQueryService
+        IReadOnlyList<CategoryInventoryView?> inventories) : IInventoryQueryService
     {
-        public int? RequestedCategoryId { get; private set; }
+        private int inventoryIndex;
+
+        public List<int> RequestedCategoryIds { get; } = [];
 
         public Task<IReadOnlyList<InventoryCategoryListItem>> GetCategoriesAsync(
             CancellationToken cancellationToken = default)
@@ -193,7 +167,9 @@ public sealed class IndexModelTests
             int categoryId,
             CancellationToken cancellationToken = default)
         {
-            RequestedCategoryId = categoryId;
+            RequestedCategoryIds.Add(categoryId);
+            var inventory = inventoryIndex < inventories.Count ? inventories[inventoryIndex] : null;
+            inventoryIndex++;
             return Task.FromResult(inventory);
         }
     }
@@ -205,8 +181,6 @@ public sealed class IndexModelTests
 
         public int? RequestedQuantity { get; private set; }
 
-        public DateTime? RequestedCountedAtUtc { get; private set; }
-
         public Task<InventoryQuantityUpdateResult> UpdateCurrentQuantityAsync(
             int inventoryEntryId,
             int quantity,
@@ -215,7 +189,6 @@ public sealed class IndexModelTests
         {
             RequestedInventoryEntryId = inventoryEntryId;
             RequestedQuantity = quantity;
-            RequestedCountedAtUtc = countedAtUtc;
             return Task.FromResult(result ?? new InventoryQuantityUpdateResult(true, null));
         }
     }
