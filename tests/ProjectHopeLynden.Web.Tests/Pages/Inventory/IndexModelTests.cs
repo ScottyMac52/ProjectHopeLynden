@@ -12,7 +12,7 @@ public sealed class IndexModelTests
     {
         var model = new IndexModel(new StubInventoryQueryService([], []), new StubInventoryQuantityService());
 
-        Assert.Equal("Inventory Overview", model.PageTitle);
+        Assert.Equal("Inventory Spreadsheet", model.PageTitle);
         Assert.Contains("every Project Hope inventory category", model.Summary);
     }
 
