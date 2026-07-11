@@ -7,7 +7,7 @@ namespace ProjectHopeLynden.Web.Pages.Inventory;
 public sealed class IndexModel(
     IInventoryQueryService inventoryQueryService,
     IInventoryQuantityService inventoryQuantityService,
-    IInventoryCategoryService inventoryCategoryService) : PageModel
+    IInventoryCategoryService? inventoryCategoryService = null) : PageModel
 {
     public string PageTitle { get; } = "Inventory Spreadsheet";
 
@@ -29,6 +29,14 @@ public sealed class IndexModel(
 
     public async Task<IActionResult> OnPostCreateCategoryAsync()
     {
+        if (inventoryCategoryService is null)
+        {
+            CategoryCreateFailed = true;
+            CategoryCreateMessage = "Category creation is unavailable.";
+            await LoadInventoryAsync();
+            return Page();
+        }
+
         var result = await inventoryCategoryService.CreateCategoryAsync(NewCategoryName);
         if (!result.Succeeded)
         {
