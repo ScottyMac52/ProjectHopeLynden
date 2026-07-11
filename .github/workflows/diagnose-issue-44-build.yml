@@ -21,17 +21,24 @@ jobs:
       - name: Restore
         shell: pwsh
         run: dotnet restore ProjectHopeLynden.sln
-      - name: Capture build output
+      - name: Capture build and test output
         shell: pwsh
         continue-on-error: true
         run: |
-          dotnet build ProjectHopeLynden.sln --no-restore *> build.log
-          $exitCode = $LASTEXITCODE
-          Add-Content build.log "BUILD_EXIT_CODE=$exitCode"
+          dotnet build ProjectHopeLynden.sln --no-restore *> diagnostics.log
+          $buildExitCode = $LASTEXITCODE
+          Add-Content diagnostics.log "BUILD_EXIT_CODE=$buildExitCode"
+
+          if ($buildExitCode -eq 0) {
+            dotnet test ProjectHopeLynden.sln --no-build --no-restore *>> diagnostics.log
+            $testExitCode = $LASTEXITCODE
+            Add-Content diagnostics.log "TEST_EXIT_CODE=$testExitCode"
+          }
+
           exit 0
-      - name: Upload build output
+      - name: Upload diagnostic output
         uses: actions/upload-artifact@v4
         with:
-          name: issue-44-build-log
-          path: build.log
+          name: issue-44-diagnostic-log
+          path: diagnostics.log
           if-no-files-found: error
