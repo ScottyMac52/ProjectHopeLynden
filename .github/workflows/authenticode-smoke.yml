@@ -22,7 +22,7 @@ jobs:
   sign-and-verify:
     name: Sign disposable Windows executable
     runs-on: windows-latest
-    timeout-minutes: 10
+    timeout-minutes: 8
 
     steps:
       - name: Checkout code
