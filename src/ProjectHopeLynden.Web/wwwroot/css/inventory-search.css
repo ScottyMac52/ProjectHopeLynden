@@ -1,0 +1,83 @@
+.inventory-search-hero {
+  margin-bottom: 1rem;
+}
+
+.inventory-search-card {
+  margin-bottom: 1rem;
+}
+
+.inventory-search-form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.inventory-search-form > label {
+  font-weight: 700;
+}
+
+.inventory-search-controls {
+  align-items: center;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: minmax(240px, 1fr) auto auto;
+}
+
+.inventory-search-controls input {
+  min-width: 0;
+  width: 100%;
+}
+
+.inventory-search-empty {
+  text-align: center;
+}
+
+.inventory-search-heading {
+  margin-bottom: 1rem;
+}
+
+.inventory-search-heading h2,
+.inventory-search-heading p {
+  margin-bottom: 0;
+}
+
+.inventory-search-table th:nth-child(4),
+.inventory-search-table td:nth-child(4) {
+  text-align: right;
+}
+
+.inventory-search-quantity {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.inventory-type-badge {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  white-space: nowrap;
+}
+
+.inventory-type-badge--commodity {
+  background: var(--brand-gold-soft);
+  color: var(--brand-blue-dark);
+}
+
+.inventory-type-badge--standard {
+  background: var(--background);
+  color: var(--text);
+}
+
+.inventory-search-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+@media (max-width: 720px) {
+  .inventory-search-controls {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+}
