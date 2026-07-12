@@ -1,0 +1,134 @@
+@page
+@model ManageModel
+@{
+    ViewData["Title"] = Model.PageTitle;
+}
+<link rel="stylesheet" href="~/css/inventory-management.css" />
+
+<section class="hero hero--branded inventory-management-hero">
+    <p class="eyebrow">Project Hope Food Bank of Lynden</p>
+    <h1>@Model.PageTitle</h1>
+    <p>@Model.Summary</p>
+    <div class="inventory-management-actions">
+        <a class="button-link button-link--light" asp-page="/Inventory/Index">Spreadsheet overview</a>
+        <a class="button-link button-link--light" asp-page="/Inventory/Maintain" asp-route-categoryId="@Model.CategoryId">Add inventory row</a>
+    </div>
+</section>
+
+@if (Model.QuantityUpdateFailed)
+{
+    <section class="card status-message status-message--error" aria-live="polite">
+        <p>@Model.QuantityUpdateMessage</p>
+    </section>
+}
+
+@if (Model.CategoryCreateFailed)
+{
+    <section class="card status-message status-message--error" aria-live="polite">
+        <p>@Model.CategoryCreateMessage</p>
+    </section>
+}
+
+<section class="management-toolbar" aria-label="Inventory management controls">
+    <form method="get" class="category-selector">
+        <label for="categoryId">Category</label>
+        <select id="categoryId" name="categoryId">
+            @foreach (var category in Model.Categories)
+            {
+                if (category.Id == Model.CategoryId)
+                {
+                    <option value="@category.Id" selected>@category.Name</option>
+                }
+                else
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
+            }
+        </select>
+        <button type="submit">View category</button>
+        <a class="button-link" asp-page="/Inventory/Maintain" asp-route-categoryId="@Model.CategoryId">Add inventory row</a>
+    </form>
+
+    <form method="post" asp-page-handler="CreateCategory" class="add-category-form" aria-label="Add inventory category">
+        <label for="newCategoryName">New category</label>
+        <input id="newCategoryName" asp-for="NewCategoryName" autocomplete="off" placeholder="Category name" />
+        <button type="submit">Add category</button>
+    </form>
+</section>
+
+@if (Model.Categories.Count == 0)
+{
+    <section class="card">
+        <h2>No categories yet</h2>
+        <p>Add the first inventory category above, then add its first inventory row.</p>
+    </section>
+}
+else if (Model.CategoryWasNotFound)
+{
+    <section class="card" aria-live="polite">
+        <h2>Category not found</h2>
+        <p>The selected category could not be found. Choose another category from the list.</p>
+    </section>
+}
+else if (Model.Inventory is not null)
+{
+    <section class="card" aria-label="Inventory entries for @Model.Inventory.CategoryName">
+        <div class="section-heading inventory-category__heading">
+            <div>
+                <p class="card__kicker">Selected category</p>
+                <h2>@Model.Inventory.CategoryName</h2>
+            </div>
+            <a class="button-link" asp-page="/Inventory/Maintain" asp-route-categoryId="@Model.Inventory.CategoryId">Add row</a>
+        </div>
+
+        @if (!Model.Inventory.HasEntries)
+        {
+            <p>No inventory entries have been recorded for this category yet.</p>
+            <p><a class="button-link" asp-page="/Inventory/Maintain" asp-route-categoryId="@Model.Inventory.CategoryId">Add the first row</a></p>
+        }
+        else
+        {
+            <div class="table-wrapper">
+                <table class="inventory-table inventory-table--manage">
+                    <thead>
+                        <tr>
+                            <th scope="col">Item</th>
+                            <th scope="col">Location</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Commodity</th>
+                            <th scope="col">BB Date</th>
+                            <th scope="col">Menu Item</th>
+                            <th scope="col">Last Updated</th>
+                            <th scope="col">History</th>
+                            <th scope="col">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entry in Model.Inventory.Entries)
+                        {
+                            <tr>
+                                <td>@entry.ItemName</td>
+                                <td>@entry.LocationName</td>
+                                <td>
+                                    <form method="post" asp-page-handler="UpdateQuantity" class="quantity-form" aria-label="Update quantity for @entry.ItemName">
+                                        <input type="hidden" asp-for="CategoryId" />
+                                        <input type="hidden" name="InventoryEntryId" value="@entry.Id" />
+                                        <label class="visually-hidden" for="manage-quantity-@entry.Id">Quantity for @entry.ItemName</label>
+                                        <input id="manage-quantity-@entry.Id" name="UpdatedQuantity" type="number" min="0" step="0.5" value="@entry.CurrentQuantity" />
+                                        <button type="submit">Save</button>
+                                    </form>
+                                </td>
+                                <td>@(entry.IsCommodity ? "Yes" : "No")</td>
+                                <td>@(entry.BestByDate?.ToString("yyyy-MM-dd") ?? "")</td>
+                                <td>@(entry.IsMenuItem ? "Yes" : "No")</td>
+                                <td>@entry.LastUpdatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td><a asp-page="/Inventory/History" asp-route-inventoryEntryId="@entry.Id">View history</a></td>
+                                <td><a asp-page="/Inventory/Maintain" asp-route-inventoryEntryId="@entry.Id">Edit details</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+}
