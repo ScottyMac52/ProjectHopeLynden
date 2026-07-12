@@ -1,0 +1,78 @@
+@page
+@model CommodityReportModel
+@{
+    ViewData["Title"] = Model.PageTitle;
+}
+<link rel="stylesheet" href="~/css/commodity-report.css" />
+
+<section class="hero hero--branded commodity-report-hero">
+    <p class="eyebrow">Project Hope Food Bank of Lynden</p>
+    <h1>@Model.PageTitle</h1>
+    <p>@Model.Summary</p>
+    <div class="commodity-report-actions">
+        <button type="button" onclick="window.print()">Print report</button>
+        <a class="button-link button-link--light" asp-page="/Inventory/Index">Back to spreadsheet</a>
+    </div>
+</section>
+
+<section class="commodity-report-summary" aria-label="Commodity report summary">
+    <article>
+        <span>Generated</span>
+        <strong>@Model.Report.GeneratedAtUtc.ToString("yyyy-MM-dd HH:mm 'UTC'")</strong>
+    </article>
+    <article>
+        <span>Commodity rows</span>
+        <strong>@Model.Report.Rows.Count</strong>
+    </article>
+    <article>
+        <span>Total quantity</span>
+        <strong>@Model.Report.TotalQuantity.ToString("0.##")</strong>
+    </article>
+</section>
+
+@if (!Model.Report.HasRows)
+{
+    <section class="card commodity-report-empty">
+        <h2>No Commodity inventory</h2>
+        <p>No inventory rows are currently marked as Commodity.</p>
+    </section>
+}
+else
+{
+    <section class="commodity-report-panel" aria-label="Commodity inventory report">
+        <div class="table-wrapper">
+            <table class="commodity-report-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Item</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Location</th>
+                        <th scope="col">BB Date</th>
+                        <th scope="col">Quantity As Of</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Report.Rows)
+                    {
+                        <tr>
+                            <td>@row.ItemName</td>
+                            <td>@row.CategoryName</td>
+                            <td>@row.Quantity.ToString("0.##")</td>
+                            <td>@row.LocationName</td>
+                            <td>@(row.BestByDate?.ToString("yyyy-MM-dd") ?? "")</td>
+                            <td>@row.QuantityAsOfUtc.ToString("yyyy-MM-dd HH:mm 'UTC'")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="2" scope="row">Commodity total</th>
+                        <td>@Model.Report.TotalQuantity.ToString("0.##")</td>
+                        <td colspan="3"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </section>
+}
