@@ -1,0 +1,32 @@
+name: Diagnose PR 54 Web tests
+
+on:
+  push:
+    branches:
+      - issue-44-add-seed-data
+    paths:
+      - .github/workflows/diagnose-pr54-web-tests.yml
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-web-tests:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Capture Web test output
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          dotnet test tests/ProjectHopeLynden.Web.Tests/ProjectHopeLynden.Web.Tests.csproj -c Release --logger "console;verbosity=detailed" *> web-tests.log
+          exit 0
+      - name: Upload Web test output
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr54-web-test-diagnostics
+          path: web-tests.log
+          if-no-files-found: error
