@@ -73,4 +73,23 @@ public sealed class InventoryCommodityService(ProjectHopeDbContext context) : II
             nonCommodityQuantity,
             entries);
     }
+
+    public async Task<CommodityReportView> GetCommodityReportAsync(
+        DateTime generatedAtUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var entries = await GetCommodityInventoryAsync(cancellationToken);
+        var rows = entries
+            .Select(entry => new CommodityReportRow(
+                entry.InventoryEntryId,
+                entry.ItemName,
+                entry.CategoryName,
+                entry.LocationName,
+                entry.CurrentQuantity,
+                entry.BestByDate,
+                entry.LastUpdatedAtUtc))
+            .ToList();
+
+        return new CommodityReportView(generatedAtUtc, rows);
+    }
 }
