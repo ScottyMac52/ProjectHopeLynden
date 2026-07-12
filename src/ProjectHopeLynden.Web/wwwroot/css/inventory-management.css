@@ -1,0 +1,82 @@
+.inventory-management-hero {
+  margin-bottom: 1rem;
+}
+
+.inventory-management-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+.inventory-management-actions .button-link--light {
+  background: #ffffff;
+  color: var(--brand-blue-dark);
+}
+
+.inventory-management-actions .button-link--light:hover,
+.inventory-management-actions .button-link--light:focus {
+  background: var(--brand-gold-soft);
+  color: var(--brand-blue-dark);
+}
+
+.management-toolbar {
+  align-items: end;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  margin-bottom: 1rem;
+  padding: 1rem;
+}
+
+.management-toolbar .category-selector {
+  align-items: end;
+}
+
+.add-category-form {
+  align-items: end;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.add-category-form label {
+  font-weight: 800;
+  grid-column: 1 / -1;
+}
+
+.add-category-form input,
+.add-category-form button {
+  font: inherit;
+  padding: 0.55rem 0.75rem;
+}
+
+.add-category-form input {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  color: var(--text);
+  min-width: 0;
+}
+
+.inventory-category__heading {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.inventory-table--manage {
+  min-width: 1050px;
+}
+
+@media (max-width: 900px) {
+  .management-toolbar {
+    grid-template-columns: 1fr;
+  }
+}

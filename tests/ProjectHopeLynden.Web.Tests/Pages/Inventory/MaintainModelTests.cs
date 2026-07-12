@@ -97,7 +97,7 @@ public sealed class MaintainModelTests
         var actionResult = await model.OnPostSaveAsync();
 
         var redirect = Assert.IsType<RedirectToPageResult>(actionResult);
-        Assert.Equal("/Inventory/Index", redirect.PageName);
+        Assert.Equal("/Inventory/Manage", redirect.PageName);
         Assert.NotNull(redirect.RouteValues);
         Assert.Equal(2, redirect.RouteValues["categoryId"]);
         Assert.Equal("Green Beans", service.LastRequest?.ItemName);
@@ -122,6 +122,7 @@ public sealed class MaintainModelTests
         var actionResult = await model.OnPostSaveAsync();
 
         var redirect = Assert.IsType<RedirectToPageResult>(actionResult);
+        Assert.Equal("/Inventory/Manage", redirect.PageName);
         Assert.Equal(2, redirect.RouteValues?["categoryId"]);
     }
 
@@ -145,6 +146,7 @@ public sealed class MaintainModelTests
         var actionResult = await model.OnPostSaveAsync();
 
         var redirect = Assert.IsType<RedirectToPageResult>(actionResult);
+        Assert.Equal("/Inventory/Manage", redirect.PageName);
         Assert.Equal(14, service.UpdatedInventoryEntryId);
         Assert.False(service.LastRequest?.IsCommodity);
         Assert.True(service.LastRequest?.IsMenuItem);

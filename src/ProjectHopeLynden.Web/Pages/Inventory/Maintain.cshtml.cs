@@ -92,7 +92,7 @@ public sealed class MaintainModel(IInventoryEntryMaintenanceService entryMainten
             return Page();
         }
 
-        return RedirectToPage("/Inventory/Index", new { categoryId = result.CategoryId ?? SelectedCategoryId });
+        return RedirectToPage("/Inventory/Manage", new { categoryId = result.CategoryId ?? SelectedCategoryId });
     }
 
     private void ApplyEditView(InventoryEntryEditView editView)

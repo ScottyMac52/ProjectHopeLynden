@@ -3,11 +3,16 @@
 @{
     ViewData["Title"] = Model.PageTitle;
 }
+<link rel="stylesheet" href="~/css/inventory-management.css" />
 
 <section class="hero hero--branded">
     <p class="eyebrow">Project Hope Food Bank of Lynden</p>
     <h1>@Model.PageTitle</h1>
     <p>@Model.Summary</p>
+    <div class="inventory-management-actions">
+        <a class="button-link button-link--light" asp-page="/Inventory/Index">Spreadsheet overview</a>
+        <a class="button-link button-link--light" asp-page="/Inventory/Manage" asp-route-categoryId="@(Model.SelectedCategoryId ?? Model.CategoryId)">Manage inventory</a>
+    </div>
 </section>
 
 @if (Model.EntryWasNotFound)
@@ -16,7 +21,7 @@
         <p class="card__kicker">Inventory row unavailable</p>
         <h2>Inventory row not found</h2>
         <p>The requested inventory row could not be found. Return to inventory and choose another row.</p>
-        <p><a class="button-link" asp-page="/Inventory/Index">Back to inventory</a></p>
+        <p><a class="button-link" asp-page="/Inventory/Manage">Back to inventory management</a></p>
     </section>
 }
 else
@@ -71,7 +76,7 @@ else
             {
                 <section class="form-note" aria-label="Current quantity note">
                     <strong>Current quantity: @Model.CurrentQuantity</strong>
-                    <span>Use the inventory table quantity editor for count changes so history stays intact.</span>
+                    <span>Use Manage Inventory or the spreadsheet overview for count changes so history stays intact.</span>
                 </section>
             }
             else
@@ -95,7 +100,7 @@ else
 
             <div class="form-actions">
                 <button type="submit">Save inventory row</button>
-                <a asp-page="/Inventory/Index" asp-route-categoryId="@(Model.SelectedCategoryId ?? Model.CategoryId)">Cancel</a>
+                <a asp-page="/Inventory/Manage" asp-route-categoryId="@(Model.SelectedCategoryId ?? Model.CategoryId)">Cancel</a>
             </div>
         </form>
     </section>

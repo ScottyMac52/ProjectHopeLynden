@@ -10,8 +10,8 @@
     <h1>@Model.PageTitle</h1>
     <p>@Model.Summary</p>
     <div class="inventory-toolbar inventory-toolbar--hero">
-        <a class="button-link button-link--light" asp-page="/Inventory/Maintain">Edit or add inventory row</a>
-        <a class="button-link button-link--light" asp-page="/Inventory/Maintain">Open original edit form</a>
+        <a class="button-link button-link--light" asp-page="/Inventory/Manage">Manage inventory</a>
+        <a class="button-link button-link--light" asp-page="/Inventory/Maintain">Add inventory row</a>
     </div>
 </section>
 
@@ -35,13 +35,14 @@
         <input id="new-category-name" asp-for="NewCategoryName" autocomplete="off" placeholder="Category name" />
         <button type="submit">Add category</button>
     </form>
-    <a class="button-link button-link--secondary" asp-page="/Inventory/Maintain">Edit inventory details</a>
+    <a class="button-link button-link--secondary" asp-page="/Inventory/Manage">Open category editor</a>
 </section>
 
 @if (Model.CategoryInventories.Count == 0)
 {
     <section class="card">
         <p>No inventory categories have been added yet.</p>
+        <p><a class="button-link" asp-page="/Inventory/Manage">Create the first category</a></p>
     </section>
 }
 else
