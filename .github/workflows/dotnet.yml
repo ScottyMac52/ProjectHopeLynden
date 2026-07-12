@@ -50,6 +50,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Validate Authenticode signing script syntax
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          $scriptPath = (Resolve-Path ./build/Sign-Authenticode.ps1).Path
+
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            $scriptPath,
+            [ref]$tokens,
+            [ref]$parseErrors)
+
+          if (@($parseErrors).Count -gt 0) {
+            foreach ($parseError in $parseErrors) {
+              Write-Error "$($parseError.Extent.Text): $($parseError.Message)"
+            }
+
+            throw "The Authenticode signing script contains PowerShell syntax errors."
+          }
+
+          Write-Host "Authenticode signing script syntax is valid."
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -118,7 +140,7 @@ jobs:
           reportgenerator -reports:./coverage/**/coverage.cobertura.xml `
                           -targetdir:./coverage/report `
                           -reporttypes:"Cobertura;MarkdownSummaryGithub" `
-                          -filefilters:"-*/Persistence/Migrations/*;-*\\Persistence\\Migrations\\*;-*/Program.cs;-*\\Program.cs;-*/Startup/DatabaseInitializationExtensions.cs;-*\\Startup\\DatabaseInitializationExtensions.cs;-*/Pages/*.cshtml;-*\\Pages\\*.cshtml"
+                          -filefilters:"-*/Persistence/Migrations/*;-*\Persistence\Migrations\*;-*/Program.cs;-*\Program.cs;-*/Startup/DatabaseInitializationExtensions.cs;-*\Startup\DatabaseInitializationExtensions.cs;-*/Pages/*.cshtml;-*\Pages\*.cshtml"
 
       - name: Assert coverage thresholds
         shell: pwsh
@@ -181,3 +203,108 @@ jobs:
       app_publisher: 'Project Hope Food Bank of Lynden'
       skip_projects: ''
     secrets: inherit
+
+  sign-installer:
+    name: Authenticode Sign setup.exe (optional)
+    needs: release
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: windows-latest
+    permissions:
+      actions: read
+      contents: write
+
+    steps:
+      - name: Checkout signing script
+        uses: actions/checkout@v4
+
+      - name: Determine signing configuration
+        id: signing
+        shell: pwsh
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.AUTHENTICODE_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.AUTHENTICODE_CERTIFICATE_PASSWORD }}
+        run: |
+          $hasCertificate = -not [string]::IsNullOrWhiteSpace($env:CERTIFICATE_BASE64)
+          $hasPassword = -not [string]::IsNullOrWhiteSpace($env:CERTIFICATE_PASSWORD)
+
+          if ($hasCertificate -xor $hasPassword) {
+            throw "Authenticode signing is partially configured. Set both AUTHENTICODE_CERTIFICATE_BASE64 and AUTHENTICODE_CERTIFICATE_PASSWORD, or remove both."
+          }
+
+          if (-not $hasCertificate) {
+            "enabled=false" >> $env:GITHUB_OUTPUT
+            "## Authenticode Signing" >> $env:GITHUB_STEP_SUMMARY
+            "Signing credentials are not configured. The unsigned installer from the shared release workflow remains available." >> $env:GITHUB_STEP_SUMMARY
+            Write-Warning "Authenticode signing skipped because no signing credentials are configured."
+            exit 0
+          }
+
+          "enabled=true" >> $env:GITHUB_OUTPUT
+          Write-Host "Authenticode signing credentials are configured."
+
+      - name: Download unsigned release artifact
+        if: steps.signing.outputs.enabled == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-build-v*'
+          path: release-artifact
+          merge-multiple: true
+
+      - name: Stage installer for signing
+        if: steps.signing.outputs.enabled == 'true'
+        shell: pwsh
+        run: |
+          $setupFiles = @(Get-ChildItem -Path ./release-artifact -Recurse -Filter setup.exe -File)
+
+          if ($setupFiles.Count -ne 1) {
+            throw "Expected exactly one setup.exe in the release artifact, but found $($setupFiles.Count)."
+          }
+
+          New-Item -ItemType Directory -Path ./signed-installer -Force | Out-Null
+          $target = Join-Path (Resolve-Path ./signed-installer).Path "setup.exe"
+          Copy-Item -LiteralPath $setupFiles[0].FullName -Destination $target -Force
+          "SETUP_PATH=$target" >> $env:GITHUB_ENV
+
+      - name: Sign and verify setup.exe
+        if: steps.signing.outputs.enabled == 'true'
+        shell: pwsh
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.AUTHENTICODE_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.AUTHENTICODE_CERTIFICATE_PASSWORD }}
+          TIMESTAMP_URL: ${{ vars.AUTHENTICODE_TIMESTAMP_URL }}
+        run: |
+          $timestampUrl = $env:TIMESTAMP_URL
+          if ([string]::IsNullOrWhiteSpace($timestampUrl)) {
+            $timestampUrl = "http://timestamp.digicert.com"
+          }
+
+          ./build/Sign-Authenticode.ps1 `
+            -FilePath $env:SETUP_PATH `
+            -CertificateBase64 $env:CERTIFICATE_BASE64 `
+            -CertificatePassword $env:CERTIFICATE_PASSWORD `
+            -TimestampUrl $timestampUrl
+
+          $signature = Get-AuthenticodeSignature -LiteralPath $env:SETUP_PATH
+          "## Authenticode Signing" >> $env:GITHUB_STEP_SUMMARY
+          "Signed and verified setup.exe." >> $env:GITHUB_STEP_SUMMARY
+          "Certificate subject: $($signature.SignerCertificate.Subject)" >> $env:GITHUB_STEP_SUMMARY
+          "Certificate thumbprint: $($signature.SignerCertificate.Thumbprint)" >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Upload signed installer artifact
+        if: steps.signing.outputs.enabled == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ProjectHopeLynden-signed-installer-${{ github.ref_name }}
+          path: ./signed-installer/setup.exe
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Replace release asset with signed installer
+        if: steps.signing.outputs.enabled == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: ./signed-installer/setup.exe
+          overwrite_files: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
