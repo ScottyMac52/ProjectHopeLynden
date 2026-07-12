@@ -40,7 +40,8 @@ public sealed class ManageModelTests
         var queryService = new StubInventoryQueryService(
             [new InventoryCategoryListItem(2, "Cereals"), new InventoryCategoryListItem(4, "Produce")],
             inventory);
-        var model = CreateModel(queryService) { CategoryId = 4 };
+        var model = CreateModel(queryService);
+        model.CategoryId = 4;
 
         await model.OnGetAsync();
 
@@ -68,7 +69,8 @@ public sealed class ManageModelTests
         var queryService = new StubInventoryQueryService(
             [new InventoryCategoryListItem(2, "Cereals")],
             null);
-        var model = CreateModel(queryService) { CategoryId = 404 };
+        var model = CreateModel(queryService);
+        model.CategoryId = 404;
 
         await model.OnGetAsync();
 
@@ -81,10 +83,8 @@ public sealed class ManageModelTests
     {
         var categoryService = new StubInventoryCategoryService(
             new InventoryCategoryCreateResult(true, 9, null));
-        var model = CreateModel(new StubInventoryQueryService([], null), categoryService: categoryService)
-        {
-            NewCategoryName = "Baking Supplies",
-        };
+        var model = CreateModel(new StubInventoryQueryService([], null), categoryService: categoryService);
+        model.NewCategoryName = "Baking Supplies";
 
         var result = await model.OnPostCreateCategoryAsync();
 
@@ -102,10 +102,8 @@ public sealed class ManageModelTests
             inventory);
         var categoryService = new StubInventoryCategoryService(
             new InventoryCategoryCreateResult(false, 2, "That category already exists."));
-        var model = CreateModel(queryService, categoryService: categoryService)
-        {
-            NewCategoryName = "Cereals",
-        };
+        var model = CreateModel(queryService, categoryService: categoryService);
+        model.NewCategoryName = "Cereals";
 
         var result = await model.OnPostCreateCategoryAsync();
 
@@ -132,12 +130,10 @@ public sealed class ManageModelTests
     public async Task OnPostUpdateQuantityAsync_UpdatesAndReturnsToSelectedCategory()
     {
         var quantityService = new StubInventoryQuantityService();
-        var model = CreateModel(new StubInventoryQueryService([], null), quantityService)
-        {
-            CategoryId = 2,
-            InventoryEntryId = 14,
-            UpdatedQuantity = 1.5,
-        };
+        var model = CreateModel(new StubInventoryQueryService([], null), quantityService);
+        model.CategoryId = 2;
+        model.InventoryEntryId = 14;
+        model.UpdatedQuantity = 1.5;
 
         var result = await model.OnPostUpdateQuantityAsync();
 
@@ -159,11 +155,9 @@ public sealed class ManageModelTests
         var queryService = new StubInventoryQueryService(
             [new InventoryCategoryListItem(2, "Cereals")],
             inventory);
-        var model = CreateModel(queryService)
-        {
-            InventoryEntryId = inventoryEntryId,
-            UpdatedQuantity = updatedQuantity,
-        };
+        var model = CreateModel(queryService);
+        model.InventoryEntryId = inventoryEntryId;
+        model.UpdatedQuantity = updatedQuantity;
 
         var result = await model.OnPostUpdateQuantityAsync();
 
@@ -182,11 +176,9 @@ public sealed class ManageModelTests
             inventory);
         var quantityService = new StubInventoryQuantityService(
             new InventoryQuantityUpdateResult(false, "Quantity must be zero or greater."));
-        var model = CreateModel(queryService, quantityService)
-        {
-            InventoryEntryId = 14,
-            UpdatedQuantity = -1,
-        };
+        var model = CreateModel(queryService, quantityService);
+        model.InventoryEntryId = 14;
+        model.UpdatedQuantity = -1;
 
         var result = await model.OnPostUpdateQuantityAsync();
 
@@ -199,11 +191,9 @@ public sealed class ManageModelTests
     public async Task OnPostUpdateQuantityAsync_UsesFallbackMessage()
     {
         var quantityService = new StubInventoryQuantityService(new InventoryQuantityUpdateResult(false, null));
-        var model = CreateModel(new StubInventoryQueryService([], null), quantityService)
-        {
-            InventoryEntryId = 14,
-            UpdatedQuantity = 10,
-        };
+        var model = CreateModel(new StubInventoryQueryService([], null), quantityService);
+        model.InventoryEntryId = 14;
+        model.UpdatedQuantity = 10;
 
         var result = await model.OnPostUpdateQuantityAsync();
 
