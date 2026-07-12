@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using ProjectHopeLynden.Application.Backup;
 using ProjectHopeLynden.Application.Inventory;
 using ProjectHopeLynden.Infrastructure.DependencyInjection;
 using ProjectHopeLynden.Infrastructure.Persistence;
@@ -48,5 +49,34 @@ public sealed class ServiceCollectionExtensionsTests
 
         var descriptor = Assert.Single(services, service => service.ServiceType == typeof(DbContextOptions<ProjectHopeDbContext>));
         Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime);
+    }
+
+    [Fact]
+    public void AddProjectHopeDatabaseBackup_RegistersConfiguredBackupService()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddProjectHopePersistence("Data Source=:memory:");
+
+        services.AddProjectHopeDatabaseBackup("ConfiguredBackups");
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var options = scope.ServiceProvider.GetRequiredService<DatabaseBackupOptions>();
+        var service = scope.ServiceProvider.GetRequiredService<IDatabaseBackupService>();
+
+        Assert.Equal("ConfiguredBackups", options.Folder);
+        Assert.Equal("ConfiguredBackups", service.BackupFolder);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void AddProjectHopeDatabaseBackup_RejectsMissingFolder(string? backupFolder)
+    {
+        var services = new ServiceCollection();
+
+        Assert.Throws<ArgumentException>(() => services.AddProjectHopeDatabaseBackup(backupFolder!));
     }
 }
