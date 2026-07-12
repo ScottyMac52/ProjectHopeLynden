@@ -50,6 +50,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Validate Authenticode signing script syntax
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          $scriptPath = (Resolve-Path ./build/Sign-Authenticode.ps1).Path
+
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            $scriptPath,
+            [ref]$tokens,
+            [ref]$parseErrors)
+
+          if (@($parseErrors).Count -gt 0) {
+            foreach ($parseError in $parseErrors) {
+              Write-Error "$($parseError.Extent.Text): $($parseError.Message)"
+            }
+
+            throw "The Authenticode signing script contains PowerShell syntax errors."
+          }
+
+          Write-Host "Authenticode signing script syntax is valid."
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
