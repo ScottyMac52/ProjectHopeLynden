@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
 
         services.AddDbContext<ProjectHopeDbContext>(options => options.UseSqlite(connectionString));
         services.AddScoped<IInventoryQueryService, InventoryQueryService>();
+        services.AddScoped<IInventorySearchService, InventorySearchService>();
         services.AddScoped<IInventoryQuantityService, InventoryQuantityService>();
         services.AddScoped<IInventoryHistoryService, InventoryHistoryService>();
         services.AddScoped<IInventoryCommodityService, InventoryCommodityService>();
