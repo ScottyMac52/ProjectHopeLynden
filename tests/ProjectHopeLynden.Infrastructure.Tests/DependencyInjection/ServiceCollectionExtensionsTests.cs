@@ -19,6 +19,7 @@ public sealed class ServiceCollectionExtensionsTests
         using var provider = services.BuildServiceProvider();
         Assert.NotNull(provider.GetRequiredService<ProjectHopeDbContext>());
         Assert.NotNull(provider.GetRequiredService<IInventoryQueryService>());
+        Assert.NotNull(provider.GetRequiredService<IInventorySearchService>());
         Assert.NotNull(provider.GetRequiredService<IInventoryQuantityService>());
         Assert.NotNull(provider.GetRequiredService<IInventoryHistoryService>());
         Assert.NotNull(provider.GetRequiredService<IInventoryCommodityService>());
