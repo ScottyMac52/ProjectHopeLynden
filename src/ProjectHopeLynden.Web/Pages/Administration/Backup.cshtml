@@ -1,0 +1,54 @@
+@page
+@model BackupModel
+@{
+    ViewData["Title"] = Model.PageTitle;
+}
+<link rel="stylesheet" href="~/css/database-backup.css" />
+
+<section class="hero hero--branded database-backup-hero">
+    <p class="eyebrow">Project Hope Food Bank of Lynden</p>
+    <h1>@Model.PageTitle</h1>
+    <p>@Model.Summary</p>
+</section>
+
+<section class="card database-backup-card" aria-label="Database backup controls">
+    <div>
+        <p class="card__kicker">Configured backup folder</p>
+        <h2>Local recovery copies</h2>
+        <p class="database-backup-folder"><code>@Model.BackupFolder</code></p>
+        <p>Each backup is a complete SQLite database containing inventory rows, current quantities, and historical count records.</p>
+    </div>
+
+    <form method="post" asp-page-handler="CreateBackup">
+        <button type="submit">Create backup now</button>
+    </form>
+</section>
+
+@if (Model.LastResult is not null)
+{
+    if (Model.LastResult.Succeeded)
+    {
+        <section class="card database-backup-status database-backup-status--success" aria-live="polite">
+            <p class="card__kicker">Backup completed</p>
+            <h2>Recovery copy created</h2>
+            <p><strong>Created:</strong> @Model.LastResult.AttemptedAtUtc.ToString("yyyy-MM-dd HH:mm:ss") UTC</p>
+            <p><strong>File:</strong> <code>@Model.LastResult.BackupFilePath</code></p>
+        </section>
+    }
+    else
+    {
+        <section class="card database-backup-status database-backup-status--error" aria-live="assertive">
+            <p class="card__kicker">Backup failed</p>
+            <h2>No recovery copy was created</h2>
+            <p>@Model.LastResult.ErrorMessage</p>
+            <p>Confirm the configured folder is available and writable, then try again. The failure is also written to the server log.</p>
+        </section>
+    }
+}
+else
+{
+    <section class="card database-backup-guidance">
+        <h2>Backup naming</h2>
+        <p>Files use a UTC timestamp and a short unique suffix, for example <code>ProjectHopeLynden-20260712-081530-1234567-a1b2c3d4.db</code>.</p>
+    </section>
+}

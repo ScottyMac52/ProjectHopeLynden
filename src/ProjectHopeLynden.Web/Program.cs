@@ -6,8 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 var databaseConnectionString = builder.Configuration.GetConnectionString("ProjectHopeDatabase")
     ?? throw new InvalidOperationException("The ProjectHopeDatabase connection string is not configured.");
 
+var databaseBackupFolder = builder.Configuration["DatabaseBackup:Folder"]
+    ?? throw new InvalidOperationException("The DatabaseBackup folder is not configured.");
+
 builder.Services.AddRazorPages();
 builder.Services.AddProjectHopePersistence(databaseConnectionString);
+builder.Services.AddProjectHopeDatabaseBackup(databaseBackupFolder);
 
 var app = builder.Build();
 
