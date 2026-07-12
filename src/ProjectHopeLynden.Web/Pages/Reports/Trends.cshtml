@@ -1,0 +1,130 @@
+@page
+@model TrendsModel
+@{
+    ViewData["Title"] = Model.PageTitle;
+    var groupingLabel = Model.Report.Request.Grouping == InventoryTrendGrouping.Category ? "Category" : "Item";
+}
+<link rel="stylesheet" href="~/css/trend-report.css" />
+
+<section class="hero hero--branded trend-report-hero">
+    <p class="eyebrow">Project Hope Food Bank of Lynden</p>
+    <h1>@Model.PageTitle</h1>
+    <p>@Model.Summary</p>
+</section>
+
+<section class="card trend-filter-card" aria-label="Inventory trend report filters">
+    <form method="get" class="trend-filter-form">
+        <label>
+            <span>Group results by</span>
+            <select id="groupBy" name="groupBy">
+                @if (Model.GroupBy == "category")
+                {
+                    <option value="item">Item</option>
+                    <option value="category" selected>Category</option>
+                }
+                else
+                {
+                    <option value="item" selected>Item</option>
+                    <option value="category">Category</option>
+                }
+            </select>
+        </label>
+
+        <label>
+            <span>Item name</span>
+            <input id="itemName" name="itemName" value="@Model.ItemName" placeholder="All items" autocomplete="off" />
+        </label>
+
+        <label>
+            <span>Category</span>
+            <select id="categoryId" name="categoryId">
+                <option value="">All categories</option>
+                @foreach (var category in Model.Categories)
+                {
+                    if (category.Id == Model.CategoryId)
+                    {
+                        <option value="@category.Id" selected>@category.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                }
+            </select>
+        </label>
+
+        <label>
+            <span>Inventory type</span>
+            <select id="inventoryType" name="inventoryType">
+                @if (Model.InventoryType == "commodity")
+                {
+                    <option value="all">All inventory</option>
+                    <option value="commodity" selected>Commodity only</option>
+                    <option value="noncommodity">Non-Commodity only</option>
+                }
+                else if (Model.InventoryType == "noncommodity")
+                {
+                    <option value="all">All inventory</option>
+                    <option value="commodity">Commodity only</option>
+                    <option value="noncommodity" selected>Non-Commodity only</option>
+                }
+                else
+                {
+                    <option value="all" selected>All inventory</option>
+                    <option value="commodity">Commodity only</option>
+                    <option value="noncommodity">Non-Commodity only</option>
+                }
+            </select>
+        </label>
+
+        <button type="submit">Generate report</button>
+    </form>
+</section>
+
+<section class="card trend-report-summary">
+    <div>
+        <p class="card__kicker">Current report shape</p>
+        <h2>Historical counts grouped by @groupingLabel.ToLowerInvariant()</h2>
+        <p>Generated @Model.Report.GeneratedAtUtc.ToString("yyyy-MM-dd HH:mm") UTC</p>
+    </div>
+    <button type="button" class="print-report-button" onclick="window.print()">Print report</button>
+</section>
+
+@if (!Model.Report.HasPoints)
+{
+    <section class="card trend-empty" aria-live="polite">
+        <h2>No historical count records found</h2>
+        <p>Adjust the item, category, or inventory-type filters and generate the report again.</p>
+    </section>
+}
+else
+{
+    <section class="card trend-report-table-card" aria-label="Inventory trend report results">
+        <div class="table-wrapper">
+            <table class="inventory-table trend-report-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">@groupingLabel</th>
+                        <th scope="col">Recorded Quantity</th>
+                        <th scope="col">Net Change</th>
+                        <th scope="col">Count Records</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var point in Model.Report.Points)
+                    {
+                        <tr>
+                            <td>@point.CountedOnUtc.ToString("yyyy-MM-dd")</td>
+                            <td>@point.GroupName</td>
+                            <td>@point.RecordedQuantity.ToString("0.##")</td>
+                            <td>@(point.NetQuantityChange.HasValue ? point.NetQuantityChange.Value.ToString("+0.##;-0.##;0") : "—")</td>
+                            <td>@point.RecordCount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="trend-report-note">Recorded Quantity totals the historical count records captured for the same group and date. This first report shape is intentionally simple for staff validation.</p>
+    </section>
+}
