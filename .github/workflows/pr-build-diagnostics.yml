@@ -1,0 +1,33 @@
+name: PR Build Diagnostics
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-errors:
+    runs-on: windows-2025
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        shell: pwsh
+        run: dotnet restore ProjectHopeLynden.sln
+
+      - name: Show build errors only
+        shell: pwsh
+        run: |
+          $output = & dotnet build ProjectHopeLynden.sln --configuration Release --no-restore 2>&1
+          $buildExitCode = $LASTEXITCODE
+          $output | Where-Object {
+            $_ -match 'error (CS|RZ|NETSDK|MSB)[0-9]+' -or
+            $_ -match '^Build FAILED\.' -or
+            $_ -match '^[ ]*[0-9]+ Error\(s\)'
+          } | ForEach-Object { Write-Host $_ }
+          exit $buildExitCode
