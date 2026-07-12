@@ -1,0 +1,44 @@
+.database-backup-hero {
+  margin-bottom: 1rem;
+}
+
+.database-backup-card {
+  align-items: center;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.database-backup-card h2,
+.database-backup-card p {
+  margin-bottom: 0.5rem;
+}
+
+.database-backup-folder {
+  overflow-wrap: anywhere;
+}
+
+.database-backup-status,
+.database-backup-guidance {
+  margin-bottom: 1rem;
+}
+
+.database-backup-status--success {
+  border-left: 0.4rem solid var(--brand-green);
+}
+
+.database-backup-status--error {
+  border-left: 0.4rem solid var(--danger);
+}
+
+.database-backup-status code {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 720px) {
+  .database-backup-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
