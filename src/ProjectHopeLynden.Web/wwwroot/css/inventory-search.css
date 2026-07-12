@@ -65,7 +65,7 @@
 }
 
 .inventory-type-badge--standard {
-  background: var(--surface-muted);
+  background: var(--background);
   color: var(--text);
 }
 
