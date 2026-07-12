@@ -11,6 +11,17 @@
   z-index: 1;
 }
 
+.inventory-management-actions .button-link--light {
+  background: #ffffff;
+  color: var(--brand-blue-dark);
+}
+
+.inventory-management-actions .button-link--light:hover,
+.inventory-management-actions .button-link--light:focus {
+  background: var(--brand-gold-soft);
+  color: var(--brand-blue-dark);
+}
+
 .management-toolbar {
   align-items: end;
   background: #ffffff;
