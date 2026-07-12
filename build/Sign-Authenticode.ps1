@@ -9,7 +9,10 @@ param(
     [string]$CertificatePassword,
 
     [Parameter(Mandatory = $false)]
-    [string]$TimestampUrl = "http://timestamp.digicert.com"
+    [string]$TimestampUrl = "http://timestamp.digicert.com",
+
+    [Parameter(Mandatory = $false)]
+    [switch]$SkipTimestamp
 )
 
 Set-StrictMode -Version Latest
@@ -27,7 +30,7 @@ if ([string]::IsNullOrWhiteSpace($CertificatePassword)) {
     throw "The Authenticode certificate password is empty."
 }
 
-if ([string]::IsNullOrWhiteSpace($TimestampUrl)) {
+if (-not $SkipTimestamp -and [string]::IsNullOrWhiteSpace($TimestampUrl)) {
     throw "The Authenticode timestamp URL is empty."
 }
 
@@ -65,17 +68,24 @@ try {
         $signToolPath = $signToolFile.FullName
     }
 
-    Write-Host "Signing $resolvedFilePath with SHA-256 and RFC 3161 timestamping."
-
     $signArguments = @(
         "sign",
         "/fd", "SHA256",
         "/f", $pfxPath,
-        "/p", $CertificatePassword,
-        "/tr", $TimestampUrl,
-        "/td", "SHA256",
-        $resolvedFilePath
+        "/p", $CertificatePassword
     )
+
+    if ($SkipTimestamp) {
+        Write-Host "Signing $resolvedFilePath with SHA-256 without timestamping for isolated smoke verification."
+    } else {
+        Write-Host "Signing $resolvedFilePath with SHA-256 and RFC 3161 timestamping."
+        $signArguments += @(
+            "/tr", $TimestampUrl,
+            "/td", "SHA256"
+        )
+    }
+
+    $signArguments += $resolvedFilePath
 
     & $signToolPath @signArguments
     if ($LASTEXITCODE -ne 0) {
