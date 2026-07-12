@@ -8,4 +8,8 @@ public interface IInventoryCommodityService
     Task<InventoryItemTotalView?> GetItemTotalAsync(
         string itemName,
         CancellationToken cancellationToken = default);
+
+    Task<CommodityReportView> GetCommodityReportAsync(
+        DateTime generatedAtUtc,
+        CancellationToken cancellationToken = default);
 }
