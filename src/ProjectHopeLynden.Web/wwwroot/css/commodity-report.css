@@ -1,0 +1,155 @@
+.commodity-report-hero {
+  margin-bottom: 1rem;
+}
+
+.commodity-report-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+.commodity-report-actions button,
+.commodity-report-actions .button-link {
+  font: inherit;
+  padding: 0.65rem 1rem;
+}
+
+.commodity-report-actions .button-link--light {
+  background: #ffffff;
+  color: var(--brand-blue-dark);
+}
+
+.commodity-report-summary {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 1rem;
+}
+
+.commodity-report-summary article {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(36, 49, 58, 0.07);
+  padding: 1rem 1.1rem;
+}
+
+.commodity-report-summary span,
+.commodity-report-summary strong {
+  display: block;
+}
+
+.commodity-report-summary span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.commodity-report-summary strong {
+  color: var(--brand-blue-dark);
+  font-size: 1.2rem;
+}
+
+.commodity-report-panel {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: 0 12px 32px rgba(36, 49, 58, 0.09);
+  overflow: hidden;
+}
+
+.commodity-report-table {
+  border-collapse: collapse;
+  min-width: 900px;
+  width: 100%;
+}
+
+.commodity-report-table th,
+.commodity-report-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.7rem 0.8rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.commodity-report-table thead th {
+  background: #f3ead8;
+  color: var(--brand-blue-dark);
+  position: sticky;
+  top: 0;
+}
+
+.commodity-report-table tbody tr:nth-child(even) {
+  background: #fbf7ee;
+}
+
+.commodity-report-table tfoot th,
+.commodity-report-table tfoot td {
+  background: var(--brand-blue-dark);
+  border-bottom: 0;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.commodity-report-empty {
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .commodity-report-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .site-header,
+  .site-footer,
+  .commodity-report-actions {
+    display: none;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  .page-shell {
+    max-width: none;
+    padding: 0;
+  }
+
+  .commodity-report-hero {
+    background: #ffffff;
+    box-shadow: none;
+    color: #000000;
+    padding: 0 0 1rem;
+  }
+
+  .commodity-report-hero::after {
+    display: none;
+  }
+
+  .commodity-report-hero .eyebrow,
+  .commodity-report-hero p {
+    color: #000000;
+  }
+
+  .commodity-report-summary article,
+  .commodity-report-panel {
+    box-shadow: none;
+  }
+
+  .commodity-report-table {
+    min-width: 0;
+  }
+
+  .commodity-report-table thead th {
+    position: static;
+  }
+}
