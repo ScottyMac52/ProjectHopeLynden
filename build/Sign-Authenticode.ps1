@@ -157,15 +157,15 @@ try {
 
     $signArguments += $resolvedFilePath
 
-    Invoke-SignTool \
-        -ToolPath $signToolPath \
-        -Arguments $signArguments \
+    Invoke-SignTool `
+        -ToolPath $signToolPath `
+        -Arguments $signArguments `
         -Operation "Authenticode signing"
 
     Write-Host "Verifying Authenticode signature with signtool.exe."
-    Invoke-SignTool \
-        -ToolPath $signToolPath \
-        -Arguments @("verify", "/pa", "/v", $resolvedFilePath) \
+    Invoke-SignTool `
+        -ToolPath $signToolPath `
+        -Arguments @("verify", "/pa", "/v", $resolvedFilePath) `
         -Operation "Authenticode verification"
 
     $signature = Get-AuthenticodeSignature -LiteralPath $resolvedFilePath
