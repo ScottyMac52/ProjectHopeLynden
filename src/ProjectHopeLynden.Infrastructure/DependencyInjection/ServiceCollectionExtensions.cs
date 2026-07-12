@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using ProjectHopeLynden.Application.Backup;
 using ProjectHopeLynden.Application.Inventory;
 using ProjectHopeLynden.Infrastructure.Inventory;
 using ProjectHopeLynden.Infrastructure.Persistence;
+using ProjectHopeLynden.Infrastructure.Persistence.Backup;
 using ProjectHopeLynden.Infrastructure.Persistence.Seeding;
 
 namespace ProjectHopeLynden.Infrastructure.DependencyInjection;
@@ -28,6 +30,21 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IInventoryEntryMaintenanceService, InventoryEntryMaintenanceService>();
         services.AddScoped<IInventoryCategoryService, InventoryCategoryService>();
         services.AddScoped<InitialInventorySeeder>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddProjectHopeDatabaseBackup(
+        this IServiceCollection services,
+        string backupFolder)
+    {
+        if (string.IsNullOrWhiteSpace(backupFolder))
+        {
+            throw new ArgumentException("A Project Hope database backup folder is required.", nameof(backupFolder));
+        }
+
+        services.AddSingleton(new DatabaseBackupOptions(backupFolder));
+        services.AddScoped<IDatabaseBackupService, DatabaseBackupService>();
 
         return services;
     }
