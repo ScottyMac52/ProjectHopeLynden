@@ -1,0 +1,94 @@
+@page
+@model SearchModel
+@{
+    ViewData["Title"] = Model.PageTitle;
+}
+<link rel="stylesheet" href="~/css/inventory-search.css" />
+
+<section class="hero hero--branded inventory-search-hero">
+    <p class="eyebrow">Project Hope Food Bank of Lynden</p>
+    <h1>@Model.PageTitle</h1>
+    <p>@Model.Summary</p>
+</section>
+
+<section class="card inventory-search-card" aria-label="Inventory item search">
+    <form method="get" class="inventory-search-form">
+        <label for="searchTerm">Item name</label>
+        <div class="inventory-search-controls">
+            <input id="searchTerm" asp-for="SearchTerm" placeholder="For example: beans, rice, soup" autocomplete="off" autofocus />
+            <button type="submit">Search inventory</button>
+            @if (Model.HasSearched)
+            {
+                <a class="button-link button-link--secondary" asp-page="/Inventory/Search">Clear</a>
+            }
+        </div>
+    </form>
+</section>
+
+@if (!Model.HasSearched)
+{
+    <section class="card inventory-search-empty" aria-live="polite">
+        <h2>Find an inventory item</h2>
+        <p>Enter all or part of an item name above. Search works across every category and location.</p>
+    </section>
+}
+else if (!Model.Results.HasResults)
+{
+    <section class="card inventory-search-empty" aria-live="polite">
+        <h2>No inventory entries found</h2>
+        <p>No item names contain “@Model.Results.SearchTerm”. Try a shorter or different search term.</p>
+    </section>
+}
+else
+{
+    <section class="card inventory-search-results" aria-label="Inventory search results">
+        <div class="section-heading inventory-search-heading">
+            <div>
+                <p class="card__kicker">Search results</p>
+                <h2>Matches for “@Model.Results.SearchTerm”</h2>
+                <p>@Model.Results.Rows.Count inventory entries found across all categories.</p>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="inventory-table inventory-search-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Item</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Location</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Inventory Type</th>
+                        <th scope="col">BB Date</th>
+                        <th scope="col">Menu Item</th>
+                        <th scope="col">Last Updated</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Results.Rows)
+                    {
+                        <tr>
+                            <td><strong>@row.ItemName</strong></td>
+                            <td>@row.CategoryName</td>
+                            <td>@row.LocationName</td>
+                            <td class="inventory-search-quantity">@row.CurrentQuantity.ToString("0.##")</td>
+                            <td>
+                                <span class="inventory-type-badge @(row.IsCommodity ? "inventory-type-badge--commodity" : "inventory-type-badge--standard")">
+                                    @(row.IsCommodity ? "Commodity" : "Non-Commodity")
+                                </span>
+                            </td>
+                            <td>@(row.BestByDate?.ToString("yyyy-MM-dd") ?? "")</td>
+                            <td>@(row.IsMenuItem ? "Yes" : "No")</td>
+                            <td>@row.LastUpdatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td class="inventory-search-actions">
+                                <a asp-page="/Inventory/Maintain" asp-route-inventoryEntryId="@row.InventoryEntryId">Edit</a>
+                                <a asp-page="/Inventory/History" asp-route-inventoryEntryId="@row.InventoryEntryId">History</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}
