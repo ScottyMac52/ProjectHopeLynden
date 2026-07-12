@@ -13,11 +13,6 @@ public static class DatabaseInitializationExtensions
 
         await context.Database.MigrateAsync();
 
-        if (!app.Environment.IsDevelopment())
-        {
-            return;
-        }
-
         var seeder = scope.ServiceProvider.GetRequiredService<InitialInventorySeeder>();
         await seeder.SeedAsync();
     }
