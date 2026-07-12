@@ -20,14 +20,30 @@ jobs:
         shell: pwsh
         run: dotnet restore ProjectHopeLynden.sln
 
-      - name: Show build errors only
+      - name: Capture build errors
+        id: build
         shell: pwsh
         run: |
           $output = & dotnet build ProjectHopeLynden.sln --configuration Release --no-restore 2>&1
           $buildExitCode = $LASTEXITCODE
+          $output | Out-File build-output.txt -Encoding utf8
           $output | Where-Object {
             $_ -match 'error (CS|RZ|NETSDK|MSB)[0-9]+' -or
             $_ -match '^Build FAILED\.' -or
             $_ -match '^[ ]*[0-9]+ Error\(s\)'
-          } | ForEach-Object { Write-Host $_ }
-          exit $buildExitCode
+          } | Out-File build-errors.txt -Encoding utf8
+          "exit_code=$buildExitCode" >> $env:GITHUB_OUTPUT
+          exit 0
+
+      - name: Upload build diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-build-errors
+          path: |
+            build-errors.txt
+            build-output.txt
+
+      - name: Fail when build failed
+        if: steps.build.outputs.exit_code != '0'
+        shell: pwsh
+        run: exit 1
