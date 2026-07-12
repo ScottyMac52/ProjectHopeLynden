@@ -1,5 +1,9 @@
 name: Authenticode Signing Smoke Test
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
     branches:
@@ -18,6 +22,7 @@ jobs:
   sign-and-verify:
     name: Sign disposable Windows executable
     runs-on: windows-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout code
@@ -98,7 +103,8 @@ jobs:
             ./build/Sign-Authenticode.ps1 `
               -FilePath $env:SMOKE_EXE `
               -CertificateBase64 $certificateBase64 `
-              -CertificatePassword $passwordText
+              -CertificatePassword $passwordText `
+              -SkipTimestamp
 
             $signature = Get-AuthenticodeSignature -LiteralPath $env:SMOKE_EXE
             if ($signature.Status -ne "Valid") {
