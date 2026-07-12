@@ -6,30 +6,47 @@ namespace ProjectHopeLynden.Web.Pages.Inventory;
 
 public sealed class IndexModel(
     IInventoryQueryService inventoryQueryService,
-    IInventoryQuantityService inventoryQuantityService) : PageModel
+    IInventoryQuantityService inventoryQuantityService,
+    IInventoryCategoryService? inventoryCategoryService = null) : PageModel
 {
-    public string PageTitle { get; } = "Inventory Overview";
+    public string PageTitle { get; } = "Inventory Spreadsheet";
 
-    public string Summary { get; } = "Review every Project Hope inventory category in one familiar spreadsheet-style view.";
+    public string Summary { get; } = "Review and update inventory in one continuous spreadsheet-style grid, or use the original edit form for full row maintenance.";
 
     public IReadOnlyList<CategoryInventoryView> CategoryInventories { get; private set; } = [];
 
     public bool QuantityUpdateFailed { get; private set; }
-
     public string? QuantityUpdateMessage { get; private set; }
+    public bool CategoryCreateFailed { get; private set; }
+    public string? CategoryCreateMessage { get; private set; }
 
-    [BindProperty]
-    public int? CategoryId { get; set; }
+    [BindProperty] public int? CategoryId { get; set; }
+    [BindProperty] public int? InventoryEntryId { get; set; }
+    [BindProperty] public double? UpdatedQuantity { get; set; }
+    [BindProperty] public string? NewCategoryName { get; set; }
 
-    [BindProperty]
-    public int? InventoryEntryId { get; set; }
+    public async Task OnGetAsync() => await LoadInventoryAsync();
 
-    [BindProperty]
-    public double? UpdatedQuantity { get; set; }
-
-    public async Task OnGetAsync()
+    public async Task<IActionResult> OnPostCreateCategoryAsync()
     {
-        await LoadInventoryAsync();
+        if (inventoryCategoryService is null)
+        {
+            CategoryCreateFailed = true;
+            CategoryCreateMessage = "Category creation is unavailable.";
+            await LoadInventoryAsync();
+            return Page();
+        }
+
+        var result = await inventoryCategoryService.CreateCategoryAsync(NewCategoryName);
+        if (!result.Succeeded)
+        {
+            CategoryCreateFailed = true;
+            CategoryCreateMessage = result.ErrorMessage ?? "Category creation failed.";
+            await LoadInventoryAsync();
+            return Page();
+        }
+
+        return RedirectToPage(new { categoryId = result.CategoryId });
     }
 
     public async Task<IActionResult> OnPostUpdateQuantityAsync()
@@ -48,7 +65,6 @@ public sealed class IndexModel(
             InventoryEntryId.Value,
             UpdatedQuantity.Value,
             DateTime.UtcNow);
-
         if (!result.Succeeded)
         {
             return await ReloadWithQuantityErrorAsync(result.ErrorMessage ?? "Quantity update failed.");
