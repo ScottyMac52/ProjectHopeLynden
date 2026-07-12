@@ -1,0 +1,82 @@
+.trend-report-hero {
+  margin-bottom: 1rem;
+}
+
+.trend-filter-card {
+  margin-bottom: 1rem;
+}
+
+.trend-filter-form {
+  align-items: end;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.trend-filter-form label {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.trend-filter-form input,
+.trend-filter-form select {
+  min-width: 0;
+  width: 100%;
+}
+
+.trend-report-summary {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.trend-report-summary h2,
+.trend-report-summary p {
+  margin-bottom: 0;
+}
+
+.trend-report-table-card {
+  overflow: hidden;
+}
+
+.trend-report-table th:nth-child(3),
+.trend-report-table td:nth-child(3),
+.trend-report-table th:nth-child(4),
+.trend-report-table td:nth-child(4),
+.trend-report-table th:nth-child(5),
+.trend-report-table td:nth-child(5) {
+  text-align: right;
+}
+
+.trend-report-note {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  margin: 1rem 0 0;
+}
+
+.trend-empty {
+  text-align: center;
+}
+
+@media print {
+  .site-header,
+  .site-footer,
+  .trend-filter-card,
+  .print-report-button {
+    display: none;
+  }
+
+  .page-shell {
+    margin: 0;
+    max-width: none;
+    padding: 0;
+  }
+
+  .card,
+  .hero {
+    border: 0;
+    box-shadow: none;
+  }
+}
