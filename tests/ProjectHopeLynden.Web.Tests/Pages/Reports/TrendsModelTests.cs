@@ -37,13 +37,11 @@ public sealed class TrendsModelTests
     public async Task OnGetAsync_BuildsCategoryCommodityFilterRequest()
     {
         var trendService = new StubTrendReportService();
-        var model = CreateModel(trendService)
-        {
-            GroupBy = "category",
-            ItemName = "Green Beans",
-            CategoryId = 7,
-            InventoryType = "commodity",
-        };
+        var model = CreateModel(trendService);
+        model.GroupBy = "category";
+        model.ItemName = "Green Beans";
+        model.CategoryId = 7;
+        model.InventoryType = "commodity";
 
         await model.OnGetAsync();
 
@@ -51,22 +49,20 @@ public sealed class TrendsModelTests
         Assert.Equal(InventoryTrendGrouping.Category, trendService.RequestedReport.Grouping);
         Assert.Equal("Green Beans", trendService.RequestedReport.ItemName);
         Assert.Equal(7, trendService.RequestedReport.CategoryId);
-        Assert.True(trendService.RequestedReport.IsCommodity);
+        Assert.Equal(true, trendService.RequestedReport.IsCommodity);
     }
 
     [Fact]
     public async Task OnGetAsync_BuildsNonCommodityFilterRequest()
     {
         var trendService = new StubTrendReportService();
-        var model = CreateModel(trendService)
-        {
-            InventoryType = "noncommodity",
-        };
+        var model = CreateModel(trendService);
+        model.InventoryType = "noncommodity";
 
         await model.OnGetAsync();
 
         Assert.NotNull(trendService.RequestedReport);
-        Assert.False(trendService.RequestedReport.IsCommodity);
+        Assert.Equal(false, trendService.RequestedReport.IsCommodity);
     }
 
     private static TrendsModel CreateModel(
