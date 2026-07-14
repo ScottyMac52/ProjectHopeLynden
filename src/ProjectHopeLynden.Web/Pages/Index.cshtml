@@ -11,38 +11,26 @@
   <p class="hero__supporting-text">@Model.ImpactStatement</p>
 </section>
 
-<section class="impact-strip" aria-label="Project Hope service context">
-  <article>
-    <strong>Food Bank</strong>
-    <span>Organized counts for shelf, pantry, freezer, and back-room inventory.</span>
-  </article>
-  <article>
-    <strong>Commodity Care</strong>
-    <span>Separate Commodity and non-Commodity records without hiding available food.</span>
-  </article>
-  <article>
-    <strong>History</strong>
-    <span>Preserve count changes so trends can support better planning.</span>
-  </article>
+<section class="dashboard-heading" aria-labelledby="dashboard-title">
+  <p class="card__kicker">Inventory tools</p>
+  <h2 id="dashboard-title">Choose a task</h2>
+  <p>Open the tool you need for today&apos;s food-bank work.</p>
 </section>
 
-<section class="card-grid" aria-label="Milestone 1 application areas">
-  <article class="card card--featured">
-    <p class="card__kicker">Start here</p>
-    <h2>Inventory</h2>
-    <p>View and update current counts grouped by category in a familiar spreadsheet-like layout.</p>
-    <p><a class="button-link" asp-page="/Inventory/Index">View inventory by category</a></p>
-  </article>
+<section class="card-grid dashboard-grid" aria-label="Inventory tasks">
+  @foreach (var card in Model.TaskCards)
+  {
+    var cardClasses = card.IsFeatured
+      ? "card card--featured dashboard-card"
+      : "card dashboard-card";
 
-  <article class="card">
-    <p class="card__kicker">Reporting</p>
-    <h2>Commodity Records</h2>
-    <p>Keep Commodity and non-Commodity inventory distinct for future Director reporting.</p>
-  </article>
-
-  <article class="card">
-    <p class="card__kicker">Stewardship</p>
-    <h2>Inventory History</h2>
-    <p>Historical inventory counts will support trend reporting over time.</p>
-  </article>
+    <article class="@cardClasses">
+      <p class="card__kicker">@card.Kicker</p>
+      <h2>@card.Title</h2>
+      <p>@card.Description</p>
+      <p class="dashboard-card__action">
+        <a class="button-link" asp-page="@card.Page">@card.ActionText</a>
+      </p>
+    </article>
+  }
 </section>
