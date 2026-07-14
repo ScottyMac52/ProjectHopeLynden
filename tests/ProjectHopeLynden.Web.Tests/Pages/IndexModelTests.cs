@@ -97,6 +97,7 @@ public sealed class IndexModelTests
 
         Assert.All(model.TaskCards, card =>
         {
+            Assert.False(string.IsNullOrWhiteSpace(card.Kicker));
             Assert.False(string.IsNullOrWhiteSpace(card.Title));
             Assert.False(string.IsNullOrWhiteSpace(card.Description));
             Assert.False(string.IsNullOrWhiteSpace(card.Page));
@@ -105,6 +106,7 @@ public sealed class IndexModelTests
         Assert.Equal(model.TaskCards.Count, model.TaskCards.Select(card => card.Title).Distinct().Count());
         Assert.Equal(model.TaskCards.Count, model.TaskCards.Select(card => card.Description).Distinct().Count());
         Assert.Equal(model.TaskCards.Count, model.TaskCards.Select(card => card.Page).Distinct().Count());
+        Assert.Equal(model.TaskCards.Count, model.TaskCards.Select(card => card.ActionText).Distinct().Count());
         Assert.Single(model.TaskCards, card => card.IsFeatured);
     }
 
