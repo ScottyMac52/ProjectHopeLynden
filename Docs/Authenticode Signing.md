@@ -1,196 +1,70 @@
 # Authenticode Signing for `setup.exe`
 
-Official Project Hope Lynden release installers are intended to be signed by the verified publisher **Vyper Industries** through Microsoft Azure Artifact Signing.
-
-Azure Artifact Signing is a managed signing service. Microsoft manages the certificate lifecycle and protects the private key in managed hardware security modules. The repository does not store an exportable PFX certificate or certificate password.
+Project Hope release tags can optionally Authenticode-sign the generated Inno Setup installer.
 
 ## Publisher metadata is not a signature
 
-The Inno Setup values `AppPublisher`, `VersionInfoCompany`, and related metadata describe an installer, but they do not prove who produced it. Windows can still show **Publisher: Unknown** for an unsigned installer.
+The Inno Setup values `AppPublisher`, `VersionInfoCompany`, and related metadata describe the installer, but they do not prove who produced it. Windows can still show **Publisher: Unknown** for an unsigned installer even when those values are present.
 
-The release workflow sets the installer publisher metadata to `Vyper Industries`. After Azure identity validation and configuration are complete, the Authenticode certificate must also show the approved Vyper Industries identity so the metadata and verified publisher are aligned.
+Authenticode signing adds a cryptographic signature backed by a code-signing certificate. Windows uses the certificate subject as the verified publisher identity when the certificate chain is trusted.
 
-A valid signature gives Windows a verifiable publisher identity, but it does not guarantee that SmartScreen or Smart App Control will never display a warning. Reputation can still take time to develop.
+A valid signature gives Smart App Control and SmartScreen the strongest identity information available from the project, but signing alone does not guarantee immediate reputation or prevent every warning.
 
-## Step 0: Confirm the Vyper Industries DBA records
+## Required GitHub Actions secrets
 
-Microsoft supports public identity validation for an organization or DBA, but it validates that identity against current business records.
+Configure both repository secrets under **Settings → Secrets and variables → Actions**:
 
-Before creating the Azure signing identity, confirm that:
-
-- `Vyper Industries` is registered as the active Washington trade name/DBA.
-- The associated legal owner or business entity is correct.
-- The Washington Unified Business Identifier (UBI) and business address are current.
-- A website for Vyper Industries is available and identifies the business.
-- Two different email addresses on the website's domain can receive external verification links.
-- The person completing validation has current government-issued identification and is authorized to represent the business.
-
-Washington requires a business license when doing business under a name other than a person's full legal name. The Washington Business License Application can register or change a trade name and provides the business with a UBI number.
-
-Do not proceed past Azure's **Certificate subject preview** unless it displays the intended verified Vyper Industries identity. If the preview is wrong, correct the business or billing records before creating the certificate profile.
-
-## Step 1: Create the Azure foundation
-
-You need:
-
-- A Microsoft Entra tenant.
-- An Azure subscription whose billing-account type supports organization/DBA validation.
-- Permission to register Azure resource providers and assign roles.
-
-In the Azure portal:
-
-1. Open **Subscriptions**.
-2. Select the subscription that will own the signing service.
-3. Select **Resource providers**.
-4. Find `Microsoft.CodeSigning`.
-5. Select **Register**.
-
-## Step 2: Create the Artifact Signing account
-
-In the Azure portal:
-
-1. Search for **Artifact Signing Accounts**.
-2. Select **Create**.
-3. Select the Azure subscription.
-4. Create or select a resource group.
-5. Enter a globally unique account name, such as `vyperindustries-signing` if available.
-6. Select a supported US region.
-7. Select the **Basic** pricing tier unless requirements change.
-8. Review the displayed price before creating the billable resource.
-9. Select **Review + Create**, then **Create**.
-
-Record these values for later:
-
-- Azure subscription ID
-- Artifact Signing account name
-- Artifact Signing endpoint for the selected region
-
-## Step 3: Validate the Vyper Industries DBA identity
-
-Identity validation is completed in the Azure portal and cannot be completed by the GitHub workflow.
-
-1. Open the Artifact Signing account.
-2. Confirm that your Azure identity has the **Artifact Signing Identity Verifier** role.
-3. Open **Identity validations**.
-4. Select **Organization**, then **New Identity**, then **Public**.
-5. Enter the requested organization/DBA information.
-
-Microsoft currently requests information including:
-
-- Legal business entity associated with the DBA
-- Website URL
-- Primary and secondary business email addresses
-- Business identifier, such as the applicable UBI or other accepted identifier
-- Business address
-- The legal first and last name of the representative completing identity verification
-
-Use the **Certificate subject preview** to confirm the exact identity that Windows will see. The desired result is a subject that clearly identifies **Vyper Industries** as the validated publisher.
-
-Validation can require additional current business documents. Keep the public registration, website, domain ownership, email domain, and submitted business details consistent.
-
-## Step 4: Create a Public Trust certificate profile
-
-After identity validation is completed:
-
-1. Open the Artifact Signing account.
-2. Open **Certificate profiles**.
-3. Select **Create**.
-4. Select **Public Trust**.
-5. Enter a profile name such as `VyperIndustriesPublicTrust`.
-6. Select the completed Vyper Industries identity under **Verified CN and O**.
-7. Review the generated certificate-subject preview again.
-8. Create the profile.
-
-Record the certificate profile name.
-
-## Step 5: Create the GitHub workload identity
-
-The workflow uses GitHub OpenID Connect (OIDC). It does not use an Azure client secret.
-
-In Microsoft Entra ID:
-
-1. Create an app registration for Project Hope Lynden GitHub releases.
-2. Record its **Application (client) ID** and the tenant ID.
-3. Add a **Federated credential** for GitHub Actions.
-4. Restrict the credential to this repository and release-tag workflow context.
-5. Assign the workload identity the **Artifact Signing Certificate Profile Signer** role for the selected certificate profile or the narrowest practical Artifact Signing scope.
-
-The federated credential must match the GitHub subject used by tag releases. Review the generated subject carefully before saving it.
-
-## Step 6: Configure GitHub Actions
-
-Open the GitHub repository and go to:
-
-**Settings → Secrets and variables → Actions**
-
-Create these repository secrets:
-
-| Secret | Value |
+| Secret | Purpose |
 | --- | --- |
-| `AZURE_CLIENT_ID` | Application/client ID of the Entra app registration. |
-| `AZURE_TENANT_ID` | Microsoft Entra tenant ID. |
-| `AZURE_SUBSCRIPTION_ID` | Azure subscription ID that owns the signing account. |
+| `AUTHENTICODE_CERTIFICATE_BASE64` | Base64-encoded contents of the `.pfx` code-signing certificate file. |
+| `AUTHENTICODE_CERTIFICATE_PASSWORD` | Password protecting the `.pfx` private key. |
 
-Create these repository variables:
+The certificate must include its private key and should be issued by a certificate authority trusted by the target Windows machines.
 
-| Variable | Value |
-| --- | --- |
-| `ARTIFACT_SIGNING_ENDPOINT` | Regional endpoint such as `https://wus2.codesigning.azure.net/`. |
-| `ARTIFACT_SIGNING_ACCOUNT_NAME` | Artifact Signing account name. |
-| `ARTIFACT_SIGNING_CERTIFICATE_PROFILE_NAME` | Public Trust certificate profile name. |
+Never commit the `.pfx`, its Base64 value, its password, or any private-key material to the repository.
 
-Do not create the old PFX secrets:
+## Encoding the certificate
 
-- `AUTHENTICODE_CERTIFICATE_BASE64`
-- `AUTHENTICODE_CERTIFICATE_PASSWORD`
+From PowerShell on the secure machine that holds the certificate:
 
-They are not used by the Azure Artifact Signing workflow and should be deleted if they were previously created.
+```powershell
+$pfxPath = "C:\Secure\ProjectHope-CodeSigning.pfx"
+$base64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($pfxPath))
+$base64 | Set-Clipboard
+```
+
+Paste the clipboard contents into the `AUTHENTICODE_CERTIFICATE_BASE64` repository secret. Store the `.pfx` password separately in `AUTHENTICODE_CERTIFICATE_PASSWORD`.
+
+## Optional timestamp variable
+
+The workflow uses `http://timestamp.digicert.com` by default. A different RFC 3161 timestamp service can be configured as the repository variable:
+
+```text
+AUTHENTICODE_TIMESTAMP_URL
+```
+
+Timestamping allows Windows to validate that the installer was signed while the certificate was valid, even after the certificate later expires.
 
 ## Release behavior
 
 For a `vX.X.X.X` tag:
 
 1. The shared workflow builds the application and unsigned `setup.exe`.
-2. The signing job checks all three Azure secrets and all three Artifact Signing variables.
-3. With no Azure signing configuration, signing is skipped and the unsigned release remains available.
-4. With partial configuration, the signing job fails and reports the missing setting names.
-5. With complete configuration, GitHub authenticates to Azure through OIDC.
-6. `azure/artifact-signing-action` signs `setup.exe` with SHA-256 and Microsoft's RFC 3161 timestamp service.
-7. PowerShell verifies that the resulting Authenticode signature is valid.
-8. The signed installer is uploaded as a workflow artifact.
-9. The existing GitHub Release `setup.exe` asset is replaced with the verified signed installer.
+2. The Project Hope signing job checks whether both signing secrets exist.
+3. When both exist, it downloads the installer artifact, signs with SHA-256, applies an RFC 3161 timestamp, and verifies the signature twice.
+4. The verified signed installer is uploaded as a workflow artifact.
+5. The existing `setup.exe` asset on the GitHub Release is replaced with the signed file.
 
-## First signed release
+When neither signing secret exists, the signing job reports that signing was skipped and leaves the unsigned installer produced by the shared workflow in place. This preserves local, development, and test release capability without a certificate.
 
-After the Azure resources and GitHub configuration are complete, merge the signing workflow and create a new release tag. Do not reuse an existing tag.
-
-Example:
-
-```powershell
-git switch main
-git pull --ff-only
-git tag -a v0.0.9.3 -m "Release v0.0.9.3"
-git push origin v0.0.9.3
-```
-
-Use the next version that is actually available at release time.
+If only one of the two required secrets is configured, the signing job fails with a clear configuration error rather than silently publishing an incorrectly configured signed release.
 
 ## Local verification
 
-After downloading the installer from the GitHub Release:
+After downloading an official signed installer:
 
 ```powershell
-Get-AuthenticodeSignature .\setup.exe |
-    Format-List Status, StatusMessage, SignerCertificate
+Get-AuthenticodeSignature .\setup.exe | Format-List Status,StatusMessage,SignerCertificate
 ```
 
-The expected result is `Status : Valid`, and the signer certificate should show the approved Vyper Industries identity.
-
-Windows Explorer also displays the signature under **Properties → Digital Signatures**.
-
-## Official references
-
-- Microsoft Learn: `https://learn.microsoft.com/azure/artifact-signing/overview`
-- Microsoft setup quickstart: `https://learn.microsoft.com/azure/artifact-signing/quickstart`
-- Microsoft GitHub action: `https://github.com/Azure/artifact-signing-action`
-- Washington business licensing: `https://dor.wa.gov/open-business/apply-business-license`
+A successful official release should report `Status : Valid` and show the expected certificate subject. Windows Explorer also exposes the signature under **Properties → Digital Signatures**.
