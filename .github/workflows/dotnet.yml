@@ -50,6 +50,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Validate Authenticode signing script syntax
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          $scriptPath = (Resolve-Path ./build/Sign-Authenticode.ps1).Path
+
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            $scriptPath,
+            [ref]$tokens,
+            [ref]$parseErrors)
+
+          if (@($parseErrors).Count -gt 0) {
+            foreach ($parseError in $parseErrors) {
+              Write-Error "$($parseError.Extent.Text): $($parseError.Message)"
+            }
+
+            throw "The Authenticode signing script contains PowerShell syntax errors."
+          }
+
+          Write-Host "Authenticode signing script syntax is valid."
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -178,63 +200,47 @@ jobs:
       create_release: true
       enable_installer: true
       installer_iss_path: 'installer/installer.iss'
-      app_publisher: 'Vyper Industries'
+      app_publisher: 'Project Hope Food Bank of Lynden'
       skip_projects: ''
     secrets: inherit
 
   sign-installer:
-    name: Azure Artifact Sign setup.exe (optional)
+    name: Authenticode Sign setup.exe (optional)
     needs: release
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: windows-latest
     permissions:
       actions: read
       contents: write
-      id-token: write
 
     steps:
-      - name: Determine Azure Artifact Signing configuration
+      - name: Checkout signing script
+        uses: actions/checkout@v4
+
+      - name: Determine signing configuration
         id: signing
         shell: pwsh
         env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          SIGNING_ENDPOINT: ${{ vars.ARTIFACT_SIGNING_ENDPOINT }}
-          SIGNING_ACCOUNT_NAME: ${{ vars.ARTIFACT_SIGNING_ACCOUNT_NAME }}
-          CERTIFICATE_PROFILE_NAME: ${{ vars.ARTIFACT_SIGNING_CERTIFICATE_PROFILE_NAME }}
+          CERTIFICATE_BASE64: ${{ secrets.AUTHENTICODE_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.AUTHENTICODE_CERTIFICATE_PASSWORD }}
         run: |
-          $configuration = [ordered]@{
-            AZURE_CLIENT_ID = $env:AZURE_CLIENT_ID
-            AZURE_TENANT_ID = $env:AZURE_TENANT_ID
-            AZURE_SUBSCRIPTION_ID = $env:AZURE_SUBSCRIPTION_ID
-            ARTIFACT_SIGNING_ENDPOINT = $env:SIGNING_ENDPOINT
-            ARTIFACT_SIGNING_ACCOUNT_NAME = $env:SIGNING_ACCOUNT_NAME
-            ARTIFACT_SIGNING_CERTIFICATE_PROFILE_NAME = $env:CERTIFICATE_PROFILE_NAME
+          $hasCertificate = -not [string]::IsNullOrWhiteSpace($env:CERTIFICATE_BASE64)
+          $hasPassword = -not [string]::IsNullOrWhiteSpace($env:CERTIFICATE_PASSWORD)
+
+          if ($hasCertificate -xor $hasPassword) {
+            throw "Authenticode signing is partially configured. Set both AUTHENTICODE_CERTIFICATE_BASE64 and AUTHENTICODE_CERTIFICATE_PASSWORD, or remove both."
           }
 
-          $configuredNames = @($configuration.Keys | Where-Object {
-            -not [string]::IsNullOrWhiteSpace($configuration[$_])
-          })
-
-          if ($configuredNames.Count -eq 0) {
+          if (-not $hasCertificate) {
             "enabled=false" >> $env:GITHUB_OUTPUT
-            "## Azure Artifact Signing" >> $env:GITHUB_STEP_SUMMARY
-            "Azure Artifact Signing is not configured. The unsigned installer from the shared release workflow remains available." >> $env:GITHUB_STEP_SUMMARY
-            Write-Warning "Azure Artifact Signing skipped because no signing configuration is present."
+            "## Authenticode Signing" >> $env:GITHUB_STEP_SUMMARY
+            "Signing credentials are not configured. The unsigned installer from the shared release workflow remains available." >> $env:GITHUB_STEP_SUMMARY
+            Write-Warning "Authenticode signing skipped because no signing credentials are configured."
             exit 0
           }
 
-          $missingNames = @($configuration.Keys | Where-Object {
-            [string]::IsNullOrWhiteSpace($configuration[$_])
-          })
-
-          if ($missingNames.Count -gt 0) {
-            throw "Azure Artifact Signing is partially configured. Missing: $($missingNames -join ', '). Configure every required secret and variable, or remove all signing configuration to keep unsigned releases enabled."
-          }
-
           "enabled=true" >> $env:GITHUB_OUTPUT
-          Write-Host "Azure Artifact Signing configuration is complete."
+          Write-Host "Authenticode signing credentials are configured."
 
       - name: Download unsigned release artifact
         if: steps.signing.outputs.enabled == 'true'
@@ -259,39 +265,27 @@ jobs:
           Copy-Item -LiteralPath $setupFiles[0].FullName -Destination $target -Force
           "SETUP_PATH=$target" >> $env:GITHUB_ENV
 
-      - name: Sign in to Azure with GitHub OIDC
-        if: steps.signing.outputs.enabled == 'true'
-        uses: azure/login@v3
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Sign setup.exe with Azure Artifact Signing
-        if: steps.signing.outputs.enabled == 'true'
-        uses: azure/artifact-signing-action@v2
-        with:
-          endpoint: ${{ vars.ARTIFACT_SIGNING_ENDPOINT }}
-          signing-account-name: ${{ vars.ARTIFACT_SIGNING_ACCOUNT_NAME }}
-          certificate-profile-name: ${{ vars.ARTIFACT_SIGNING_CERTIFICATE_PROFILE_NAME }}
-          files: ${{ github.workspace }}\signed-installer\setup.exe
-          file-digest: SHA256
-          timestamp-rfc3161: http://timestamp.acs.microsoft.com
-          timestamp-digest: SHA256
-          description: Project Hope Lynden Server Installer
-          description-url: https://github.com/ScottyMac52/ProjectHopeLynden
-
-      - name: Verify signed installer
+      - name: Sign and verify setup.exe
         if: steps.signing.outputs.enabled == 'true'
         shell: pwsh
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.AUTHENTICODE_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.AUTHENTICODE_CERTIFICATE_PASSWORD }}
+          TIMESTAMP_URL: ${{ vars.AUTHENTICODE_TIMESTAMP_URL }}
         run: |
-          $signature = Get-AuthenticodeSignature -LiteralPath $env:SETUP_PATH
-
-          if ($signature.Status -ne "Valid") {
-            throw "The signed installer failed Authenticode verification. Status: $($signature.Status). $($signature.StatusMessage)"
+          $timestampUrl = $env:TIMESTAMP_URL
+          if ([string]::IsNullOrWhiteSpace($timestampUrl)) {
+            $timestampUrl = "http://timestamp.digicert.com"
           }
 
-          "## Azure Artifact Signing" >> $env:GITHUB_STEP_SUMMARY
+          ./build/Sign-Authenticode.ps1 `
+            -FilePath $env:SETUP_PATH `
+            -CertificateBase64 $env:CERTIFICATE_BASE64 `
+            -CertificatePassword $env:CERTIFICATE_PASSWORD `
+            -TimestampUrl $timestampUrl
+
+          $signature = Get-AuthenticodeSignature -LiteralPath $env:SETUP_PATH
+          "## Authenticode Signing" >> $env:GITHUB_STEP_SUMMARY
           "Signed and verified setup.exe." >> $env:GITHUB_STEP_SUMMARY
           "Certificate subject: $($signature.SignerCertificate.Subject)" >> $env:GITHUB_STEP_SUMMARY
           "Certificate thumbprint: $($signature.SignerCertificate.Thumbprint)" >> $env:GITHUB_STEP_SUMMARY
@@ -314,8 +308,3 @@ jobs:
           overwrite_files: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Sign out of Azure
-        if: always() && steps.signing.outputs.enabled == 'true'
-        shell: pwsh
-        run: az logout
