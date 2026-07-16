@@ -1,0 +1,34 @@
+@page
+@model AboutModel
+@{
+    ViewData["Title"] = "About";
+}
+
+<section class="hero hero--branded about-hero">
+    <p class="eyebrow">About this application</p>
+    <h1>@Model.ApplicationName</h1>
+    <p class="hero__supporting-text">Created for @Model.OrganizationName by @Model.CreatorName.</p>
+    <p class="about-version" aria-label="Installed application version">
+        Version: <strong>@Model.Version</strong>
+    </p>
+</section>
+
+<section class="about-grid" aria-label="Application information">
+    <article class="card card--featured">
+        <p class="card__kicker">Purpose</p>
+        <h2>Inventory support for Project Hope</h2>
+        <p>
+            @Model.ApplicationName provides straightforward tools for current inventory,
+            Commodity reporting, count history, trends, search, and database backups.
+        </p>
+    </article>
+
+    <article class="card">
+        <p class="card__kicker">Created by</p>
+        <h2>@Model.CreatorName</h2>
+        <p>
+            Designed and developed for @Model.OrganizationName to support its service to
+            Lynden families.
+        </p>
+    </article>
+</section>
