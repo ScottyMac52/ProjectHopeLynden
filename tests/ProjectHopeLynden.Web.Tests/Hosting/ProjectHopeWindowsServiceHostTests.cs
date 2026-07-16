@@ -40,7 +40,10 @@ public sealed class ProjectHopeWindowsServiceHostTests
             EnvironmentName = Environments.Development,
         });
 
-        ProjectHopeWindowsServiceHost.Configure(builder);
+        var exception = Record.Exception(() =>
+            ProjectHopeWindowsServiceHost.Configure(builder));
+
+        Assert.Null(exception);
     }
 
     [Fact]
