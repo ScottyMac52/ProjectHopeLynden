@@ -10,13 +10,14 @@ public sealed class TrendsModel(
 {
     public string PageTitle { get; } = "Inventory Trends";
 
-    public string Summary { get; } = "Review historical inventory counts by item or category and filter Commodity status.";
+    public string Summary { get; } = "Compare end-of-day inventory levels with the count activity that changed them, grouped by item or category and filtered by Commodity status.";
 
     public IReadOnlyList<InventoryCategoryListItem> Categories { get; private set; } = [];
 
     public InventoryTrendReportView Report { get; private set; } = new(
         DateTime.MinValue,
         new InventoryTrendReportRequest(InventoryTrendGrouping.Item),
+        [],
         []);
 
     [BindProperty(SupportsGet = true)]
