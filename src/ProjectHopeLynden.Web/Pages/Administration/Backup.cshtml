@@ -45,10 +45,68 @@
         </section>
     }
 }
-else
+
+@if (Model.RestoreResult is not null)
 {
-    <section class="card database-backup-guidance">
-        <h2>Backup naming</h2>
-        <p>Files use a UTC timestamp and a short unique suffix, for example <code>ProjectHopeLynden-20260712-081530-1234567-a1b2c3d4.db</code>.</p>
-    </section>
+    if (Model.RestoreResult.Succeeded)
+    {
+        <section class="card database-backup-status database-backup-status--success" aria-live="polite">
+            <p class="card__kicker">Restore completed</p>
+            <h2>Database restored</h2>
+            <p><strong>Restored:</strong> <code>@Model.RestoreResult.RestoredBackupFileName</code></p>
+            <p><strong>Safety backup:</strong> <code>@Model.RestoreResult.SafetyBackupFilePath</code></p>
+        </section>
+    }
+    else
+    {
+        <section class="card database-backup-status database-backup-status--error" aria-live="assertive">
+            <p class="card__kicker">Restore not completed</p>
+            <h2>The current database was not replaced</h2>
+            <p>@Model.RestoreResult.ErrorMessage</p>
+            @if (!string.IsNullOrWhiteSpace(Model.RestoreResult.SafetyBackupFilePath))
+            {
+                <p><strong>Safety backup:</strong> <code>@Model.RestoreResult.SafetyBackupFilePath</code></p>
+            }
+        </section>
+    }
 }
+
+<section class="card database-restore-card" aria-label="Database restore controls">
+    <div>
+        <p class="card__kicker">Restore from backup</p>
+        <h2>Replace the current inventory database</h2>
+        <p class="database-restore-warning">
+            Restoring replaces all current inventory and count history. The application creates a fresh safety backup before changing anything.
+        </p>
+    </div>
+
+    @if (Model.AvailableBackups.Count == 0)
+    {
+        <p>No valid Project Hope database backups are currently available.</p>
+    }
+    else
+    {
+        <form method="post" asp-page-handler="RestoreBackup" class="database-restore-form">
+            <label asp-for="SelectedBackupFileName">Backup to restore</label>
+            <select asp-for="SelectedBackupFileName" required>
+                <option value="">Select a backup</option>
+                @foreach (var backup in Model.AvailableBackups)
+                {
+                    <option value="@backup.FileName">
+                        @backup.FileName — @backup.LastWriteTimeUtc.ToString("yyyy-MM-dd HH:mm:ss") UTC — @((backup.SizeBytes / 1024d).ToString("N1")) KB
+                    </option>
+                }
+            </select>
+
+            <label asp-for="RestoreConfirmation">Type RESTORE to confirm</label>
+            <input asp-for="RestoreConfirmation" autocomplete="off" spellcheck="false" required />
+
+            <button type="submit" class="database-restore-button">Restore selected backup</button>
+        </form>
+    }
+</section>
+
+<section class="card database-backup-guidance">
+    <h2>Backup naming</h2>
+    <p>Files use a UTC timestamp and a short unique suffix, for example <code>ProjectHopeLynden-20260712-081530-1234567-a1b2c3d4.db</code>.</p>
+</section>
