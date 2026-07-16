@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 using ProjectHopeLynden.Web.Hosting;
 using Xunit;
@@ -40,10 +41,9 @@ public sealed class ProjectHopeWindowsServiceHostTests
             EnvironmentName = Environments.Development,
         });
 
-        var exception = Record.Exception(() =>
-            ProjectHopeWindowsServiceHost.Configure(builder));
+        ProjectHopeWindowsServiceHost.Configure(builder);
 
-        Assert.Null(exception);
+        Assert.NotNull(builder);
     }
 
     [Fact]
