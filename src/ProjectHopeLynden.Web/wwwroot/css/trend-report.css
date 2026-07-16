@@ -38,22 +38,25 @@
 }
 
 .trend-report-table-card {
+  margin-bottom: 1rem;
   overflow: hidden;
 }
 
 .trend-report-table th:nth-child(3),
 .trend-report-table td:nth-child(3),
 .trend-report-table th:nth-child(4),
-.trend-report-table td:nth-child(4),
-.trend-report-table th:nth-child(5),
-.trend-report-table td:nth-child(5) {
+.trend-report-table td:nth-child(4) {
   text-align: right;
 }
 
 .trend-report-note {
-  color: var(--text-muted);
+  color: var(--muted);
   font-size: 0.92rem;
   margin: 1rem 0 0;
+}
+
+section.trend-report-note {
+  margin-top: 0;
 }
 
 .trend-empty {

@@ -45,7 +45,7 @@ public static class InitialInventorySeedData
 
     public static readonly InventorySeedEntry[] InventoryEntries =
     [
-        // Existing synthetic rows retained for Commodity and history workflow coverage.
+        // Existing sample rows retained for Commodity distinction and baseline inventory coverage.
         new("Green Beans", "Canned Vegetables", "Shelf", 24, 20, null, true, false, At(2026, 7, 8)),
         new("Green Beans", "Canned Vegetables", "Back Room", 18, 14, null, false, false, At(2026, 7, 8)),
         new("Tomato Sauce", "Tomatoes", "Pantry Area", 36, 30, null, true, true, At(2026, 7, 8)),

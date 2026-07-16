@@ -30,142 +30,257 @@ public sealed class InventoryTrendReportServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetTrendReportAsync_AggregatesRequestedItemCountsOverTime()
+    public async Task GetTrendReportAsync_UsesFinalSameDayCountAndSeparatesCountActivity()
     {
-        var category = new Category { Name = "Canned Vegetables" };
-        var location = new Location { Name = "Shelf" };
-        var greenBeans = new Item { Name = "Green Beans" };
-        var corn = new Item { Name = "Corn" };
-        var greenBeanEntry = CreateEntry(greenBeans, category, location, true);
-        var cornEntry = CreateEntry(corn, category, location, true);
-        context.InventoryEntries.AddRange(greenBeanEntry, cornEntry);
-        await context.SaveChangesAsync();
+        var entry = await AddEntryAsync("Green Beans", "Canned Vegetables", "Shelf", true);
+        var firstDay = At(2026, 6, 1, 8);
+        var secondDay = At(2026, 6, 2, 9);
 
-        var firstCount = At(2026, 6, 1);
-        var secondCount = At(2026, 6, 8);
         context.InventoryCountHistory.AddRange(
-            CreateHistory(greenBeanEntry, firstCount, 18, null),
-            CreateHistory(greenBeanEntry, secondCount, 24, 6),
-            CreateHistory(cornEntry, firstCount, 40, null));
+            CreateHistory(entry, firstDay, 12, null),
+            CreateHistory(entry, secondDay, 10, -2),
+            CreateHistory(entry, secondDay.AddHours(3), 8, -2));
         await context.SaveChangesAsync();
 
-        var service = new InventoryTrendReportService(context);
-        var generatedAtUtc = At(2026, 7, 12);
-
-        var report = await service.GetTrendReportAsync(
+        var report = await CreateService().GetTrendReportAsync(
             new InventoryTrendReportRequest(InventoryTrendGrouping.Item, ItemName: "Green Beans"),
-            generatedAtUtc);
+            At(2026, 7, 12));
 
-        Assert.True(report.HasPoints);
-        Assert.Equal(generatedAtUtc, report.GeneratedAtUtc);
-        Assert.Equal(2, report.Points.Count);
-        Assert.All(report.Points, point => Assert.Equal("Green Beans", point.GroupName));
-        Assert.Equal([18d, 24d], report.Points.Select(point => point.RecordedQuantity).ToArray());
-        Assert.Null(report.Points[0].NetQuantityChange);
-        Assert.Equal(6, report.Points[1].NetQuantityChange);
+        Assert.Equal([12d, 8d], report.InventorySnapshots
+            .Select(point => point.EndOfDayQuantity)
+            .ToArray());
+        Assert.All(report.InventorySnapshots, point => Assert.Equal(1, point.InventoryEntryCount));
+
+        var secondDayActivity = Assert.Single(report.CountActivity);
+        Assert.Equal(secondDay.Date, secondDayActivity.CountedOnUtc);
+        Assert.Equal(-4d, secondDayActivity.NetQuantityChange);
+        Assert.Equal(2, secondDayActivity.CountEventCount);
     }
 
     [Fact]
-    public async Task GetTrendReportAsync_SummarizesMovementByCategoryAndDate()
+    public async Task GetTrendReportAsync_CarriesForwardLatestEntryCountsForCategorySnapshot()
     {
-        var cannedVegetables = new Category { Name = "Canned Vegetables" };
-        var cannedFruit = new Category { Name = "Canned Fruit" };
-        var shelf = new Location { Name = "Shelf" };
-        var countedOn = At(2026, 6, 24);
-        var greenBeans = CreateEntry(new Item { Name = "Green Beans" }, cannedVegetables, shelf, true);
-        var peas = CreateEntry(new Item { Name = "Peas" }, cannedVegetables, shelf, false);
-        var peaches = CreateEntry(new Item { Name = "Peaches" }, cannedFruit, shelf, false);
-        context.InventoryEntries.AddRange(greenBeans, peas, peaches);
-        await context.SaveChangesAsync();
+        var greenBeans = await AddEntryAsync("Green Beans", "Canned Vegetables", "Shelf", true);
+        var peas = await AddEntryAsync("Peas", "Canned Vegetables", "Back Room", false);
+        var firstDay = At(2026, 6, 1, 8);
+        var secondDay = At(2026, 6, 8, 8);
 
         context.InventoryCountHistory.AddRange(
-            CreateHistory(greenBeans, countedOn, 10, 2),
-            CreateHistory(peas, countedOn.AddHours(2), 5, -1),
-            CreateHistory(peaches, countedOn, 30, 4));
+            CreateHistory(greenBeans, firstDay, 10, null),
+            CreateHistory(peas, firstDay.AddHours(1), 5, null),
+            CreateHistory(greenBeans, secondDay, 8, -2));
         await context.SaveChangesAsync();
 
-        var service = new InventoryTrendReportService(context);
-
-        var report = await service.GetTrendReportAsync(
+        var report = await CreateService().GetTrendReportAsync(
             new InventoryTrendReportRequest(
                 InventoryTrendGrouping.Category,
-                CategoryId: cannedVegetables.Id),
+                CategoryId: greenBeans.CategoryId),
             At(2026, 7, 12));
 
-        var point = Assert.Single(report.Points);
-        Assert.Equal("Canned Vegetables", point.GroupName);
-        Assert.Equal(countedOn.Date, point.CountedOnUtc);
-        Assert.Equal(15, point.RecordedQuantity);
-        Assert.Equal(1, point.NetQuantityChange);
-        Assert.Equal(2, point.RecordCount);
+        Assert.Equal(2, report.InventorySnapshots.Count);
+        Assert.Equal(15, report.InventorySnapshots[0].EndOfDayQuantity);
+        Assert.Equal(13, report.InventorySnapshots[1].EndOfDayQuantity);
+        Assert.Equal(2, report.InventorySnapshots[1].InventoryEntryCount);
+    }
+
+    [Fact]
+    public async Task GetTrendReportAsync_DoesNotEmitDatesCausedOnlyByAnotherCategory()
+    {
+        var dryBeans = await AddEntryAsync("Pinto", "Dry Beans", "Back Room", false);
+        var cannedFruit = await AddEntryAsync("Peaches", "Canned Fruit", "Shelf", false);
+        var firstDryBeanDate = At(2026, 6, 10, 8);
+        var unrelatedDate = At(2026, 6, 16, 8);
+        var secondDryBeanDate = At(2026, 6, 24, 8);
+
+        context.InventoryCountHistory.AddRange(
+            CreateHistory(dryBeans, firstDryBeanDate, 4, null),
+            CreateHistory(cannedFruit, unrelatedDate, 20, null),
+            CreateHistory(dryBeans, secondDryBeanDate, 6, 2));
+        await context.SaveChangesAsync();
+
+        var report = await CreateService().GetTrendReportAsync(
+            new InventoryTrendReportRequest(
+                InventoryTrendGrouping.Category,
+                CategoryId: dryBeans.CategoryId),
+            At(2026, 7, 12));
+
+        Assert.Equal(
+            [firstDryBeanDate.Date, secondDryBeanDate.Date],
+            report.InventorySnapshots.Select(point => point.CountedOnUtc).ToArray());
+    }
+
+    [Fact]
+    public async Task GetTrendReportAsync_UsesCountTimeClassificationAfterEntryIsEdited()
+    {
+        var entry = await AddEntryAsync("Green Beans", "Canned Vegetables", "Shelf", false);
+        var oldCategoryId = entry.CategoryId;
+        var firstCount = At(2026, 6, 1, 8);
+
+        context.InventoryCountHistory.Add(CreateHistory(entry, firstCount, 10, null));
+        await context.SaveChangesAsync();
+
+        var newItem = new Item { Name = "Canned Beans" };
+        var newCategory = new Category { Name = "Meal Ingredients" };
+        var newLocation = new Location { Name = "Pantry" };
+        context.AddRange(newItem, newCategory, newLocation);
+        await context.SaveChangesAsync();
+
+        entry.Item = newItem;
+        entry.Category = newCategory;
+        entry.Location = newLocation;
+        entry.IsCommodity = true;
+        await context.SaveChangesAsync();
+
+        context.InventoryCountHistory.Add(CreateHistory(
+            entry,
+            At(2026, 6, 8, 8),
+            12,
+            2));
+        await context.SaveChangesAsync();
+
+        var oldReport = await CreateService().GetTrendReportAsync(
+            new InventoryTrendReportRequest(
+                InventoryTrendGrouping.Category,
+                CategoryId: oldCategoryId,
+                IsCommodity: false),
+            At(2026, 7, 12));
+
+        var oldSnapshot = Assert.Single(oldReport.InventorySnapshots);
+        Assert.Equal("Canned Vegetables", oldSnapshot.GroupName);
+        Assert.Equal(firstCount.Date, oldSnapshot.CountedOnUtc);
+        Assert.Equal(10, oldSnapshot.EndOfDayQuantity);
+
+        var newReport = await CreateService().GetTrendReportAsync(
+            new InventoryTrendReportRequest(
+                InventoryTrendGrouping.Category,
+                CategoryId: newCategory.Id,
+                IsCommodity: true),
+            At(2026, 7, 12));
+
+        var newSnapshot = Assert.Single(newReport.InventorySnapshots);
+        Assert.Equal("Meal Ingredients", newSnapshot.GroupName);
+        Assert.Equal(12, newSnapshot.EndOfDayQuantity);
     }
 
     [Theory]
     [InlineData(true, 24)]
     [InlineData(false, 6)]
-    public async Task GetTrendReportAsync_FiltersSameItemByCommodityStatus(
+    public async Task GetTrendReportAsync_FiltersLatestSnapshotsByCommodityStatus(
         bool isCommodity,
         double expectedQuantity)
     {
-        var category = new Category { Name = "Canned Vegetables" };
-        var shelf = new Location { Name = "Shelf" };
-        var backRoom = new Location { Name = "Back Room" };
-        var item = new Item { Name = "Green Beans" };
-        var commodityEntry = CreateEntry(item, category, shelf, true);
-        var nonCommodityEntry = CreateEntry(item, category, backRoom, false);
-        context.InventoryEntries.AddRange(commodityEntry, nonCommodityEntry);
-        await context.SaveChangesAsync();
+        var commodityEntry = await AddEntryAsync("Green Beans", "Canned Vegetables", "Shelf", true);
+        var nonCommodityEntry = await AddEntryAsync("Green Beans", "Canned Vegetables", "Back Room", false);
+        var countedOn = At(2026, 6, 24, 8);
 
-        var countedOn = At(2026, 6, 24);
         context.InventoryCountHistory.AddRange(
             CreateHistory(commodityEntry, countedOn, 24, 4),
-            CreateHistory(nonCommodityEntry, countedOn, 6, -2));
+            CreateHistory(nonCommodityEntry, countedOn.AddHours(1), 6, -2));
         await context.SaveChangesAsync();
 
-        var service = new InventoryTrendReportService(context);
-
-        var report = await service.GetTrendReportAsync(
+        var report = await CreateService().GetTrendReportAsync(
             new InventoryTrendReportRequest(
                 InventoryTrendGrouping.Item,
                 ItemName: "Green Beans",
                 IsCommodity: isCommodity),
             At(2026, 7, 12));
 
-        var point = Assert.Single(report.Points);
-        Assert.Equal(expectedQuantity, point.RecordedQuantity);
-        Assert.Equal(1, point.RecordCount);
+        var point = Assert.Single(report.InventorySnapshots);
+        Assert.Equal(expectedQuantity, point.EndOfDayQuantity);
+        Assert.Equal(1, point.InventoryEntryCount);
     }
 
     [Fact]
-    public async Task GetTrendReportAsync_ReturnsEmptyReportWhenNoHistoryMatches()
+    public async Task GetTrendReportAsync_ExcludesImportedBaselinesFromCountActivity()
     {
-        var service = new InventoryTrendReportService(context);
+        var greenBeans = await AddEntryAsync("Green Beans", "Canned Vegetables", "Shelf", true);
+        var peas = await AddEntryAsync("Peas", "Canned Vegetables", "Shelf", true);
+        var countedOn = At(2026, 6, 24, 8);
+
+        context.InventoryCountHistory.AddRange(
+            CreateHistory(greenBeans, countedOn, 10, null),
+            CreateHistory(peas, countedOn.AddHours(1), 5, 2));
+        await context.SaveChangesAsync();
+
+        var report = await CreateService().GetTrendReportAsync(
+            new InventoryTrendReportRequest(InventoryTrendGrouping.Category),
+            At(2026, 7, 12));
+
+        var activity = Assert.Single(report.CountActivity);
+        Assert.Equal(2d, activity.NetQuantityChange);
+        Assert.Equal(1, activity.CountEventCount);
+    }
+
+    [Fact]
+    public async Task GetTrendReportAsync_TrimsAndMatchesItemNameIgnoringCase()
+    {
+        var entry = await AddEntryAsync("Green Beans", "Canned Vegetables", "Shelf", true);
+        context.InventoryCountHistory.Add(CreateHistory(entry, At(2026, 6, 24, 8), 14, null));
+        await context.SaveChangesAsync();
+
+        var report = await CreateService().GetTrendReportAsync(
+            new InventoryTrendReportRequest(
+                InventoryTrendGrouping.Item,
+                ItemName: "  green beans  "),
+            At(2026, 7, 12));
+
+        Assert.Single(report.InventorySnapshots);
+        Assert.Empty(report.CountActivity);
+        Assert.Equal("Green Beans", report.InventorySnapshots[0].GroupName);
+    }
+
+    [Fact]
+    public async Task GetTrendReportAsync_ReturnsEmptyDatasetsWhenNoHistoryMatches()
+    {
+        var entry = await AddEntryAsync("Green Beans", "Canned Vegetables", "Shelf", true);
+        context.InventoryCountHistory.Add(CreateHistory(entry, At(2026, 6, 24, 8), 14, null));
+        await context.SaveChangesAsync();
+
         var request = new InventoryTrendReportRequest(
             InventoryTrendGrouping.Item,
             ItemName: "Missing Item");
 
-        var report = await service.GetTrendReportAsync(request, At(2026, 7, 12));
+        var report = await CreateService().GetTrendReportAsync(request, At(2026, 7, 12));
 
-        Assert.False(report.HasPoints);
-        Assert.Empty(report.Points);
+        Assert.False(report.HasData);
+        Assert.False(report.HasInventorySnapshots);
+        Assert.False(report.HasCountActivity);
+        Assert.Empty(report.InventorySnapshots);
+        Assert.Empty(report.CountActivity);
         Assert.Same(request, report.Request);
     }
 
-    private static InventoryEntry CreateEntry(
-        Item item,
-        Category category,
-        Location location,
+    private InventoryTrendReportService CreateService()
+    {
+        return new InventoryTrendReportService(context);
+    }
+
+    private async Task<InventoryEntry> AddEntryAsync(
+        string itemName,
+        string categoryName,
+        string locationName,
         bool isCommodity)
     {
-        return new InventoryEntry
+        var item = await context.Items.SingleOrDefaultAsync(existing => existing.Name == itemName)
+            ?? new Item { Name = itemName };
+        var category = await context.Categories.SingleOrDefaultAsync(existing => existing.Name == categoryName)
+            ?? new Category { Name = categoryName };
+        var location = await context.Locations.SingleOrDefaultAsync(existing => existing.Name == locationName)
+            ?? new Location { Name = locationName };
+
+        var entry = new InventoryEntry
         {
             Item = item,
             Category = category,
             Location = location,
             CurrentQuantity = 0,
             IsCommodity = isCommodity,
-            LastUpdatedAtUtc = At(2026, 6, 24),
+            LastUpdatedAtUtc = At(2026, 6, 1),
         };
+
+        context.InventoryEntries.Add(entry);
+        await context.SaveChangesAsync();
+        return entry;
     }
 
     private static InventoryCountHistory CreateHistory(
@@ -176,16 +291,23 @@ public sealed class InventoryTrendReportServiceTests : IAsyncLifetime
     {
         return new InventoryCountHistory
         {
-            InventoryEntry = entry,
+            InventoryEntryId = entry.Id,
             CountedAtUtc = countedAtUtc,
             CountedQuantity = quantity,
             PreviousQuantity = change.HasValue ? quantity - change.Value : null,
             QuantityChange = change,
+            ItemIdAtCount = entry.ItemId,
+            ItemNameAtCount = entry.Item.Name,
+            CategoryIdAtCount = entry.CategoryId,
+            CategoryNameAtCount = entry.Category.Name,
+            LocationIdAtCount = entry.LocationId,
+            LocationNameAtCount = entry.Location.Name,
+            IsCommodityAtCount = entry.IsCommodity,
         };
     }
 
-    private static DateTime At(int year, int month, int day)
+    private static DateTime At(int year, int month, int day, int hour = 0)
     {
-        return new DateTime(year, month, day, 0, 0, 0, DateTimeKind.Utc);
+        return new DateTime(year, month, day, hour, 0, 0, DateTimeKind.Utc);
     }
 }

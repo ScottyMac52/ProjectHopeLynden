@@ -71,7 +71,7 @@ public sealed class Issues46Through50SeedDataTests
     }
 
     [Fact]
-    public async Task SeedAsync_PreservesRepresentativeRowsAndHandwrittenCorrections()
+    public async Task SeedAsync_PreservesRepresentativeRowsAsInventoryBaselines()
     {
         await using var connection = await OpenConnectionAsync();
         await using var context = CreateContext(connection);
@@ -80,15 +80,15 @@ public sealed class Issues46Through50SeedDataTests
 
         await seeder.SeedAsync();
 
-        await AssertEntryAsync(context, "Jelly Misc.", "Condiments", "Back Room", 2, 4);
-        await AssertEntryAsync(context, "Popcorn Misc.", "Snacks", "Back Room", 1, 3.5);
-        await AssertEntryAsync(context, "Apples Pink Lady", "Produce", "WIC", 9, null);
-        await AssertEntryAsync(context, "Corn North Pride", "Canned Vegetables", "Crypt", 8, 82);
-        await AssertEntryAsync(context, "Chicken Crider", "Canned Meat", "Back Room", 7, null);
-        await AssertEntryAsync(context, "Chicken Crider", "Canned Meat", "Crypt", 30, 55);
-        await AssertEntryAsync(context, "Size 2", "Diapers", "Kitchen", 0, 8);
-        await AssertEntryAsync(context, "Sensitive", "Formula", "Front", 7, 5);
-        await AssertEntryAsync(context, "Total Comfort", "Formula", "Front", 12, 13);
+        await AssertEntryAsync(context, "Jelly Misc.", "Condiments", "Back Room", 2);
+        await AssertEntryAsync(context, "Popcorn Misc.", "Snacks", "Back Room", 1);
+        await AssertEntryAsync(context, "Apples Pink Lady", "Produce", "WIC", 9);
+        await AssertEntryAsync(context, "Corn North Pride", "Canned Vegetables", "Crypt", 8);
+        await AssertEntryAsync(context, "Chicken Crider", "Canned Meat", "Back Room", 7);
+        await AssertEntryAsync(context, "Chicken Crider", "Canned Meat", "Crypt", 30);
+        await AssertEntryAsync(context, "Size 2", "Diapers", "Kitchen", 0);
+        await AssertEntryAsync(context, "Sensitive", "Formula", "Front", 7);
+        await AssertEntryAsync(context, "Total Comfort", "Formula", "Front", 12);
     }
 
     [Fact]
@@ -114,8 +114,7 @@ public sealed class Issues46Through50SeedDataTests
         string itemName,
         string categoryName,
         string locationName,
-        double currentQuantity,
-        double? previousQuantity)
+        double currentQuantity)
     {
         var entry = await context.InventoryEntries
             .Include(inventoryEntry => inventoryEntry.Item)
@@ -127,17 +126,12 @@ public sealed class Issues46Through50SeedDataTests
 
         Assert.Equal(currentQuantity, entry.CurrentQuantity);
 
-        var history = await context.InventoryCountHistory
-            .Where(record => record.InventoryEntryId == entry.Id)
-            .OrderBy(record => record.CountedAtUtc)
-            .Select(record => record.CountedQuantity)
-            .ToArrayAsync();
+        var baseline = await context.InventoryCountHistory
+            .SingleAsync(record => record.InventoryEntryId == entry.Id);
 
-        var expectedHistory = previousQuantity.HasValue
-            ? new[] { previousQuantity.Value, currentQuantity }
-            : new[] { currentQuantity };
-
-        Assert.Equal(expectedHistory, history);
+        Assert.Equal(currentQuantity, baseline.CountedQuantity);
+        Assert.Null(baseline.PreviousQuantity);
+        Assert.Null(baseline.QuantityChange);
     }
 
     private static async Task<SqliteConnection> OpenConnectionAsync()

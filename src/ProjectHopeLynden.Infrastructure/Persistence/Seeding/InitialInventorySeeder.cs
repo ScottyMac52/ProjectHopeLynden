@@ -15,10 +15,13 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
 
         foreach (var seedEntry in InitialInventorySeedData.InventoryEntries)
         {
+            var item = items[seedEntry.ItemName];
+            var category = categories[seedEntry.CategoryName];
+            var location = locations[seedEntry.LocationName];
             var inventoryEntry = await EnsureInventoryEntryAsync(
-                items[seedEntry.ItemName],
-                categories[seedEntry.CategoryName],
-                locations[seedEntry.LocationName],
+                item,
+                category,
+                location,
                 seedEntry.CurrentQuantity,
                 seedEntry.BestByDate,
                 seedEntry.IsCommodity,
@@ -28,6 +31,9 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
 
             await EnsureHistoryAsync(
                 inventoryEntry,
+                item,
+                category,
+                location,
                 seedEntry.PreviousQuantity,
                 seedEntry.CurrentQuantity,
                 seedEntry.LastUpdatedAtUtc,
@@ -145,41 +151,96 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
 
     private async Task EnsureHistoryAsync(
         InventoryEntry inventoryEntry,
+        Item item,
+        Category category,
+        Location location,
         double? previousQuantity,
         double currentQuantity,
         DateTime countedAtUtc,
         CancellationToken cancellationToken)
     {
-        var hasHistory = await context.InventoryCountHistory.AnyAsync(
-            history => history.InventoryEntryId == inventoryEntry.Id,
-            cancellationToken);
+        var history = await context.InventoryCountHistory
+            .Where(record => record.InventoryEntryId == inventoryEntry.Id)
+            .OrderBy(record => record.CountedAtUtc)
+            .ThenBy(record => record.Id)
+            .ToListAsync(cancellationToken);
 
-        if (hasHistory)
+        if (history.Count == 0)
+        {
+            context.InventoryCountHistory.Add(CreateHistory(
+                inventoryEntry,
+                item,
+                category,
+                location,
+                currentQuantity,
+                countedAtUtc,
+                null,
+                null));
+
+            await context.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
+        if (!previousQuantity.HasValue)
         {
             return;
         }
 
-        if (previousQuantity.HasValue)
+        var expectedChange = currentQuantity - previousQuantity.Value;
+        var syntheticPrior = history.FirstOrDefault(record =>
+            record.CountedAtUtc == countedAtUtc.AddDays(-7)
+            && record.CountedQuantity == previousQuantity.Value
+            && !record.PreviousQuantity.HasValue
+            && !record.QuantityChange.HasValue);
+        var importedCurrent = history.FirstOrDefault(record =>
+            record.CountedAtUtc == countedAtUtc
+            && record.CountedQuantity == currentQuantity
+            && record.PreviousQuantity == previousQuantity.Value
+            && record.QuantityChange == expectedChange);
+
+        if (syntheticPrior is null || importedCurrent is null)
         {
-            context.InventoryCountHistory.Add(new InventoryCountHistory
-            {
-                InventoryEntryId = inventoryEntry.Id,
-                CountedQuantity = previousQuantity.Value,
-                CountedAtUtc = countedAtUtc.AddDays(-7),
-                PreviousQuantity = null,
-                QuantityChange = null,
-            });
+            return;
         }
 
-        context.InventoryCountHistory.Add(new InventoryCountHistory
-        {
-            InventoryEntryId = inventoryEntry.Id,
-            CountedQuantity = currentQuantity,
-            CountedAtUtc = countedAtUtc,
-            PreviousQuantity = previousQuantity,
-            QuantityChange = previousQuantity.HasValue ? currentQuantity - previousQuantity.Value : null,
-        });
+        context.InventoryCountHistory.Remove(syntheticPrior);
+        importedCurrent.PreviousQuantity = null;
+        importedCurrent.QuantityChange = null;
+        importedCurrent.ItemIdAtCount = item.Id;
+        importedCurrent.ItemNameAtCount = item.Name;
+        importedCurrent.CategoryIdAtCount = category.Id;
+        importedCurrent.CategoryNameAtCount = category.Name;
+        importedCurrent.LocationIdAtCount = location.Id;
+        importedCurrent.LocationNameAtCount = location.Name;
+        importedCurrent.IsCommodityAtCount = inventoryEntry.IsCommodity;
 
         await context.SaveChangesAsync(cancellationToken);
+    }
+
+    private static InventoryCountHistory CreateHistory(
+        InventoryEntry inventoryEntry,
+        Item item,
+        Category category,
+        Location location,
+        double countedQuantity,
+        DateTime countedAtUtc,
+        double? previousQuantity,
+        double? quantityChange)
+    {
+        return new InventoryCountHistory
+        {
+            InventoryEntryId = inventoryEntry.Id,
+            CountedQuantity = countedQuantity,
+            CountedAtUtc = countedAtUtc,
+            PreviousQuantity = previousQuantity,
+            QuantityChange = quantityChange,
+            ItemIdAtCount = item.Id,
+            ItemNameAtCount = item.Name,
+            CategoryIdAtCount = category.Id,
+            CategoryNameAtCount = category.Name,
+            LocationIdAtCount = location.Id,
+            LocationNameAtCount = location.Name,
+            IsCommodityAtCount = inventoryEntry.IsCommodity,
+        };
     }
 }

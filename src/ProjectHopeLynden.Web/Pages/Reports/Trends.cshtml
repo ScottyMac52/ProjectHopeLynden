@@ -84,14 +84,14 @@
 
 <section class="card trend-report-summary">
     <div>
-        <p class="card__kicker">Current report shape</p>
-        <h2>Historical counts grouped by @groupingLabel.ToLowerInvariant()</h2>
+        <p class="card__kicker">Corrected trend datasets</p>
+        <h2>Inventory snapshots and recorded movement by @groupingLabel.ToLowerInvariant()</h2>
         <p>Generated @Model.Report.GeneratedAtUtc.ToString("yyyy-MM-dd HH:mm") UTC</p>
     </div>
     <button type="button" class="print-report-button" onclick="window.print()">Print report</button>
 </section>
 
-@if (!Model.Report.HasPoints)
+@if (!Model.Report.HasData)
 {
     <section class="card trend-empty" aria-live="polite">
         <h2>No historical count records found</h2>
@@ -100,32 +100,88 @@
 }
 else
 {
-    <section class="card trend-report-table-card" aria-label="Inventory trend report results">
-        <div class="table-wrapper">
-            <table class="inventory-table trend-report-table">
-                <thead>
-                    <tr>
-                        <th scope="col">Date</th>
-                        <th scope="col">@groupingLabel</th>
-                        <th scope="col">Recorded Quantity</th>
-                        <th scope="col">Net Change</th>
-                        <th scope="col">Count Records</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var point in Model.Report.Points)
-                    {
-                        <tr>
-                            <td>@point.CountedOnUtc.ToString("yyyy-MM-dd")</td>
-                            <td>@point.GroupName</td>
-                            <td>@point.RecordedQuantity.ToString("0.##")</td>
-                            <td>@(point.NetQuantityChange.HasValue ? point.NetQuantityChange.Value.ToString("+0.##;-0.##;0") : "—")</td>
-                            <td>@point.RecordCount</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+    <section class="card trend-report-table-card" aria-label="End-of-day inventory report results">
+        <div class="section-heading">
+            <p class="card__kicker">Inventory level</p>
+            <h2>End-of-day inventory</h2>
+            <p>A row appears only when the selected item or category had a recorded count. Entries not recounted that day retain their latest earlier quantity.</p>
         </div>
-        <p class="trend-report-note">Recorded Quantity totals the historical count records captured for the same group and date. This first report shape is intentionally simple for staff validation.</p>
+
+        @if (!Model.Report.HasInventorySnapshots)
+        {
+            <p>No end-of-day inventory snapshots match these filters.</p>
+        }
+        else
+        {
+            <div class="table-wrapper">
+                <table class="inventory-table trend-report-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">@groupingLabel</th>
+                            <th scope="col">End-of-Day Quantity</th>
+                            <th scope="col">Entries Included</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var point in Model.Report.InventorySnapshots)
+                        {
+                            <tr>
+                                <td>@point.CountedOnUtc.ToString("yyyy-MM-dd")</td>
+                                <td>@point.GroupName</td>
+                                <td>@point.EndOfDayQuantity.ToString("0.##")</td>
+                                <td>@point.InventoryEntryCount</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <section class="card trend-report-table-card" aria-label="Daily count activity report results">
+        <div class="section-heading">
+            <p class="card__kicker">Recorded activity</p>
+            <h2>Daily count activity</h2>
+            <p>Only operational count updates with a known previous quantity are treated as movement. Imported starting counts establish the baseline and are not counted as activity.</p>
+        </div>
+
+        @if (!Model.Report.HasCountActivity)
+        {
+            <p>No operational count activity matches these filters yet.</p>
+        }
+        else
+        {
+            <div class="table-wrapper">
+                <table class="inventory-table trend-report-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">@groupingLabel</th>
+                            <th scope="col">Net Change</th>
+                            <th scope="col">Count Events</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var point in Model.Report.CountActivity)
+                        {
+                            <tr>
+                                <td>@point.CountedOnUtc.ToString("yyyy-MM-dd")</td>
+                                <td>@point.GroupName</td>
+                                <td>@point.NetQuantityChange.GetValueOrDefault().ToString("+0.##;-0.##;0")</td>
+                                <td>@point.CountEventCount</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <p class="trend-report-note">Imported spreadsheet counts establish the starting inventory only. New quantity updates create the movement records shown here.</p>
+    </section>
+
+    <section class="card trend-report-note" aria-label="Historical classification note">
+        <strong>Historical classification:</strong>
+        Item, category, location, and Commodity status are stored with each new count. Records created before this correction are backfilled from the inventory entry's current classification because earlier classifications cannot be reconstructed from the original database.
     </section>
 }

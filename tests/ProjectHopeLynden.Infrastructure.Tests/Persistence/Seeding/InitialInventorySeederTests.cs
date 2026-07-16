@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using ProjectHopeLynden.Domain.Inventory;
 using ProjectHopeLynden.Infrastructure.Persistence;
 using ProjectHopeLynden.Infrastructure.Persistence.Seeding;
 using Xunit;
@@ -112,7 +113,7 @@ public sealed class InitialInventorySeederTests
     }
 
     [Fact]
-    public async Task SeedAsync_PreservesPenciledCountChangesAsHistory()
+    public async Task SeedAsync_UsesCurrentSpreadsheetCountAsSingleBaseline()
     {
         await using var connection = await OpenConnectionAsync();
         await using var context = CreateContext(connection);
@@ -126,13 +127,55 @@ public sealed class InitialInventorySeederTests
             .SingleAsync(entry => entry.Item.Name == "Black, Soranco");
 
         var history = await context.InventoryCountHistory
-            .Where(record => record.InventoryEntryId == soranco.Id)
-            .OrderBy(record => record.CountedAtUtc)
-            .ToListAsync();
+            .SingleAsync(record => record.InventoryEntryId == soranco.Id);
 
         Assert.Equal(2d, soranco.CurrentQuantity);
-        Assert.Equal(new[] { 5d, 2d }, history.Select(record => record.CountedQuantity).ToArray());
-        Assert.Equal(-3d, history[1].QuantityChange);
+        Assert.Equal(2d, history.CountedQuantity);
+        Assert.Equal(new DateTime(2026, 6, 24, 9, 0, 0, DateTimeKind.Utc), history.CountedAtUtc);
+        Assert.Null(history.PreviousQuantity);
+        Assert.Null(history.QuantityChange);
+    }
+
+    [Fact]
+    public async Task SeedAsync_RemovesLegacySyntheticPriorAndConvertsCurrentCountToBaseline()
+    {
+        await using var connection = await OpenConnectionAsync();
+        await using var context = CreateContext(connection);
+        await context.Database.EnsureCreatedAsync();
+
+        var item = new Item { Name = "Black, Soranco" };
+        var category = new Category { Name = "Dry Beans" };
+        var location = new Location { Name = "Back Room" };
+        var entry = new InventoryEntry
+        {
+            Item = item,
+            Category = category,
+            Location = location,
+            CurrentQuantity = 2,
+            IsCommodity = true,
+            IsMenuItem = false,
+            LastUpdatedAtUtc = new DateTime(2026, 6, 24, 9, 0, 0, DateTimeKind.Utc),
+        };
+
+        context.InventoryEntries.Add(entry);
+        await context.SaveChangesAsync();
+
+        context.InventoryCountHistory.AddRange(
+            CreateHistory(entry, new DateTime(2026, 6, 17, 9, 0, 0, DateTimeKind.Utc), 5, null, null),
+            CreateHistory(entry, new DateTime(2026, 6, 24, 9, 0, 0, DateTimeKind.Utc), 2, 5, -3));
+        await context.SaveChangesAsync();
+
+        var seeder = new InitialInventorySeeder(context);
+        await seeder.SeedAsync();
+
+        var history = await context.InventoryCountHistory
+            .Where(record => record.InventoryEntryId == entry.Id)
+            .ToListAsync();
+
+        var baseline = Assert.Single(history);
+        Assert.Equal(2d, baseline.CountedQuantity);
+        Assert.Null(baseline.PreviousQuantity);
+        Assert.Null(baseline.QuantityChange);
     }
 
     [Fact]
@@ -156,7 +199,7 @@ public sealed class InitialInventorySeederTests
     }
 
     [Fact]
-    public async Task SeedAsync_IncludesMultipleHistoricalCountRecordsForAtLeastOneEntry()
+    public async Task SeedAsync_CreatesSingleBaselineHistoryRecordForSeededEntry()
     {
         await using var connection = await OpenConnectionAsync();
         await using var context = CreateContext(connection);
@@ -170,13 +213,11 @@ public sealed class InitialInventorySeederTests
             entry => entry.ItemId == greenBeans.Id && entry.IsCommodity);
 
         var history = await context.InventoryCountHistory
-            .Where(record => record.InventoryEntryId == commodityEntry.Id)
-            .OrderBy(record => record.CountedAtUtc)
-            .ToListAsync();
+            .SingleAsync(record => record.InventoryEntryId == commodityEntry.Id);
 
-        Assert.Equal(2, history.Count);
-        Assert.Equal(new[] { 20d, 24d }, history.Select(record => record.CountedQuantity).ToArray());
-        Assert.Equal(4d, history[1].QuantityChange);
+        Assert.Equal(24d, history.CountedQuantity);
+        Assert.Null(history.PreviousQuantity);
+        Assert.Null(history.QuantityChange);
     }
 
     [Fact]
@@ -194,6 +235,30 @@ public sealed class InitialInventorySeederTests
         var secondCounts = await ReadTableCountsAsync(context);
 
         Assert.Equal(firstCounts, secondCounts);
+    }
+
+    private static InventoryCountHistory CreateHistory(
+        InventoryEntry entry,
+        DateTime countedAtUtc,
+        double countedQuantity,
+        double? previousQuantity,
+        double? quantityChange)
+    {
+        return new InventoryCountHistory
+        {
+            InventoryEntryId = entry.Id,
+            CountedAtUtc = countedAtUtc,
+            CountedQuantity = countedQuantity,
+            PreviousQuantity = previousQuantity,
+            QuantityChange = quantityChange,
+            ItemIdAtCount = entry.ItemId,
+            ItemNameAtCount = entry.Item.Name,
+            CategoryIdAtCount = entry.CategoryId,
+            CategoryNameAtCount = entry.Category.Name,
+            LocationIdAtCount = entry.LocationId,
+            LocationNameAtCount = entry.Location.Name,
+            IsCommodityAtCount = entry.IsCommodity,
+        };
     }
 
     private static async Task<SqliteConnection> OpenConnectionAsync()

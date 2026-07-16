@@ -19,6 +19,9 @@ public sealed class InventoryQuantityService(ProjectHopeDbContext context) : IIn
         }
 
         var entry = await context.InventoryEntries
+            .Include(inventoryEntry => inventoryEntry.Item)
+            .Include(inventoryEntry => inventoryEntry.Category)
+            .Include(inventoryEntry => inventoryEntry.Location)
             .SingleOrDefaultAsync(inventoryEntry => inventoryEntry.Id == inventoryEntryId, cancellationToken);
 
         if (entry is null)
@@ -37,6 +40,13 @@ public sealed class InventoryQuantityService(ProjectHopeDbContext context) : IIn
             CountedAtUtc = countedAtUtc,
             PreviousQuantity = previousQuantity,
             QuantityChange = quantity - previousQuantity,
+            ItemIdAtCount = entry.ItemId,
+            ItemNameAtCount = entry.Item.Name,
+            CategoryIdAtCount = entry.CategoryId,
+            CategoryNameAtCount = entry.Category.Name,
+            LocationIdAtCount = entry.LocationId,
+            LocationNameAtCount = entry.Location.Name,
+            IsCommodityAtCount = entry.IsCommodity,
         });
 
         await context.SaveChangesAsync(cancellationToken);

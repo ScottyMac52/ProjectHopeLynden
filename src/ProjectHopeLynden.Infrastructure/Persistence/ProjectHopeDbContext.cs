@@ -141,6 +141,21 @@ public sealed class ProjectHopeDbContext(DbContextOptions<ProjectHopeDbContext> 
             entity.Property(history => history.CountedAtUtc)
                 .IsRequired();
 
+            entity.Property(history => history.ItemNameAtCount)
+                .HasMaxLength(150)
+                .IsRequired();
+
+            entity.Property(history => history.CategoryNameAtCount)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(history => history.LocationNameAtCount)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            entity.Property(history => history.IsCommodityAtCount)
+                .IsRequired();
+
             entity.HasOne(history => history.InventoryEntry)
                 .WithMany(entry => entry.CountHistory)
                 .HasForeignKey(history => history.InventoryEntryId)

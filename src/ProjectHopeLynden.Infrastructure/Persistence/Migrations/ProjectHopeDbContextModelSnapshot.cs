@@ -41,6 +41,14 @@ public sealed class ProjectHopeDbContextModelSnapshot : ModelSnapshot
                 .HasColumnType("INTEGER")
                 .HasAnnotation("Sqlite:Autoincrement", true);
 
+            entity.Property<int>("CategoryIdAtCount")
+                .HasColumnType("INTEGER");
+
+            entity.Property<string>("CategoryNameAtCount")
+                .IsRequired()
+                .HasMaxLength(100)
+                .HasColumnType("TEXT");
+
             entity.Property<DateTime>("CountedAtUtc")
                 .HasColumnType("TEXT");
 
@@ -49,6 +57,25 @@ public sealed class ProjectHopeDbContextModelSnapshot : ModelSnapshot
 
             entity.Property<int>("InventoryEntryId")
                 .HasColumnType("INTEGER");
+
+            entity.Property<bool>("IsCommodityAtCount")
+                .HasColumnType("INTEGER");
+
+            entity.Property<int>("ItemIdAtCount")
+                .HasColumnType("INTEGER");
+
+            entity.Property<string>("ItemNameAtCount")
+                .IsRequired()
+                .HasMaxLength(150)
+                .HasColumnType("TEXT");
+
+            entity.Property<int>("LocationIdAtCount")
+                .HasColumnType("INTEGER");
+
+            entity.Property<string>("LocationNameAtCount")
+                .IsRequired()
+                .HasMaxLength(100)
+                .HasColumnType("TEXT");
 
             entity.Property<double?>("PreviousQuantity")
                 .HasColumnType("REAL");
