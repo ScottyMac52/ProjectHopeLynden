@@ -1,0 +1,50 @@
+name: Issue 68 Build Diagnostics
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/issue-68-build-diagnostics.yml'
+      - 'src/**'
+      - 'tests/**'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        shell: pwsh
+        run: dotnet restore ProjectHopeLynden.sln
+
+      - name: Capture build diagnostics
+        shell: pwsh
+        run: |
+          $output = dotnet build ProjectHopeLynden.sln --no-restore -c Release 2>&1
+          $output | Set-Content build-output.txt
+          $errors = @($output | Where-Object { $_ -match '(?i)error\s+(CS|MSB|NETSDK|NU)\d+' })
+          if ($errors.Count -eq 0) {
+            $errors = @($output | Select-Object -Last 100)
+          }
+          $errors | Set-Content build-errors.txt
+          Write-Host "Captured $($errors.Count) diagnostic line(s)."
+
+      - name: Upload diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-68-build-diagnostics
+          path: |
+            build-errors.txt
+            build-output.txt
+          if-no-files-found: error
