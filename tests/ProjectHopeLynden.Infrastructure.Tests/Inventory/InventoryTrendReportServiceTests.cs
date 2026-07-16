@@ -53,7 +53,7 @@ public sealed class InventoryTrendReportServiceTests : IAsyncLifetime
 
         var secondDayActivity = Assert.Single(report.CountActivity);
         Assert.Equal(secondDay.Date, secondDayActivity.CountedOnUtc);
-        Assert.Equal(-4, secondDayActivity.NetQuantityChange);
+        Assert.Equal(-4d, secondDayActivity.NetQuantityChange);
         Assert.Equal(2, secondDayActivity.CountEventCount);
     }
 
@@ -207,7 +207,7 @@ public sealed class InventoryTrendReportServiceTests : IAsyncLifetime
             At(2026, 7, 12));
 
         var activity = Assert.Single(report.CountActivity);
-        Assert.Equal(2, activity.NetQuantityChange);
+        Assert.Equal(2d, activity.NetQuantityChange);
         Assert.Equal(1, activity.CountEventCount);
     }
 
