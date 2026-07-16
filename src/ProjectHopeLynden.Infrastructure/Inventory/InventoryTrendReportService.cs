@@ -29,32 +29,35 @@ public sealed class InventoryTrendReportService(ProjectHopeDbContext context) : 
                 record.QuantityChange))
             .ToListAsync(cancellationToken);
 
-        var reportDates = records
-            .Select(record => record.CountedAtUtc.Date)
-            .Distinct()
-            .OrderBy(date => date)
-            .ToArray();
+        var matchingRecords = ApplyFilters(records, request, normalizedItemName).ToArray();
 
-        var inventorySnapshots = reportDates
-            .SelectMany(date => BuildInventorySnapshots(
-                records,
-                date,
-                request,
-                normalizedItemName))
+        var inventorySnapshots = matchingRecords
+            .GroupBy(record => GetGroupName(record, request.Grouping))
+            .SelectMany(group => group
+                .Select(record => record.CountedAtUtc.Date)
+                .Distinct()
+                .OrderBy(date => date)
+                .Select(date => BuildInventorySnapshot(
+                    records,
+                    date,
+                    group.Key,
+                    request,
+                    normalizedItemName))
+                .Where(point => point is not null)
+                .Select(point => point!))
             .OrderBy(point => point.CountedOnUtc)
             .ThenBy(point => point.GroupName)
             .ToArray();
 
-        var countActivity = ApplyFilters(records, request, normalizedItemName)
+        var countActivity = matchingRecords
+            .Where(record => record.QuantityChange.HasValue)
             .GroupBy(record => new TrendKey(
                 GetGroupName(record, request.Grouping),
                 record.CountedAtUtc.Date))
             .Select(group => new InventoryTrendActivityPoint(
                 group.Key.GroupName,
                 group.Key.CountedOnUtc,
-                group.All(record => record.QuantityChange.HasValue)
-                    ? group.Sum(record => record.QuantityChange!.Value)
-                    : null,
+                group.Sum(record => record.QuantityChange!.Value),
                 group.Count()))
             .OrderBy(point => point.CountedOnUtc)
             .ThenBy(point => point.GroupName)
@@ -67,9 +70,10 @@ public sealed class InventoryTrendReportService(ProjectHopeDbContext context) : 
             countActivity);
     }
 
-    private static IEnumerable<InventoryTrendReportPoint> BuildInventorySnapshots(
+    private static InventoryTrendReportPoint? BuildInventorySnapshot(
         IReadOnlyList<TrendRecord> records,
         DateTime countedOnUtc,
+        string groupName,
         InventoryTrendReportRequest request,
         string? normalizedItemName)
     {
@@ -81,13 +85,23 @@ public sealed class InventoryTrendReportService(ProjectHopeDbContext context) : 
                 .ThenByDescending(record => record.Id)
                 .First());
 
-        return ApplyFilters(latestRecords, request, normalizedItemName)
-            .GroupBy(record => GetGroupName(record, request.Grouping))
-            .Select(group => new InventoryTrendReportPoint(
-                group.Key,
-                countedOnUtc,
-                group.Sum(record => record.CountedQuantity),
-                group.Count()));
+        var groupRecords = ApplyFilters(latestRecords, request, normalizedItemName)
+            .Where(record => string.Equals(
+                GetGroupName(record, request.Grouping),
+                groupName,
+                StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        if (groupRecords.Length == 0)
+        {
+            return null;
+        }
+
+        return new InventoryTrendReportPoint(
+            groupName,
+            countedOnUtc,
+            groupRecords.Sum(record => record.CountedQuantity),
+            groupRecords.Length);
     }
 
     private static IEnumerable<TrendRecord> ApplyFilters(
