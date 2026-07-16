@@ -31,5 +31,11 @@
     <None Include="..\..\src\ProjectHopeLynden.Web\appsettings.json"
           Link="TestAssets\appsettings.json"
           CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\ProjectHopeLynden.Web\Pages\About.cshtml"
+          Link="TestAssets\About.cshtml"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\ProjectHopeLynden.Web\Pages\Shared\_Layout.cshtml"
+          Link="TestAssets\_Layout.cshtml"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
