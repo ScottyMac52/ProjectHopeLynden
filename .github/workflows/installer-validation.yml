@@ -1,0 +1,40 @@
+name: Installer Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/installer-validation.yml'
+      - 'installer/**'
+
+permissions:
+  contents: read
+
+jobs:
+  compile-installer:
+    name: Compile Inno Setup script
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress
+
+      - name: Prepare placeholder publish directory
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path publish -Force | Out-Null
+          Set-Content -Path publish/ProjectHopeLynden.Web.exe `
+            -Value 'installer validation placeholder'
+
+      - name: Compile installer script
+        shell: pwsh
+        run: |
+          $publishDir = (Resolve-Path ./publish).Path
+          & 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' `
+            "/DPublishDir=$publishDir" `
+            installer/installer.iss

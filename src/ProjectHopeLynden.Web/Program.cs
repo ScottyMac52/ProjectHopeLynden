@@ -1,7 +1,10 @@
 using ProjectHopeLynden.Infrastructure.DependencyInjection;
+using ProjectHopeLynden.Web.Hosting;
 using ProjectHopeLynden.Web.Startup;
 
 var builder = WebApplication.CreateBuilder(args);
+
+ProjectHopeWindowsServiceHost.Configure(builder);
 
 var databaseConnectionString = builder.Configuration.GetConnectionString("ProjectHopeDatabase")
     ?? throw new InvalidOperationException("The ProjectHopeDatabase connection string is not configured.");

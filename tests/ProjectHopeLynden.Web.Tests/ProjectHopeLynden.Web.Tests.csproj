@@ -20,4 +20,16 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\ProjectHopeLynden.Web\ProjectHopeLynden.Web.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\installer\installer.iss"
+          Link="TestAssets\installer.iss"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\installer\ProjectHopeService.ps1"
+          Link="TestAssets\ProjectHopeService.ps1"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\ProjectHopeLynden.Web\appsettings.json"
+          Link="TestAssets\appsettings.json"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
