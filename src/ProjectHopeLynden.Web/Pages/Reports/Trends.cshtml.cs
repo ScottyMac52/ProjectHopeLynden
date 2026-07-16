@@ -10,7 +10,7 @@ public sealed class TrendsModel(
 {
     public string PageTitle { get; } = "Inventory Trends";
 
-    public string Summary { get; } = "Compare end-of-day inventory levels with the count activity that changed them, grouped by item or category and filtered by Commodity status.";
+    public string Summary { get; } = "Compare end-of-day inventory snapshots with operational quantity changes by item, category, and Commodity status.";
 
     public IReadOnlyList<InventoryCategoryListItem> Categories { get; private set; } = [];
 
