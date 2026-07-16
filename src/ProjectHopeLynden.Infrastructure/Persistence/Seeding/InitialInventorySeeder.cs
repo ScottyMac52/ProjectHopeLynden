@@ -159,37 +159,60 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
         DateTime countedAtUtc,
         CancellationToken cancellationToken)
     {
-        var hasHistory = await context.InventoryCountHistory.AnyAsync(
-            history => history.InventoryEntryId == inventoryEntry.Id,
-            cancellationToken);
+        var history = await context.InventoryCountHistory
+            .Where(record => record.InventoryEntryId == inventoryEntry.Id)
+            .OrderBy(record => record.CountedAtUtc)
+            .ThenBy(record => record.Id)
+            .ToListAsync(cancellationToken);
 
-        if (hasHistory)
-        {
-            return;
-        }
-
-        if (previousQuantity.HasValue)
+        if (history.Count == 0)
         {
             context.InventoryCountHistory.Add(CreateHistory(
                 inventoryEntry,
                 item,
                 category,
                 location,
-                previousQuantity.Value,
-                countedAtUtc.AddDays(-7),
+                currentQuantity,
+                countedAtUtc,
                 null,
                 null));
+
+            await context.SaveChangesAsync(cancellationToken);
+            return;
         }
 
-        context.InventoryCountHistory.Add(CreateHistory(
-            inventoryEntry,
-            item,
-            category,
-            location,
-            currentQuantity,
-            countedAtUtc,
-            previousQuantity,
-            previousQuantity.HasValue ? currentQuantity - previousQuantity.Value : null));
+        if (!previousQuantity.HasValue)
+        {
+            return;
+        }
+
+        var expectedChange = currentQuantity - previousQuantity.Value;
+        var syntheticPrior = history.SingleOrDefault(record =>
+            record.CountedAtUtc == countedAtUtc.AddDays(-7)
+            && record.CountedQuantity == previousQuantity.Value
+            && !record.PreviousQuantity.HasValue
+            && !record.QuantityChange.HasValue);
+        var importedCurrent = history.SingleOrDefault(record =>
+            record.CountedAtUtc == countedAtUtc
+            && record.CountedQuantity == currentQuantity
+            && record.PreviousQuantity == previousQuantity.Value
+            && record.QuantityChange == expectedChange);
+
+        if (syntheticPrior is null || importedCurrent is null)
+        {
+            return;
+        }
+
+        context.InventoryCountHistory.Remove(syntheticPrior);
+        importedCurrent.PreviousQuantity = null;
+        importedCurrent.QuantityChange = null;
+        importedCurrent.ItemIdAtCount = item.Id;
+        importedCurrent.ItemNameAtCount = item.Name;
+        importedCurrent.CategoryIdAtCount = category.Id;
+        importedCurrent.CategoryNameAtCount = category.Name;
+        importedCurrent.LocationIdAtCount = location.Id;
+        importedCurrent.LocationNameAtCount = location.Name;
+        importedCurrent.IsCommodityAtCount = inventoryEntry.IsCommodity;
 
         await context.SaveChangesAsync(cancellationToken);
     }
