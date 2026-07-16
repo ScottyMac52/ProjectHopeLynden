@@ -6,12 +6,13 @@ namespace ProjectHopeLynden.Web.Tests.Pages.Reports;
 public sealed class TrendsModelTests
 {
     [Fact]
-    public void PageCopy_DescribesHistoricalTrendFiltering()
+    public void PageCopy_DescribesInventoryLevelsAndCountActivity()
     {
         var model = CreateModel(new StubTrendReportService());
 
         Assert.Equal("Inventory Trends", model.PageTitle);
-        Assert.Contains("historical inventory counts", model.Summary);
+        Assert.Contains("end-of-day inventory levels", model.Summary);
+        Assert.Contains("count activity", model.Summary);
         Assert.Contains("Commodity", model.Summary);
     }
 
@@ -31,6 +32,7 @@ public sealed class TrendsModelTests
         Assert.Null(trendService.RequestedReport.CategoryId);
         Assert.Null(trendService.RequestedReport.IsCommodity);
         Assert.Same(trendService.ReturnedReport, model.Report);
+        Assert.False(model.Report.HasData);
     }
 
     [Fact]
@@ -86,7 +88,7 @@ public sealed class TrendsModelTests
             CancellationToken cancellationToken = default)
         {
             RequestedReport = request;
-            ReturnedReport = new InventoryTrendReportView(generatedAtUtc, request, []);
+            ReturnedReport = new InventoryTrendReportView(generatedAtUtc, request, [], []);
             return Task.FromResult(ReturnedReport);
         }
     }
