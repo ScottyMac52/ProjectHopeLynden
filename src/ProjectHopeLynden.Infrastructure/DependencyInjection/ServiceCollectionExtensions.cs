@@ -45,6 +45,7 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton(new DatabaseBackupOptions(backupFolder));
         services.AddScoped<IDatabaseBackupService, DatabaseBackupService>();
+        services.AddScoped<IDatabaseRestoreService, DatabaseRestoreService>();
 
         return services;
     }
