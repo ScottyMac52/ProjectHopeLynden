@@ -6,13 +6,13 @@ namespace ProjectHopeLynden.Web.Tests.Pages.Reports;
 public sealed class TrendsModelTests
 {
     [Fact]
-    public void PageCopy_DescribesInventoryLevelsAndCountActivity()
+    public void PageCopy_DescribesInventorySnapshotsAndOperationalChanges()
     {
         var model = CreateModel(new StubTrendReportService());
 
         Assert.Equal("Inventory Trends", model.PageTitle);
-        Assert.Contains("end-of-day inventory levels", model.Summary);
-        Assert.Contains("count activity", model.Summary);
+        Assert.Contains("end-of-day inventory snapshots", model.Summary);
+        Assert.Contains("operational quantity changes", model.Summary);
         Assert.Contains("Commodity", model.Summary);
     }
 
