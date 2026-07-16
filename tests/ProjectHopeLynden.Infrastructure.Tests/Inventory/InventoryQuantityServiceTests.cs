@@ -57,6 +57,13 @@ public sealed class InventoryQuantityServiceTests : IAsyncLifetime
         Assert.Equal(0.5, history.CountedQuantity);
         Assert.Equal(-1d, history.QuantityChange);
         Assert.Equal(countedAtUtc, history.CountedAtUtc);
+        Assert.Equal(entry.ItemId, history.ItemIdAtCount);
+        Assert.Equal("Green Beans", history.ItemNameAtCount);
+        Assert.Equal(entry.CategoryId, history.CategoryIdAtCount);
+        Assert.Equal("Canned Vegetables", history.CategoryNameAtCount);
+        Assert.Equal(entry.LocationId, history.LocationIdAtCount);
+        Assert.Equal("Shelf", history.LocationNameAtCount);
+        Assert.True(history.IsCommodityAtCount);
     }
 
     [Fact]
