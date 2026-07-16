@@ -51,9 +51,8 @@ public sealed class InventoryTrendReportServiceTests : IAsyncLifetime
             .ToArray());
         Assert.All(report.InventorySnapshots, point => Assert.Equal(1, point.InventoryEntryCount));
 
-        var secondDayActivity = Assert.Single(
-            report.CountActivity,
-            point => point.CountedOnUtc == secondDay.Date);
+        var secondDayActivity = Assert.Single(report.CountActivity);
+        Assert.Equal(secondDay.Date, secondDayActivity.CountedOnUtc);
         Assert.Equal(-4, secondDayActivity.NetQuantityChange);
         Assert.Equal(2, secondDayActivity.CountEventCount);
     }
@@ -82,6 +81,32 @@ public sealed class InventoryTrendReportServiceTests : IAsyncLifetime
         Assert.Equal(15, report.InventorySnapshots[0].EndOfDayQuantity);
         Assert.Equal(13, report.InventorySnapshots[1].EndOfDayQuantity);
         Assert.Equal(2, report.InventorySnapshots[1].InventoryEntryCount);
+    }
+
+    [Fact]
+    public async Task GetTrendReportAsync_DoesNotEmitDatesCausedOnlyByAnotherCategory()
+    {
+        var dryBeans = await AddEntryAsync("Pinto", "Dry Beans", "Back Room", false);
+        var cannedFruit = await AddEntryAsync("Peaches", "Canned Fruit", "Shelf", false);
+        var firstDryBeanDate = At(2026, 6, 10, 8);
+        var unrelatedDate = At(2026, 6, 16, 8);
+        var secondDryBeanDate = At(2026, 6, 24, 8);
+
+        context.InventoryCountHistory.AddRange(
+            CreateHistory(dryBeans, firstDryBeanDate, 4, null),
+            CreateHistory(cannedFruit, unrelatedDate, 20, null),
+            CreateHistory(dryBeans, secondDryBeanDate, 6, 2));
+        await context.SaveChangesAsync();
+
+        var report = await CreateService().GetTrendReportAsync(
+            new InventoryTrendReportRequest(
+                InventoryTrendGrouping.Category,
+                CategoryId: dryBeans.CategoryId),
+            At(2026, 7, 12));
+
+        Assert.Equal(
+            [firstDryBeanDate.Date, secondDryBeanDate.Date],
+            report.InventorySnapshots.Select(point => point.CountedOnUtc).ToArray());
     }
 
     [Fact]
@@ -166,7 +191,7 @@ public sealed class InventoryTrendReportServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetTrendReportAsync_ReportsUnknownMovementWhenAnyChangeIsUnknown()
+    public async Task GetTrendReportAsync_ExcludesImportedBaselinesFromCountActivity()
     {
         var greenBeans = await AddEntryAsync("Green Beans", "Canned Vegetables", "Shelf", true);
         var peas = await AddEntryAsync("Peas", "Canned Vegetables", "Shelf", true);
@@ -182,8 +207,8 @@ public sealed class InventoryTrendReportServiceTests : IAsyncLifetime
             At(2026, 7, 12));
 
         var activity = Assert.Single(report.CountActivity);
-        Assert.Null(activity.NetQuantityChange);
-        Assert.Equal(2, activity.CountEventCount);
+        Assert.Equal(2, activity.NetQuantityChange);
+        Assert.Equal(1, activity.CountEventCount);
     }
 
     [Fact]
@@ -200,7 +225,7 @@ public sealed class InventoryTrendReportServiceTests : IAsyncLifetime
             At(2026, 7, 12));
 
         Assert.Single(report.InventorySnapshots);
-        Assert.Single(report.CountActivity);
+        Assert.Empty(report.CountActivity);
         Assert.Equal("Green Beans", report.InventorySnapshots[0].GroupName);
     }
 
