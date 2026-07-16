@@ -187,12 +187,12 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
         }
 
         var expectedChange = currentQuantity - previousQuantity.Value;
-        var syntheticPrior = history.SingleOrDefault(record =>
+        var syntheticPrior = history.FirstOrDefault(record =>
             record.CountedAtUtc == countedAtUtc.AddDays(-7)
             && record.CountedQuantity == previousQuantity.Value
             && !record.PreviousQuantity.HasValue
             && !record.QuantityChange.HasValue);
-        var importedCurrent = history.SingleOrDefault(record =>
+        var importedCurrent = history.FirstOrDefault(record =>
             record.CountedAtUtc == countedAtUtc
             && record.CountedQuantity == currentQuantity
             && record.PreviousQuantity == previousQuantity.Value
