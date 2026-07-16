@@ -15,10 +15,13 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
 
         foreach (var seedEntry in InitialInventorySeedData.InventoryEntries)
         {
+            var item = items[seedEntry.ItemName];
+            var category = categories[seedEntry.CategoryName];
+            var location = locations[seedEntry.LocationName];
             var inventoryEntry = await EnsureInventoryEntryAsync(
-                items[seedEntry.ItemName],
-                categories[seedEntry.CategoryName],
-                locations[seedEntry.LocationName],
+                item,
+                category,
+                location,
                 seedEntry.CurrentQuantity,
                 seedEntry.BestByDate,
                 seedEntry.IsCommodity,
@@ -28,6 +31,9 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
 
             await EnsureHistoryAsync(
                 inventoryEntry,
+                item,
+                category,
+                location,
                 seedEntry.PreviousQuantity,
                 seedEntry.CurrentQuantity,
                 seedEntry.LastUpdatedAtUtc,
@@ -145,6 +151,9 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
 
     private async Task EnsureHistoryAsync(
         InventoryEntry inventoryEntry,
+        Item item,
+        Category category,
+        Location location,
         double? previousQuantity,
         double currentQuantity,
         DateTime countedAtUtc,
@@ -161,25 +170,54 @@ public sealed class InitialInventorySeeder(ProjectHopeDbContext context)
 
         if (previousQuantity.HasValue)
         {
-            context.InventoryCountHistory.Add(new InventoryCountHistory
-            {
-                InventoryEntryId = inventoryEntry.Id,
-                CountedQuantity = previousQuantity.Value,
-                CountedAtUtc = countedAtUtc.AddDays(-7),
-                PreviousQuantity = null,
-                QuantityChange = null,
-            });
+            context.InventoryCountHistory.Add(CreateHistory(
+                inventoryEntry,
+                item,
+                category,
+                location,
+                previousQuantity.Value,
+                countedAtUtc.AddDays(-7),
+                null,
+                null));
         }
 
-        context.InventoryCountHistory.Add(new InventoryCountHistory
-        {
-            InventoryEntryId = inventoryEntry.Id,
-            CountedQuantity = currentQuantity,
-            CountedAtUtc = countedAtUtc,
-            PreviousQuantity = previousQuantity,
-            QuantityChange = previousQuantity.HasValue ? currentQuantity - previousQuantity.Value : null,
-        });
+        context.InventoryCountHistory.Add(CreateHistory(
+            inventoryEntry,
+            item,
+            category,
+            location,
+            currentQuantity,
+            countedAtUtc,
+            previousQuantity,
+            previousQuantity.HasValue ? currentQuantity - previousQuantity.Value : null));
 
         await context.SaveChangesAsync(cancellationToken);
+    }
+
+    private static InventoryCountHistory CreateHistory(
+        InventoryEntry inventoryEntry,
+        Item item,
+        Category category,
+        Location location,
+        double countedQuantity,
+        DateTime countedAtUtc,
+        double? previousQuantity,
+        double? quantityChange)
+    {
+        return new InventoryCountHistory
+        {
+            InventoryEntryId = inventoryEntry.Id,
+            CountedQuantity = countedQuantity,
+            CountedAtUtc = countedAtUtc,
+            PreviousQuantity = previousQuantity,
+            QuantityChange = quantityChange,
+            ItemIdAtCount = item.Id,
+            ItemNameAtCount = item.Name,
+            CategoryIdAtCount = category.Id,
+            CategoryNameAtCount = category.Name,
+            LocationIdAtCount = location.Id,
+            LocationNameAtCount = location.Name,
+            IsCommodityAtCount = inventoryEntry.IsCommodity,
+        };
     }
 }
