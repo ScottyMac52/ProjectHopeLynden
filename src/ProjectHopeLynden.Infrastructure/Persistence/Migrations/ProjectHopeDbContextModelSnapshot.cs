@@ -34,6 +34,57 @@ public sealed class ProjectHopeDbContextModelSnapshot : ModelSnapshot
             entity.ToTable("Categories");
         });
 
+        modelBuilder.Entity("ProjectHopeLynden.Domain.IncomingOrders.IncomingOrder", entity =>
+        {
+            entity.Property<int>("Id")
+                .ValueGeneratedOnAdd()
+                .HasColumnType("INTEGER")
+                .HasAnnotation("Sqlite:Autoincrement", true);
+            entity.Property<string>("ChargeTo").HasMaxLength(100).HasColumnType("TEXT");
+            entity.Property<DateTime>("CreatedAtUtc").HasColumnType("TEXT");
+            entity.Property<DateTime?>("DueDate").HasColumnType("TEXT");
+            entity.Property<DateTime>("ExpectedDate").HasColumnType("TEXT");
+            entity.Property<double?>("InvoiceAmount").HasColumnType("REAL");
+            entity.Property<DateTime?>("InvoiceDate").HasColumnType("TEXT");
+            entity.Property<string>("InvoiceNumber").HasMaxLength(100).HasColumnType("TEXT");
+            entity.Property<string>("Notes").HasMaxLength(2000).HasColumnType("TEXT");
+            entity.Property<DateTime>("OrderDate").HasColumnType("TEXT");
+            entity.Property<string>("ProductSummary").HasMaxLength(500).HasColumnType("TEXT");
+            entity.Property<DateTime?>("ReceivedAtUtc").HasColumnType("TEXT");
+            entity.Property<string>("SentToPayer").HasMaxLength(100).HasColumnType("TEXT");
+            entity.Property<string>("Status").IsRequired().HasMaxLength(20).HasColumnType("TEXT");
+            entity.Property<string>("Vendor").IsRequired().HasMaxLength(150).HasColumnType("TEXT");
+            entity.Property<double?>("Weight").HasColumnType("REAL");
+            entity.HasKey("Id");
+            entity.HasIndex("Status", "ExpectedDate");
+            entity.ToTable("IncomingOrders", table =>
+            {
+                table.HasCheckConstraint("CK_IncomingOrders_InvoiceAmount_NonNegative", "InvoiceAmount IS NULL OR InvoiceAmount >= 0");
+                table.HasCheckConstraint("CK_IncomingOrders_Weight_NonNegative", "Weight IS NULL OR Weight >= 0");
+            });
+        });
+
+        modelBuilder.Entity("ProjectHopeLynden.Domain.IncomingOrders.IncomingOrderLine", entity =>
+        {
+            entity.Property<int>("Id")
+                .ValueGeneratedOnAdd()
+                .HasColumnType("INTEGER")
+                .HasAnnotation("Sqlite:Autoincrement", true);
+            entity.Property<double>("ExpectedQuantity").HasColumnType("REAL");
+            entity.Property<int>("IncomingOrderId").HasColumnType("INTEGER");
+            entity.Property<int>("InventoryEntryId").HasColumnType("INTEGER");
+            entity.Property<double?>("ReceivedQuantity").HasColumnType("REAL");
+            entity.HasKey("Id");
+            entity.HasIndex("IncomingOrderId");
+            entity.HasIndex("InventoryEntryId");
+            entity.HasIndex("IncomingOrderId", "InventoryEntryId").IsUnique();
+            entity.ToTable("IncomingOrderLines", table =>
+            {
+                table.HasCheckConstraint("CK_IncomingOrderLines_ExpectedQuantity_Positive", "ExpectedQuantity > 0");
+                table.HasCheckConstraint("CK_IncomingOrderLines_ReceivedQuantity_Positive", "ReceivedQuantity IS NULL OR ReceivedQuantity > 0");
+            });
+        });
+
         modelBuilder.Entity("ProjectHopeLynden.Domain.Inventory.InventoryCountHistory", entity =>
         {
             entity.Property<int>("Id")
@@ -91,6 +142,22 @@ public sealed class ProjectHopeDbContextModelSnapshot : ModelSnapshot
             {
                 table.HasCheckConstraint("CK_InventoryCountHistory_CountedQuantity_NonNegative", "CountedQuantity >= 0");
             });
+        });
+
+        modelBuilder.Entity("ProjectHopeLynden.Domain.IncomingOrders.IncomingOrderLine", entity =>
+        {
+            entity.HasOne("ProjectHopeLynden.Domain.IncomingOrders.IncomingOrder", "IncomingOrder")
+                .WithMany("Lines")
+                .HasForeignKey("IncomingOrderId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+            entity.HasOne("ProjectHopeLynden.Domain.Inventory.InventoryEntry", "InventoryEntry")
+                .WithMany()
+                .HasForeignKey("InventoryEntryId")
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+            entity.Navigation("IncomingOrder");
+            entity.Navigation("InventoryEntry");
         });
 
         modelBuilder.Entity("ProjectHopeLynden.Domain.Inventory.InventoryEntry", entity =>
@@ -217,6 +284,11 @@ public sealed class ProjectHopeDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("ProjectHopeLynden.Domain.Inventory.Category", entity =>
         {
             entity.Navigation("InventoryEntries");
+        });
+
+        modelBuilder.Entity("ProjectHopeLynden.Domain.IncomingOrders.IncomingOrder", entity =>
+        {
+            entity.Navigation("Lines");
         });
 
         modelBuilder.Entity("ProjectHopeLynden.Domain.Inventory.InventoryEntry", entity =>

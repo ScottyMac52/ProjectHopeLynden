@@ -1,0 +1,78 @@
+@page
+@using ProjectHopeLynden.Application.IncomingOrders
+@using ProjectHopeLynden.Domain.IncomingOrders
+@model IndexModel
+@{
+    ViewData["Title"] = "Incoming Orders";
+}
+<link rel="stylesheet" href="~/css/incoming-orders.css" asp-append-version="true" />
+
+<section class="hero hero--branded">
+    <p class="eyebrow">Project Hope Food Bank of Lynden</p>
+    <h1>Incoming Orders</h1>
+    <p>Track expected deliveries and add verified receipts to inventory.</p>
+    <p><a class="button-link button-link--light" asp-page="/IncomingOrders/Edit">Add incoming order</a></p>
+</section>
+
+<section class="card incoming-orders-card" aria-label="Incoming orders">
+    @if (Model.Orders.Count == 0)
+    {
+        <h2>No incoming orders</h2>
+        <p>Add an order when a delivery or pickup is scheduled.</p>
+    }
+    else
+    {
+        <div class="responsive-table">
+            <table class="incoming-orders-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Vendor</th>
+                        <th scope="col">Ordered</th>
+                        <th scope="col">Expected</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Products</th>
+                        <th scope="col">Lines</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model.Orders)
+                    {
+                        var dateClass = order.DateState switch
+                        {
+                            IncomingOrderDateState.Overdue => "order-state order-state--overdue",
+                            IncomingOrderDateState.DueToday => "order-state order-state--due",
+                            _ => "order-state",
+                        };
+                        var dateText = order.DateState switch
+                        {
+                            IncomingOrderDateState.DueToday => "Due Today",
+                            IncomingOrderDateState.Overdue => "Overdue",
+                            IncomingOrderDateState.Upcoming => "Upcoming",
+                            _ => order.Status.ToString(),
+                        };
+                        <tr>
+                            <td><strong>@order.Vendor</strong></td>
+                            <td>@order.OrderDate.ToString("M/d/yyyy")</td>
+                            <td>@order.ExpectedDate.ToString("M/d/yyyy")</td>
+                            <td><span class="@dateClass">@dateText</span></td>
+                            <td>@(order.ProductSummary ?? "—")</td>
+                            <td>@order.LineCount</td>
+                            <td class="order-actions">
+                                @if (order.Status is IncomingOrderStatus.Pending or IncomingOrderStatus.Ordered)
+                                {
+                                    <a asp-page="/IncomingOrders/Edit" asp-route-orderId="@order.Id">Edit</a>
+                                    <a class="button-link button-link--small" asp-page="/IncomingOrders/Receive" asp-route-orderId="@order.Id">Receive</a>
+                                }
+                                else
+                                {
+                                    <span>@order.Status</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

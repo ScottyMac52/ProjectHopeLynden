@@ -1,5 +1,6 @@
 using ProjectHopeLynden.Infrastructure.DependencyInjection;
 using ProjectHopeLynden.Web.Hosting;
+using ProjectHopeLynden.Web.Features;
 using ProjectHopeLynden.Web.Startup;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,8 @@ var databaseBackupFolder = builder.Configuration["DatabaseBackup:Folder"]
     ?? throw new InvalidOperationException("The DatabaseBackup folder is not configured.");
 
 builder.Services.AddRazorPages();
+builder.Services.Configure<ProjectHopeFeatureOptions>(
+    builder.Configuration.GetSection(ProjectHopeFeatureOptions.SectionName));
 builder.Services.AddProjectHopePersistence(databaseConnectionString);
 builder.Services.AddProjectHopeDatabaseBackup(databaseBackupFolder);
 

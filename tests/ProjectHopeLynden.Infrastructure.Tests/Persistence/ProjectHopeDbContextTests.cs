@@ -23,6 +23,8 @@ public sealed class ProjectHopeDbContextTests
         Assert.Contains("Locations", tableNames);
         Assert.Contains("InventoryEntries", tableNames);
         Assert.Contains("InventoryCountHistory", tableNames);
+        Assert.Contains("IncomingOrders", tableNames);
+        Assert.Contains("IncomingOrderLines", tableNames);
     }
 
     [Fact]

@@ -1,0 +1,108 @@
+@page
+@using ProjectHopeLynden.Domain.IncomingOrders
+@model EditModel
+@{
+    ViewData["Title"] = Model.IsEditing ? "Edit Incoming Order" : "Add Incoming Order";
+}
+<link rel="stylesheet" href="~/css/incoming-orders.css" asp-append-version="true" />
+
+<section class="hero hero--branded">
+    <p class="eyebrow">Incoming Orders</p>
+    <h1>@ViewData["Title"]</h1>
+    <p>Describe the expected delivery and map every quantity to an existing inventory row.</p>
+</section>
+
+@if (Model.OrderNotFound)
+{
+    <section class="card"><h2>Order unavailable</h2><p>The order was not found or has already been received.</p><a asp-page="/IncomingOrders/Index">Back to incoming orders</a></section>
+}
+else
+{
+    @if (Model.SaveFailed)
+    {
+        <section class="card status-message status-message--error" aria-live="polite"><p>@Model.SaveMessage</p></section>
+    }
+
+    <form method="post" asp-page-handler="Save" class="incoming-order-form">
+        <input type="hidden" asp-for="OrderId" />
+        <section class="card">
+            <h2>Order details</h2>
+            <div class="form-grid">
+                <label><span>Order date</span><input asp-for="OrderDate" type="date" /></label>
+                <label><span>Vendor</span><input asp-for="Vendor" autocomplete="organization" /></label>
+                <label><span>Status</span><select asp-for="Status"><option value="@IncomingOrderStatus.Pending">Pending</option><option value="@IncomingOrderStatus.Ordered">Ordered</option><option value="@IncomingOrderStatus.Cancelled">Cancelled</option></select></label>
+                <label><span>Expected pickup/delivery</span><input asp-for="ExpectedDate" type="date" /></label>
+                <label><span>Product summary</span><input asp-for="ProductSummary" /></label>
+                <label><span>Weight</span><input asp-for="Weight" type="number" min="0" step="0.01" /></label>
+            </div>
+            <label class="full-field"><span>Notes</span><textarea asp-for="Notes" rows="3"></textarea></label>
+        </section>
+
+        <section class="card">
+            <h2>Invoice and funding</h2>
+            <div class="form-grid">
+                <label><span>Invoice date</span><input asp-for="InvoiceDate" type="date" /></label>
+                <label><span>Invoice number</span><input asp-for="InvoiceNumber" /></label>
+                <label><span>Invoice amount</span><input asp-for="InvoiceAmount" type="number" min="0" step="0.01" /></label>
+                <label><span>Due date</span><input asp-for="DueDate" type="date" /></label>
+                <label><span>Sent to payer</span><input asp-for="SentToPayer" /></label>
+                <label><span>Charge to</span><input asp-for="ChargeTo" /></label>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="section-heading">
+                <div><h2>Inventory lines</h2><p>Choose the exact category, item, location, and Commodity classification.</p></div>
+                <button type="button" class="secondary-button" id="add-order-line">Add line</button>
+            </div>
+            <div id="order-lines">
+                @for (var index = 0; index < Model.Lines.Count; index++)
+                {
+                    <div class="order-line">
+                        <input type="hidden" asp-for="Lines[index].Id" />
+                        <label><span>Inventory row</span><select asp-for="Lines[index].InventoryEntryId"><option value="">Choose inventory row</option>@foreach (var option in Model.InventoryOptions){<option value="@option.Id">@option.DisplayName</option>}</select></label>
+                        <label><span>Expected quantity</span><input asp-for="Lines[index].ExpectedQuantity" type="number" min="0.5" step="0.5" /></label>
+                        <button type="button" class="remove-order-line">Remove</button>
+                    </div>
+                }
+            </div>
+            <template id="order-line-template">
+                <div class="order-line">
+                    <label><span>Inventory row</span><select data-name="Lines[__index__].InventoryEntryId"><option value="">Choose inventory row</option>@foreach (var option in Model.InventoryOptions){<option value="@option.Id">@option.DisplayName</option>}</select></label>
+                    <label><span>Expected quantity</span><input data-name="Lines[__index__].ExpectedQuantity" type="number" min="0.5" step="0.5" /></label>
+                    <button type="button" class="remove-order-line">Remove</button>
+                </div>
+            </template>
+        </section>
+
+        <div class="form-actions"><button type="submit">Save order</button><a asp-page="/IncomingOrders/Index">Cancel</a></div>
+    </form>
+}
+
+@section Scripts {
+<script>
+(() => {
+  const container = document.getElementById('order-lines');
+  const template = document.getElementById('order-line-template');
+  const addButton = document.getElementById('add-order-line');
+  if (!container || !template || !addButton) return;
+  const reindex = () => container.querySelectorAll('.order-line').forEach((row, index) => {
+    row.querySelectorAll('[name]').forEach(element => element.name = element.name.replace(/Lines\[\d+\]/, `Lines[${index}]`));
+  });
+  const wireRemoveButtons = () => document.querySelectorAll('.remove-order-line').forEach(button => button.onclick = () => {
+    if (container.querySelectorAll('.order-line').length > 1) {
+      button.closest('.order-line').remove();
+      reindex();
+    }
+  });
+  addButton.addEventListener('click', () => {
+    const fragment = template.content.cloneNode(true);
+    fragment.querySelectorAll('[data-name]').forEach(element => element.name = element.dataset.name.replace('__index__', '0'));
+    container.appendChild(fragment);
+    reindex();
+    wireRemoveButtons();
+  });
+  wireRemoveButtons();
+})();
+</script>
+}

@@ -1,0 +1,20 @@
+.incoming-orders-card { margin-top: 1.5rem; }
+.responsive-table { overflow-x: auto; }
+.incoming-orders-table { width: 100%; border-collapse: collapse; }
+.incoming-orders-table th, .incoming-orders-table td { padding: .75rem; border-bottom: 1px solid #d9e2dc; text-align: left; vertical-align: top; }
+.order-state { display: inline-block; padding: .2rem .55rem; border-radius: 999px; background: #e8efe9; font-weight: 700; white-space: nowrap; }
+.order-state--due { background: #fff0b8; border: 1px solid #8a6500; }
+.order-state--overdue { background: #ffe0dc; border: 1px solid #a52a1f; }
+.order-actions { display: flex; gap: .65rem; align-items: center; }
+.button-link--small { padding: .35rem .65rem; }
+.incoming-order-form { display: grid; gap: 1rem; margin-top: 1.5rem; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+.form-grid label, .full-field, .order-line label, .receipt-line label { display: grid; gap: .35rem; font-weight: 700; }
+.form-grid input, .form-grid select, .full-field textarea, .order-line input, .order-line select, .receipt-line input { width: 100%; padding: .65rem; border: 1px solid #9caea2; border-radius: .35rem; background: white; }
+.section-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: start; }
+.secondary-button, .remove-order-line { background: white; color: #245b3c; border: 1px solid #245b3c; }
+.order-line { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(130px, 180px) auto; gap: 1rem; align-items: end; padding: 1rem 0; border-top: 1px solid #d9e2dc; }
+.receipt-line { display: grid; grid-template-columns: 1fr minmax(150px, 220px); gap: 1rem; align-items: end; padding: 1rem 0; border-bottom: 1px solid #d9e2dc; }
+.receipt-line span { display: block; color: #526459; }
+.receipt-warning { margin: 1rem 0; padding: 1rem; border-left: .35rem solid #9a6c00; background: #fff8dd; }
+@media (max-width: 720px) { .order-line, .receipt-line { grid-template-columns: 1fr; } .section-heading { display: grid; } }

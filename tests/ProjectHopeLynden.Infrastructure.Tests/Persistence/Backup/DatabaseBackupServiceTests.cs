@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using ProjectHopeLynden.Application.Backup;
+using ProjectHopeLynden.Domain.IncomingOrders;
 using ProjectHopeLynden.Domain.Inventory;
 using ProjectHopeLynden.Infrastructure.Persistence;
 using ProjectHopeLynden.Infrastructure.Persistence.Backup;
@@ -37,11 +38,14 @@ public sealed class DatabaseBackupServiceTests
             await using var backupContext = await OpenDatabaseAsync(result.BackupFilePath);
             var backedUpEntry = await backupContext.InventoryEntries.SingleAsync();
             var backedUpHistory = await backupContext.InventoryCountHistory.SingleAsync();
+            var backedUpOrder = await backupContext.IncomingOrders.Include(order => order.Lines).SingleAsync();
 
             Assert.Equal(12, backedUpEntry.CurrentQuantity);
             Assert.True(backedUpEntry.IsCommodity);
             Assert.Equal(12, backedUpHistory.CountedQuantity);
             Assert.Equal(-3, backedUpHistory.QuantityChange);
+            Assert.Equal("Food Lifeline", backedUpOrder.Vendor);
+            Assert.Single(backedUpOrder.Lines);
         }
         finally
         {
@@ -161,6 +165,15 @@ public sealed class DatabaseBackupServiceTests
             CountedAtUtc = entry.LastUpdatedAtUtc,
             PreviousQuantity = 15,
             QuantityChange = -3,
+        });
+        context.IncomingOrders.Add(new IncomingOrder
+        {
+            OrderDate = new DateTime(2026, 7, 12),
+            Vendor = "Food Lifeline",
+            Status = IncomingOrderStatus.Pending,
+            ExpectedDate = new DateTime(2026, 7, 19),
+            CreatedAtUtc = entry.LastUpdatedAtUtc,
+            Lines = [new IncomingOrderLine { InventoryEntryId = entry.Id, ExpectedQuantity = 4 }],
         });
         await context.SaveChangesAsync();
     }
