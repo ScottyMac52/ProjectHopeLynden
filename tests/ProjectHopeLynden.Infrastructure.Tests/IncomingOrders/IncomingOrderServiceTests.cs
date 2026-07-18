@@ -111,7 +111,9 @@ public sealed class IncomingOrderServiceTests : IAsyncLifetime
         string? expectedDateText,
         string expectedMessage)
     {
-        var expectedDate = expectedDateText is null ? null : DateOnly.Parse(expectedDateText);
+        DateOnly? expectedDate = expectedDateText is null
+            ? null
+            : DateOnly.Parse(expectedDateText);
         var service = new IncomingOrderService(context);
 
         var result = await service.CreateAsync(
