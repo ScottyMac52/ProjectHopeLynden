@@ -100,11 +100,11 @@ public sealed class IncomingOrderServiceTests : IAsyncLifetime
     }
 
     [Theory]
-    [InlineData(null, 2, "2026-07-20", "Inventory row is required.")]
-    [InlineData(0, 2, "2026-07-20", "Inventory row is required.")]
-    [InlineData(1, 0, "2026-07-20", "Incoming quantity must be greater than zero.")]
-    [InlineData(1, -1, "2026-07-20", "Incoming quantity must be greater than zero.")]
-    [InlineData(1, 2, null, "Expected date is required.")]
+    [InlineData(null, 2.0, "2026-07-20", "Inventory row is required.")]
+    [InlineData(0, 2.0, "2026-07-20", "Inventory row is required.")]
+    [InlineData(1, 0.0, "2026-07-20", "Incoming quantity must be greater than zero.")]
+    [InlineData(1, -1.0, "2026-07-20", "Incoming quantity must be greater than zero.")]
+    [InlineData(1, 2.0, null, "Expected date is required.")]
     public async Task CreateAsync_RejectsMissingCoreValues(
         int? inventoryEntryId,
         double? quantity,
