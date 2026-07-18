@@ -11,19 +11,7 @@ public sealed class IncomingOrderService(ProjectHopeDbContext context) : IIncomi
 
     public async Task<IncomingOrdersView> GetOrdersAsync(CancellationToken cancellationToken = default)
     {
-        var inventoryOptions = await context.InventoryEntries
-            .AsNoTracking()
-            .OrderBy(entry => entry.Category.Name)
-            .ThenBy(entry => entry.Item.Name)
-            .ThenBy(entry => entry.Location.Name)
-            .ThenBy(entry => entry.IsCommodity)
-            .Select(entry => new IncomingOrderInventoryOption(
-                entry.Id,
-                entry.Item.Name,
-                entry.Category.Name,
-                entry.Location.Name,
-                entry.IsCommodity))
-            .ToListAsync(cancellationToken);
+        var inventoryOptions = await GetInventoryOptionsQuery().ToListAsync(cancellationToken);
 
         var scheduledOrders = await BuildOrderQuery()
             .Where(order => order.Status == IncomingOrderStatus.Scheduled)
@@ -42,6 +30,25 @@ public sealed class IncomingOrderService(ProjectHopeDbContext context) : IIncomi
             .ToListAsync(cancellationToken);
 
         return new IncomingOrdersView(inventoryOptions, scheduledOrders, completedOrders);
+    }
+
+    public async Task<IncomingOrderEditView?> GetForEditAsync(
+        int incomingOrderId,
+        CancellationToken cancellationToken = default)
+    {
+        var order = await BuildOrderQuery()
+            .AsNoTracking()
+            .Where(existingOrder => existingOrder.Id == incomingOrderId)
+            .Select(ProjectOrder())
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (order is null)
+        {
+            return null;
+        }
+
+        var inventoryOptions = await GetInventoryOptionsQuery().ToListAsync(cancellationToken);
+        return new IncomingOrderEditView(order, inventoryOptions);
     }
 
     public async Task<IncomingOrderOperationResult> CreateAsync(
@@ -212,6 +219,22 @@ public sealed class IncomingOrderService(ProjectHopeDbContext context) : IIncomi
         {
             ProcessingLock.Release();
         }
+    }
+
+    private IQueryable<IncomingOrderInventoryOption> GetInventoryOptionsQuery()
+    {
+        return context.InventoryEntries
+            .AsNoTracking()
+            .OrderBy(entry => entry.Category.Name)
+            .ThenBy(entry => entry.Item.Name)
+            .ThenBy(entry => entry.Location.Name)
+            .ThenBy(entry => entry.IsCommodity)
+            .Select(entry => new IncomingOrderInventoryOption(
+                entry.Id,
+                entry.Item.Name,
+                entry.Category.Name,
+                entry.Location.Name,
+                entry.IsCommodity));
     }
 
     private IQueryable<IncomingOrderLine> BuildOrderQuery()
