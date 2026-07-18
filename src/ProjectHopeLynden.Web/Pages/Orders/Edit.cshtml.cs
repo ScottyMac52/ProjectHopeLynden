@@ -14,6 +14,9 @@ public sealed class EditModel(IIncomingOrderService incomingOrderService) : Page
 
     public string? OperationMessage { get; private set; }
 
+    [TempData]
+    public string? StatusMessage { get; set; }
+
     [BindProperty(SupportsGet = true)]
     public int IncomingOrderId { get; set; }
 
@@ -64,7 +67,7 @@ public sealed class EditModel(IIncomingOrderService incomingOrderService) : Page
             return Page();
         }
 
-        TempData["StatusMessage"] = "Incoming order updated.";
+        StatusMessage = "Incoming order updated.";
         return RedirectToPage("/Orders/Index");
     }
 
