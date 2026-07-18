@@ -20,6 +20,12 @@ public sealed class IndexModel : PageModel
             "Open spreadsheet",
             true),
         new(
+            "Planning",
+            "Incoming Orders",
+            "Schedule expected inventory and see incoming quantities on the inventory spreadsheet.",
+            "/Orders/Index",
+            "View incoming orders"),
+        new(
             "Find food",
             "Search Inventory",
             "Find an item across categories and locations, including Commodity and non-Commodity records.",
