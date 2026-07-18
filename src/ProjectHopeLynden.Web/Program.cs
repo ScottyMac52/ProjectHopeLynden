@@ -1,4 +1,5 @@
 using ProjectHopeLynden.Infrastructure.DependencyInjection;
+using ProjectHopeLynden.Web.HostedServices;
 using ProjectHopeLynden.Web.Hosting;
 using ProjectHopeLynden.Web.Startup;
 
@@ -15,6 +16,7 @@ var databaseBackupFolder = builder.Configuration["DatabaseBackup:Folder"]
 builder.Services.AddRazorPages();
 builder.Services.AddProjectHopePersistence(databaseConnectionString);
 builder.Services.AddProjectHopeDatabaseBackup(databaseBackupFolder);
+builder.Services.AddHostedService<IncomingOrderWorker>();
 
 var app = builder.Build();
 
