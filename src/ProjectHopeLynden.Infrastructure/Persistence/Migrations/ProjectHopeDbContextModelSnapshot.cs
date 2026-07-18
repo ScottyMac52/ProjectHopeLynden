@@ -34,6 +34,57 @@ public sealed class ProjectHopeDbContextModelSnapshot : ModelSnapshot
             entity.ToTable("Categories");
         });
 
+        modelBuilder.Entity("ProjectHopeLynden.Domain.Inventory.IncomingOrderLine", entity =>
+        {
+            entity.Property<int>("Id")
+                .ValueGeneratedOnAdd()
+                .HasColumnType("INTEGER")
+                .HasAnnotation("Sqlite:Autoincrement", true);
+
+            entity.Property<DateTime?>("CancelledAtUtc")
+                .HasColumnType("TEXT");
+
+            entity.Property<DateTime>("CreatedAtUtc")
+                .HasColumnType("TEXT");
+
+            entity.Property<DateOnly>("ExpectedDate")
+                .HasColumnType("TEXT");
+
+            entity.Property<int>("InventoryEntryId")
+                .HasColumnType("INTEGER");
+
+            entity.Property<double>("Quantity")
+                .HasColumnType("REAL");
+
+            entity.Property<DateTime?>("ReceivedAtUtc")
+                .HasColumnType("TEXT");
+
+            entity.Property<string>("Reference")
+                .HasMaxLength(100)
+                .HasColumnType("TEXT");
+
+            entity.Property<string>("Source")
+                .HasMaxLength(150)
+                .HasColumnType("TEXT");
+
+            entity.Property<int>("Status")
+                .HasColumnType("INTEGER");
+
+            entity.Property<DateTime>("UpdatedAtUtc")
+                .HasColumnType("TEXT");
+
+            entity.HasKey("Id");
+
+            entity.HasIndex("InventoryEntryId", "Status");
+
+            entity.HasIndex("Status", "ExpectedDate");
+
+            entity.ToTable("IncomingOrderLines", table =>
+            {
+                table.HasCheckConstraint("CK_IncomingOrderLines_Quantity_Positive", "Quantity > 0");
+            });
+        });
+
         modelBuilder.Entity("ProjectHopeLynden.Domain.Inventory.InventoryCountHistory", entity =>
         {
             entity.Property<int>("Id")
@@ -178,6 +229,17 @@ public sealed class ProjectHopeDbContextModelSnapshot : ModelSnapshot
             entity.ToTable("Locations");
         });
 
+        modelBuilder.Entity("ProjectHopeLynden.Domain.Inventory.IncomingOrderLine", entity =>
+        {
+            entity.HasOne("ProjectHopeLynden.Domain.Inventory.InventoryEntry", "InventoryEntry")
+                .WithMany("IncomingOrders")
+                .HasForeignKey("InventoryEntryId")
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+
+            entity.Navigation("InventoryEntry");
+        });
+
         modelBuilder.Entity("ProjectHopeLynden.Domain.Inventory.InventoryCountHistory", entity =>
         {
             entity.HasOne("ProjectHopeLynden.Domain.Inventory.InventoryEntry", "InventoryEntry")
@@ -222,6 +284,7 @@ public sealed class ProjectHopeDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("ProjectHopeLynden.Domain.Inventory.InventoryEntry", entity =>
         {
             entity.Navigation("CountHistory");
+            entity.Navigation("IncomingOrders");
         });
 
         modelBuilder.Entity("ProjectHopeLynden.Domain.Inventory.Item", entity =>
