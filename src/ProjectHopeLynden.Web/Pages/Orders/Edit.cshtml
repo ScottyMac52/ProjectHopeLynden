@@ -1,0 +1,78 @@
+@page
+@model ProjectHopeLynden.Web.Pages.Orders.EditModel
+@{
+    ViewData["Title"] = Model.PageTitle;
+}
+<link rel="stylesheet" href="~/css/incoming-orders.css" />
+
+<section class="hero hero--branded incoming-orders-hero">
+    <p class="eyebrow">Incoming Orders</p>
+    <h1>@Model.PageTitle</h1>
+    <p>Correct the inventory destination, expected quantity, date, source, or reference before the order is received.</p>
+</section>
+
+@if (Model.OperationFailed)
+{
+    <section class="card status-message status-message--error" aria-live="assertive">
+        <p>@Model.OperationMessage</p>
+    </section>
+}
+
+@if (Model.EditView is not null)
+{
+    <section class="card incoming-order-edit">
+        <div>
+            <p class="card__kicker">Scheduled order</p>
+            <h2>@Model.EditView.Order.ItemName</h2>
+            <p>@Model.EditView.Order.CategoryName / @Model.EditView.Order.LocationName</p>
+        </div>
+
+        @if (!Model.EditView.Order.CanChange)
+        {
+            <p>This order is already @Model.EditView.Order.Status.ToString().ToLowerInvariant() and can no longer be edited.</p>
+            <p><a class="button-link" asp-page="/Orders/Index">Return to incoming orders</a></p>
+        }
+        else
+        {
+            <form method="post" asp-page-handler="Save" class="incoming-order-form">
+                <input type="hidden" asp-for="IncomingOrderId" />
+
+                <div class="incoming-order-form__wide">
+                    <label asp-for="InventoryEntryId">Inventory row</label>
+                    <select asp-for="InventoryEntryId" required>
+                        <option value="">Select inventory row</option>
+                        @foreach (var option in Model.EditView.InventoryOptions)
+                        {
+                            <option value="@option.InventoryEntryId">@option.DisplayName</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label asp-for="Quantity">Incoming quantity</label>
+                    <input asp-for="Quantity" type="number" min="0.5" step="0.5" required />
+                </div>
+
+                <div>
+                    <label asp-for="ExpectedDate">Expected date</label>
+                    <input asp-for="ExpectedDate" type="date" required />
+                </div>
+
+                <div>
+                    <label asp-for="Source">Source or supplier</label>
+                    <input asp-for="Source" maxlength="150" />
+                </div>
+
+                <div>
+                    <label asp-for="Reference">Order reference</label>
+                    <input asp-for="Reference" maxlength="100" />
+                </div>
+
+                <div class="incoming-order-form__actions">
+                    <button type="submit">Save changes</button>
+                    <a class="button-link button-link--secondary" asp-page="/Orders/Index">Cancel editing</a>
+                </div>
+            </form>
+        }
+    </section>
+}
