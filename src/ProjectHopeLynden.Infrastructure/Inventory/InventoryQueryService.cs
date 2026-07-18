@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ProjectHopeLynden.Application.Inventory;
+using ProjectHopeLynden.Domain.Inventory;
 using ProjectHopeLynden.Infrastructure.Persistence;
 
 namespace ProjectHopeLynden.Infrastructure.Inventory;
@@ -46,7 +47,14 @@ public sealed class InventoryQueryService(ProjectHopeDbContext context) : IInven
                 entry.IsCommodity,
                 entry.BestByDate,
                 entry.IsMenuItem,
-                entry.LastUpdatedAtUtc))
+                entry.LastUpdatedAtUtc,
+                entry.IncomingOrders
+                    .Where(order => order.Status == IncomingOrderStatus.Scheduled)
+                    .Sum(order => (double?)order.Quantity) ?? 0,
+                entry.IncomingOrders
+                    .Where(order => order.Status == IncomingOrderStatus.Scheduled)
+                    .Select(order => (DateOnly?)order.ExpectedDate)
+                    .Min()))
             .ToListAsync(cancellationToken);
 
         return new CategoryInventoryView(category.Id, category.Name, entries);
