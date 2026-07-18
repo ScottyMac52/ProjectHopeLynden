@@ -1,0 +1,199 @@
+@page
+@model ProjectHopeLynden.Web.Pages.Orders.IndexModel
+@{
+    ViewData["Title"] = Model.PageTitle;
+}
+<link rel="stylesheet" href="~/css/incoming-orders.css" />
+
+<section class="hero hero--branded incoming-orders-hero">
+    <p class="eyebrow">Project Hope Food Bank of Lynden</p>
+    <h1>@Model.PageTitle</h1>
+    <p>@Model.Summary</p>
+    <div class="inventory-toolbar inventory-toolbar--hero">
+        <a class="button-link button-link--light" asp-page="/Inventory/Index">View inventory spreadsheet</a>
+    </div>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <section class="card status-message status-message--success" aria-live="polite">
+        <p>@Model.StatusMessage</p>
+    </section>
+}
+
+@if (Model.OperationFailed)
+{
+    <section class="card status-message status-message--error" aria-live="assertive">
+        <p>@Model.OperationMessage</p>
+    </section>
+}
+
+<section class="card incoming-orders-note">
+    <div>
+        <p class="card__kicker">Work in progress</p>
+        <h2>Expected food, not budget tracking</h2>
+        <p>This first version tracks the inventory row, incoming quantity, expected date, source, and reference. The spreadsheet's budget column is intentionally not included yet.</p>
+    </div>
+</section>
+
+<section class="card incoming-order-create" aria-labelledby="schedule-order-title">
+    <div>
+        <p class="card__kicker">Schedule delivery</p>
+        <h2 id="schedule-order-title">Add an incoming order line</h2>
+        <p>Choose the exact inventory row that should receive the quantity. Commodity and non-Commodity rows remain separate.</p>
+    </div>
+
+    @if (Model.Orders.InventoryOptions.Count == 0)
+    {
+        <p>No inventory rows are available. <a asp-page="/Inventory/Maintain">Add an inventory row first</a>.</p>
+    }
+    else
+    {
+        <form method="post" asp-page-handler="Create" class="incoming-order-form">
+            <div class="incoming-order-form__wide">
+                <label asp-for="InventoryEntryId">Inventory row</label>
+                <select asp-for="InventoryEntryId" required>
+                    <option value="">Select inventory row</option>
+                    @foreach (var option in Model.Orders.InventoryOptions)
+                    {
+                        <option value="@option.InventoryEntryId">@option.DisplayName</option>
+                    }
+                </select>
+            </div>
+
+            <div>
+                <label asp-for="Quantity">Incoming quantity</label>
+                <input asp-for="Quantity" type="number" min="0.5" step="0.5" required />
+            </div>
+
+            <div>
+                <label asp-for="ExpectedDate">Expected date</label>
+                <input asp-for="ExpectedDate" type="date" required />
+            </div>
+
+            <div>
+                <label asp-for="Source">Source or supplier</label>
+                <input asp-for="Source" maxlength="150" placeholder="Optional" />
+            </div>
+
+            <div>
+                <label asp-for="Reference">Order reference</label>
+                <input asp-for="Reference" maxlength="100" placeholder="Optional" />
+            </div>
+
+            <div class="incoming-order-form__actions">
+                <button type="submit">Schedule incoming order</button>
+            </div>
+        </form>
+    }
+</section>
+
+<section class="card incoming-orders-section" aria-labelledby="scheduled-orders-title">
+    <div class="incoming-orders-section__heading">
+        <div>
+            <p class="card__kicker">On the way</p>
+            <h2 id="scheduled-orders-title">Scheduled incoming orders</h2>
+        </div>
+        <p><strong>@Model.Orders.ScheduledOrders.Count</strong> scheduled line(s)</p>
+    </div>
+
+    @if (Model.Orders.ScheduledOrders.Count == 0)
+    {
+        <p>No incoming orders are currently scheduled.</p>
+    }
+    else
+    {
+        <div class="incoming-orders-scroll">
+            <table class="incoming-orders-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Expected</th>
+                        <th scope="col">Item</th>
+                        <th scope="col">Category / Location</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Source</th>
+                        <th scope="col">Reference</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model.Orders.ScheduledOrders)
+                    {
+                        <tr>
+                            <td><strong>@order.ExpectedDate.ToString("yyyy-MM-dd")</strong></td>
+                            <td>
+                                @order.ItemName
+                                @if (order.IsCommodity)
+                                {
+                                    <span class="incoming-order-badge">Commodity</span>
+                                }
+                            </td>
+                            <td>@order.CategoryName<br /><span class="muted">@order.LocationName</span></td>
+                            <td>@order.Quantity</td>
+                            <td>@(order.Source ?? "—")</td>
+                            <td>@(order.Reference ?? "—")</td>
+                            <td>
+                                <div class="incoming-order-actions">
+                                    <a class="button-link button-link--secondary" asp-page="/Orders/Edit" asp-route-incomingOrderId="@order.Id">Edit</a>
+                                    <form method="post" asp-page-handler="Receive">
+                                        <input type="hidden" name="incomingOrderId" value="@order.Id" />
+                                        <button type="submit">Receive now</button>
+                                    </form>
+                                    <form method="post" asp-page-handler="Cancel">
+                                        <input type="hidden" name="incomingOrderId" value="@order.Id" />
+                                        <button type="submit" class="button--danger">Cancel</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+<section class="card incoming-orders-section" aria-labelledby="completed-orders-title">
+    <div class="incoming-orders-section__heading">
+        <div>
+            <p class="card__kicker">Recent activity</p>
+            <h2 id="completed-orders-title">Received and cancelled orders</h2>
+        </div>
+    </div>
+
+    @if (Model.Orders.CompletedOrders.Count == 0)
+    {
+        <p>No incoming-order activity has been completed yet.</p>
+    }
+    else
+    {
+        <div class="incoming-orders-scroll">
+            <table class="incoming-orders-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Status</th>
+                        <th scope="col">Expected</th>
+                        <th scope="col">Item</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Source / Reference</th>
+                        <th scope="col">Completed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model.Orders.CompletedOrders)
+                    {
+                        var completedAt = order.ReceivedAtUtc ?? order.CancelledAtUtc ?? order.UpdatedAtUtc;
+                        <tr>
+                            <td><span class="incoming-order-status incoming-order-status--@order.Status.ToString().ToLowerInvariant()">@order.Status</span></td>
+                            <td>@order.ExpectedDate.ToString("yyyy-MM-dd")</td>
+                            <td>@order.ItemName<br /><span class="muted">@order.CategoryName / @order.LocationName</span></td>
+                            <td>@order.Quantity</td>
+                            <td>@(order.Source ?? "—")<br /><span class="muted">@(order.Reference ?? "")</span></td>
+                            <td>@completedAt.ToString("yyyy-MM-dd HH:mm") UTC</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
