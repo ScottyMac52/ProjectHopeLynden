@@ -27,4 +27,6 @@ public sealed class InventoryEntry
     public DateTime LastUpdatedAtUtc { get; set; }
 
     public List<InventoryCountHistory> CountHistory { get; set; } = [];
+
+    public List<IncomingOrderLine> IncomingOrders { get; set; } = [];
 }
