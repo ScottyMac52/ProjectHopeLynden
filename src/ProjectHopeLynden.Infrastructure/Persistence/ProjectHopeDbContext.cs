@@ -15,6 +15,8 @@ public sealed class ProjectHopeDbContext(DbContextOptions<ProjectHopeDbContext> 
 
     public DbSet<InventoryCountHistory> InventoryCountHistory => Set<InventoryCountHistory>();
 
+    public DbSet<IncomingOrderLine> IncomingOrderLines => Set<IncomingOrderLine>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureCategories(modelBuilder);
@@ -22,6 +24,7 @@ public sealed class ProjectHopeDbContext(DbContextOptions<ProjectHopeDbContext> 
         ConfigureLocations(modelBuilder);
         ConfigureInventoryEntries(modelBuilder);
         ConfigureInventoryCountHistory(modelBuilder);
+        ConfigureIncomingOrderLines(modelBuilder);
     }
 
     private static void ConfigureCategories(ModelBuilder modelBuilder)
@@ -162,6 +165,49 @@ public sealed class ProjectHopeDbContext(DbContextOptions<ProjectHopeDbContext> 
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(history => new { history.InventoryEntryId, history.CountedAtUtc });
+        });
+    }
+
+    private static void ConfigureIncomingOrderLines(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<IncomingOrderLine>(entity =>
+        {
+            entity.ToTable("IncomingOrderLines", table =>
+            {
+                table.HasCheckConstraint("CK_IncomingOrderLines_Quantity_Positive", "Quantity > 0");
+            });
+
+            entity.HasKey(order => order.Id);
+
+            entity.Property(order => order.Quantity)
+                .HasColumnType("REAL")
+                .IsRequired();
+
+            entity.Property(order => order.ExpectedDate)
+                .IsRequired();
+
+            entity.Property(order => order.Source)
+                .HasMaxLength(150);
+
+            entity.Property(order => order.Reference)
+                .HasMaxLength(100);
+
+            entity.Property(order => order.Status)
+                .IsRequired();
+
+            entity.Property(order => order.CreatedAtUtc)
+                .IsRequired();
+
+            entity.Property(order => order.UpdatedAtUtc)
+                .IsRequired();
+
+            entity.HasOne(order => order.InventoryEntry)
+                .WithMany(entry => entry.IncomingOrders)
+                .HasForeignKey(order => order.InventoryEntryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(order => new { order.Status, order.ExpectedDate });
+            entity.HasIndex(order => new { order.InventoryEntryId, order.Status });
         });
     }
 }
