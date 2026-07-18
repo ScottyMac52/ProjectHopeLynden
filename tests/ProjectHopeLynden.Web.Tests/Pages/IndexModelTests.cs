@@ -50,6 +50,14 @@ public sealed class IndexModelTests
                 card),
             card => Assert.Equal(
                 new HomeTaskCard(
+                    "Planning",
+                    "Incoming Orders",
+                    "Schedule expected inventory and see incoming quantities on the inventory spreadsheet.",
+                    "/Orders/Index",
+                    "View incoming orders"),
+                card),
+            card => Assert.Equal(
+                new HomeTaskCard(
                     "Find food",
                     "Search Inventory",
                     "Find an item across categories and locations, including Commodity and non-Commodity records.",
@@ -141,6 +149,6 @@ public sealed class IndexModelTests
         Assert.Equal(
             "Simple tools for food distribution, Commodity reporting, and inventory history.",
             model.ImpactStatement);
-        Assert.Equal(6, model.TaskCards.Count);
+        Assert.Equal(7, model.TaskCards.Count);
     }
 }
