@@ -4,6 +4,10 @@ public interface IIncomingOrderService
 {
     Task<IncomingOrdersView> GetOrdersAsync(CancellationToken cancellationToken = default);
 
+    Task<IncomingOrderEditView?> GetForEditAsync(
+        int incomingOrderId,
+        CancellationToken cancellationToken = default);
+
     Task<IncomingOrderOperationResult> CreateAsync(
         IncomingOrderSaveRequest request,
         DateTime createdAtUtc,
