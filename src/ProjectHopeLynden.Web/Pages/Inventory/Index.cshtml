@@ -10,6 +10,7 @@
     <h1>@Model.PageTitle</h1>
     <p>@Model.Summary</p>
     <div class="inventory-toolbar inventory-toolbar--hero">
+        <a class="button-link button-link--light" asp-page="/Orders/Index">Incoming orders</a>
         <a class="button-link button-link--light" asp-page="/Inventory/Manage">Manage inventory</a>
         <a class="button-link button-link--light" asp-page="/Inventory/Maintain">Add inventory row</a>
     </div>
@@ -55,6 +56,8 @@ else
                         <th scope="col">Item</th>
                         <th scope="col">Location</th>
                         <th scope="col" class="spreadsheet-table__quantity">Quantity</th>
+                        <th scope="col" class="spreadsheet-table__quantity">Incoming</th>
+                        <th scope="col">Expected</th>
                         <th scope="col">Commodity</th>
                         <th scope="col">BB Date</th>
                         <th scope="col">Menu Item</th>
@@ -67,7 +70,7 @@ else
                     @foreach (var inventory in Model.CategoryInventories)
                     {
                         <tr class="spreadsheet-category-row" id="category-@inventory.CategoryId">
-                            <th colspan="8" scope="rowgroup">@inventory.CategoryName</th>
+                            <th colspan="10" scope="rowgroup">@inventory.CategoryName</th>
                             <td>
                                 <a asp-page="/Inventory/Maintain" asp-route-categoryId="@inventory.CategoryId">Add row</a>
                             </td>
@@ -76,7 +79,7 @@ else
                         @if (!inventory.HasEntries)
                         {
                             <tr class="spreadsheet-empty-row">
-                                <td colspan="9">No inventory entries recorded for this category.</td>
+                                <td colspan="11">No inventory entries recorded for this category.</td>
                             </tr>
                         }
                         else
@@ -95,6 +98,13 @@ else
                                             <button type="submit">Save</button>
                                         </form>
                                     </td>
+                                    <td>
+                                        @if (entry.IncomingQuantity > 0)
+                                        {
+                                            <a asp-page="/Orders/Index" title="Open incoming orders">+@entry.IncomingQuantity</a>
+                                        }
+                                    </td>
+                                    <td>@(entry.NextExpectedDate?.ToString("yyyy-MM-dd") ?? "")</td>
                                     <td class="spreadsheet-table__center">@(entry.IsCommodity ? "✓" : "")</td>
                                     <td>@(entry.BestByDate?.ToString("yyyy-MM-dd") ?? "")</td>
                                     <td class="spreadsheet-table__center">@(entry.IsMenuItem ? "✓" : "")</td>
