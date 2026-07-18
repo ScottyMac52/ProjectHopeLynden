@@ -8,4 +8,6 @@ public sealed record InventoryEntryListItem(
     bool IsCommodity,
     DateTime? BestByDate,
     bool IsMenuItem,
-    DateTime LastUpdatedAtUtc);
+    DateTime LastUpdatedAtUtc,
+    double IncomingQuantity = 0,
+    DateOnly? NextExpectedDate = null);
