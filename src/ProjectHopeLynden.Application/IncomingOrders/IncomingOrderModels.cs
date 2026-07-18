@@ -38,6 +38,10 @@ public sealed record IncomingOrdersView(
     IReadOnlyList<IncomingOrderListItem> ScheduledOrders,
     IReadOnlyList<IncomingOrderListItem> CompletedOrders);
 
+public sealed record IncomingOrderEditView(
+    IncomingOrderListItem Order,
+    IReadOnlyList<IncomingOrderInventoryOption> InventoryOptions);
+
 public sealed record IncomingOrderSaveRequest(
     int? InventoryEntryId,
     double? Quantity,
