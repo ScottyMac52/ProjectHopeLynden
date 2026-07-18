@@ -1,0 +1,135 @@
+.incoming-orders-hero {
+  margin-bottom: 1rem;
+}
+
+.incoming-orders-note,
+.incoming-order-create,
+.incoming-orders-section,
+.incoming-order-edit {
+  margin-bottom: 1rem;
+}
+
+.incoming-orders-note h2,
+.incoming-order-create h2,
+.incoming-orders-section h2,
+.incoming-order-edit h2 {
+  margin-bottom: 0.5rem;
+}
+
+.incoming-order-form {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.incoming-order-form label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.incoming-order-form input,
+.incoming-order-form select {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.incoming-order-form__wide,
+.incoming-order-form__actions {
+  grid-column: 1 / -1;
+}
+
+.incoming-order-form__actions,
+.incoming-order-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.incoming-orders-section__heading {
+  align-items: end;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.incoming-orders-scroll {
+  overflow-x: auto;
+}
+
+.incoming-orders-table {
+  border-collapse: collapse;
+  min-width: 920px;
+  width: 100%;
+}
+
+.incoming-orders-table th,
+.incoming-orders-table td {
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.incoming-orders-table th {
+  background: var(--brand-cream);
+  color: var(--brand-navy);
+}
+
+.incoming-orders-table tbody tr:nth-child(even) {
+  background: rgba(244, 237, 219, 0.35);
+}
+
+.incoming-order-badge,
+.incoming-order-status {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-left: 0.35rem;
+  padding: 0.2rem 0.5rem;
+}
+
+.incoming-order-badge,
+.incoming-order-status--received {
+  background: #e4f2e8;
+  color: #245d35;
+}
+
+.incoming-order-status--cancelled {
+  background: #f7e4e1;
+  color: #8b2f27;
+}
+
+.incoming-order-status--scheduled {
+  background: #e3eef5;
+  color: var(--brand-navy);
+}
+
+.button--danger {
+  background: #8b2f27;
+}
+
+.muted {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 720px) {
+  .incoming-order-form {
+    grid-template-columns: 1fr;
+  }
+
+  .incoming-order-form__wide,
+  .incoming-order-form__actions {
+    grid-column: auto;
+  }
+
+  .incoming-orders-section__heading {
+    align-items: start;
+    flex-direction: column;
+  }
+}
