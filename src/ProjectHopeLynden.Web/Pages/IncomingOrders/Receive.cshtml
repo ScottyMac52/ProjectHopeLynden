@@ -1,0 +1,38 @@
+@page
+@model ReceiveModel
+@{
+    ViewData["Title"] = "Receive Incoming Order";
+}
+<link rel="stylesheet" href="~/css/incoming-orders.css" asp-append-version="true" />
+
+<section class="hero hero--branded">
+    <p class="eyebrow">Incoming Orders</p>
+    <h1>Receive @Model.Order?.Vendor order</h1>
+    <p>Confirm the quantities physically received before inventory is updated.</p>
+</section>
+
+@if (Model.ReceiveFailed)
+{
+    <section class="card status-message status-message--error" aria-live="polite"><p>@Model.ReceiveMessage</p></section>
+}
+
+@if (Model.Order is not null)
+{
+    <form method="post" class="card receive-order-form">
+        <input type="hidden" asp-for="OrderId" />
+        <h2>Receipt quantities</h2>
+        <p><strong>Expected:</strong> @Model.Order.ExpectedDate.ToString("M/d/yyyy") &nbsp; <strong>Products:</strong> @(Model.Order.ProductSummary ?? "Not specified")</p>
+        @for (var index = 0; index < Model.Lines.Count; index++)
+        {
+            <div class="receipt-line">
+                <input type="hidden" asp-for="Lines[index].LineId" />
+                <input type="hidden" asp-for="Lines[index].InventoryEntryName" />
+                <input type="hidden" asp-for="Lines[index].ExpectedQuantity" />
+                <div><strong>@Model.Lines[index].InventoryEntryName</strong><span>Expected: @Model.Lines[index].ExpectedQuantity.ToString("0.##")</span></div>
+                <label><span>Received quantity</span><input asp-for="Lines[index].ReceivedQuantity" type="number" min="0.5" step="0.5" /></label>
+            </div>
+        }
+        <div class="receipt-warning"><strong>This action updates inventory.</strong> The order can only be received once, and its receipt history will remain permanent.</div>
+        <div class="form-actions"><button type="submit">Confirm receipt and update inventory</button><a asp-page="/IncomingOrders/Index">Cancel</a></div>
+    </form>
+}

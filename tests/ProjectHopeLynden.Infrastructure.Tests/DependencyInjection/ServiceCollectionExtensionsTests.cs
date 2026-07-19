@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectHopeLynden.Application.Backup;
 using ProjectHopeLynden.Application.Inventory;
+using ProjectHopeLynden.Application.IncomingOrders;
 using ProjectHopeLynden.Infrastructure.DependencyInjection;
 using ProjectHopeLynden.Infrastructure.Persistence;
 using ProjectHopeLynden.Infrastructure.Persistence.Seeding;
@@ -26,6 +27,7 @@ public sealed class ServiceCollectionExtensionsTests
         Assert.NotNull(provider.GetRequiredService<IInventoryCommodityService>());
         Assert.NotNull(provider.GetRequiredService<IInventoryTrendReportService>());
         Assert.NotNull(provider.GetRequiredService<IInventoryEntryMaintenanceService>());
+        Assert.NotNull(provider.GetRequiredService<IIncomingOrderService>());
         Assert.NotNull(provider.GetRequiredService<InitialInventorySeeder>());
     }
 

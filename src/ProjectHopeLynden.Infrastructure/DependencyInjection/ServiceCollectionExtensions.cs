@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ProjectHopeLynden.Application.Backup;
 using ProjectHopeLynden.Application.Inventory;
+using ProjectHopeLynden.Application.IncomingOrders;
 using ProjectHopeLynden.Infrastructure.Inventory;
+using ProjectHopeLynden.Infrastructure.IncomingOrders;
 using ProjectHopeLynden.Infrastructure.Persistence;
 using ProjectHopeLynden.Infrastructure.Persistence.Backup;
 using ProjectHopeLynden.Infrastructure.Persistence.Seeding;
@@ -29,6 +31,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IInventoryTrendReportService, InventoryTrendReportService>();
         services.AddScoped<IInventoryEntryMaintenanceService, InventoryEntryMaintenanceService>();
         services.AddScoped<IInventoryCategoryService, InventoryCategoryService>();
+        services.AddScoped<IIncomingOrderService, IncomingOrderService>();
         services.AddScoped<InitialInventorySeeder>();
 
         return services;

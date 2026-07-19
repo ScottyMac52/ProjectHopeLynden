@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ProjectHopeLynden.Domain.IncomingOrders;
 using ProjectHopeLynden.Domain.Inventory;
 
 namespace ProjectHopeLynden.Infrastructure.Persistence;
@@ -15,6 +16,10 @@ public sealed class ProjectHopeDbContext(DbContextOptions<ProjectHopeDbContext> 
 
     public DbSet<InventoryCountHistory> InventoryCountHistory => Set<InventoryCountHistory>();
 
+    public DbSet<IncomingOrder> IncomingOrders => Set<IncomingOrder>();
+
+    public DbSet<IncomingOrderLine> IncomingOrderLines => Set<IncomingOrderLine>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureCategories(modelBuilder);
@@ -22,6 +27,8 @@ public sealed class ProjectHopeDbContext(DbContextOptions<ProjectHopeDbContext> 
         ConfigureLocations(modelBuilder);
         ConfigureInventoryEntries(modelBuilder);
         ConfigureInventoryCountHistory(modelBuilder);
+        ConfigureIncomingOrders(modelBuilder);
+        ConfigureIncomingOrderLines(modelBuilder);
     }
 
     private static void ConfigureCategories(ModelBuilder modelBuilder)
@@ -162,6 +169,57 @@ public sealed class ProjectHopeDbContext(DbContextOptions<ProjectHopeDbContext> 
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(history => new { history.InventoryEntryId, history.CountedAtUtc });
+        });
+    }
+
+    private static void ConfigureIncomingOrders(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<IncomingOrder>(entity =>
+        {
+            entity.ToTable("IncomingOrders", table =>
+            {
+                table.HasCheckConstraint("CK_IncomingOrders_InvoiceAmount_NonNegative", "InvoiceAmount IS NULL OR InvoiceAmount >= 0");
+                table.HasCheckConstraint("CK_IncomingOrders_Weight_NonNegative", "Weight IS NULL OR Weight >= 0");
+            });
+
+            entity.HasKey(order => order.Id);
+            entity.Property(order => order.Vendor).HasMaxLength(150).IsRequired();
+            entity.Property(order => order.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
+            entity.Property(order => order.InvoiceNumber).HasMaxLength(100);
+            entity.Property(order => order.InvoiceAmount).HasColumnType("REAL");
+            entity.Property(order => order.SentToPayer).HasMaxLength(100);
+            entity.Property(order => order.ChargeTo).HasMaxLength(100);
+            entity.Property(order => order.Weight).HasColumnType("REAL");
+            entity.Property(order => order.ProductSummary).HasMaxLength(500);
+            entity.Property(order => order.Notes).HasMaxLength(2000);
+            entity.HasIndex(order => new { order.Status, order.ExpectedDate });
+        });
+    }
+
+    private static void ConfigureIncomingOrderLines(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<IncomingOrderLine>(entity =>
+        {
+            entity.ToTable("IncomingOrderLines", table =>
+            {
+                table.HasCheckConstraint("CK_IncomingOrderLines_ExpectedQuantity_Positive", "ExpectedQuantity > 0");
+                table.HasCheckConstraint("CK_IncomingOrderLines_ReceivedQuantity_Positive", "ReceivedQuantity IS NULL OR ReceivedQuantity > 0");
+            });
+
+            entity.HasKey(line => line.Id);
+            entity.Property(line => line.ExpectedQuantity).HasColumnType("REAL").IsRequired();
+            entity.Property(line => line.ReceivedQuantity).HasColumnType("REAL");
+            entity.HasOne(line => line.IncomingOrder)
+                .WithMany(order => order.Lines)
+                .HasForeignKey(line => line.IncomingOrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(line => line.InventoryEntry)
+                .WithMany()
+                .HasForeignKey(line => line.InventoryEntryId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(line => line.IncomingOrderId);
+            entity.HasIndex(line => line.InventoryEntryId);
+            entity.HasIndex(line => new { line.IncomingOrderId, line.InventoryEntryId }).IsUnique();
         });
     }
 }
