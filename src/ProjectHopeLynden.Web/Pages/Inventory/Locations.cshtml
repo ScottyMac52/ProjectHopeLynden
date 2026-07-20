@@ -1,0 +1,62 @@
+@page
+@model LocationsModel
+@{
+    ViewData["Title"] = Model.PageTitle;
+}
+<link rel="stylesheet" href="~/css/inventory-management.css" />
+
+<section class="hero hero--branded inventory-management-hero">
+    <p class="eyebrow">Project Hope Food Bank of Lynden</p>
+    <h1>@Model.PageTitle</h1>
+    <p>Add valid storage locations for inventory rows. Renaming and deleting locations are not available here because existing inventory may depend on them.</p>
+    <div class="inventory-management-actions">
+        <a class="button-link button-link--light" asp-page="/Inventory/Manage">Manage inventory</a>
+        <a class="button-link button-link--light" asp-page="/Inventory/Maintain">Add inventory row</a>
+    </div>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(Model.AddedLocationName))
+{
+    <section class="card status-message status-message--success" aria-live="polite">
+        <p>Location <strong>@Model.AddedLocationName</strong> was added and is ready to use.</p>
+    </section>
+}
+
+@if (Model.CreateFailed)
+{
+    <section class="card status-message status-message--error" aria-live="polite">
+        <p>@Model.CreateMessage</p>
+    </section>
+}
+
+<section class="management-toolbar location-management-toolbar" aria-label="Add inventory location">
+    <form method="post" asp-page-handler="Create" class="add-location-form">
+        <label for="newLocationName">New location</label>
+        <input id="newLocationName" asp-for="NewLocationName" autocomplete="off" maxlength="100" placeholder="Location name" />
+        <button type="submit">Add location</button>
+    </form>
+</section>
+
+<section class="card" aria-label="Current inventory locations">
+    <div class="section-heading">
+        <div>
+            <p class="card__kicker">Available choices</p>
+            <h2>Current locations</h2>
+        </div>
+        <span class="location-count">@Model.Locations.Count total</span>
+    </div>
+
+    @if (Model.Locations.Count == 0)
+    {
+        <p>No locations have been added yet.</p>
+    }
+    else
+    {
+        <ul class="location-list">
+            @foreach (var location in Model.Locations)
+            {
+                <li>@location.Name</li>
+            }
+        </ul>
+    }
+</section>

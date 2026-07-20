@@ -27,6 +27,7 @@ public sealed class ServiceCollectionExtensionsTests
         Assert.NotNull(provider.GetRequiredService<IInventoryCommodityService>());
         Assert.NotNull(provider.GetRequiredService<IInventoryTrendReportService>());
         Assert.NotNull(provider.GetRequiredService<IInventoryEntryMaintenanceService>());
+        Assert.NotNull(provider.GetRequiredService<IInventoryLocationService>());
         Assert.NotNull(provider.GetRequiredService<IIncomingOrderService>());
         Assert.NotNull(provider.GetRequiredService<InitialInventorySeeder>());
     }

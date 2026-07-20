@@ -33,6 +33,20 @@ else
         </section>
     }
 
+    @if (Model.LocationCreateFailed)
+    {
+        <section class="card status-message status-message--error" aria-live="polite">
+            <p>@Model.LocationCreateMessage</p>
+        </section>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.LocationCreateSuccessMessage))
+    {
+        <section class="card status-message status-message--success" aria-live="polite">
+            <p>@Model.LocationCreateSuccessMessage</p>
+        </section>
+    }
+
     <section class="card" aria-label="Inventory row maintenance form">
         <form method="post" asp-page-handler="Save" class="inventory-entry-form">
             <input type="hidden" asp-for="InventoryEntryId" />
@@ -55,16 +69,26 @@ else
                     </select>
                 </label>
 
-                <label>
-                    <span>Location</span>
-                    <select asp-for="LocationId">
-                        <option value="">Choose location</option>
-                        @foreach (var location in Model.Options.Locations)
-                        {
-                            <option value="@location.Id">@location.Name</option>
-                        }
-                    </select>
-                </label>
+                <div class="location-field">
+                    <label>
+                        <span>Location</span>
+                        <select asp-for="LocationId">
+                            <option value="">Choose location</option>
+                            @foreach (var location in Model.Options.Locations)
+                            {
+                                <option value="@location.Id">@location.Name</option>
+                            }
+                        </select>
+                    </label>
+                    <div class="inline-location-create">
+                        <label for="newLocationName">Missing a location?</label>
+                        <div>
+                            <input id="newLocationName" asp-for="NewLocationName" autocomplete="off" maxlength="100" placeholder="New location name" />
+                            <button type="submit" asp-page-handler="CreateLocation">Add location</button>
+                        </div>
+                        <a asp-page="/Inventory/Locations" target="_blank" rel="noopener">View all locations in a new tab</a>
+                    </div>
+                </div>
 
                 <label>
                     <span>BB Date</span>

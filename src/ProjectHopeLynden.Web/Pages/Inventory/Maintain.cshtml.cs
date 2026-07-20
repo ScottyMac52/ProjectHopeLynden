@@ -4,7 +4,9 @@ using ProjectHopeLynden.Application.Inventory;
 
 namespace ProjectHopeLynden.Web.Pages.Inventory;
 
-public sealed class MaintainModel(IInventoryEntryMaintenanceService entryMaintenanceService) : PageModel
+public sealed class MaintainModel(
+    IInventoryEntryMaintenanceService entryMaintenanceService,
+    IInventoryLocationService locationService) : PageModel
 {
     public string PageTitle => IsEditing ? "Edit Inventory Row" : "Add Inventory Row";
 
@@ -17,6 +19,12 @@ public sealed class MaintainModel(IInventoryEntryMaintenanceService entryMainten
     public bool SaveFailed { get; private set; }
 
     public string? SaveMessage { get; private set; }
+
+    public bool LocationCreateFailed { get; private set; }
+
+    public string? LocationCreateMessage { get; private set; }
+
+    public string? LocationCreateSuccessMessage { get; private set; }
 
     public bool IsEditing => InventoryEntryId.HasValue;
 
@@ -46,6 +54,9 @@ public sealed class MaintainModel(IInventoryEntryMaintenanceService entryMainten
 
     [BindProperty]
     public bool IsMenuItem { get; set; }
+
+    [BindProperty]
+    public string? NewLocationName { get; set; }
 
     public async Task OnGetAsync()
     {
@@ -93,6 +104,27 @@ public sealed class MaintainModel(IInventoryEntryMaintenanceService entryMainten
         }
 
         return RedirectToPage("/Inventory/Manage", new { categoryId = result.CategoryId ?? SelectedCategoryId });
+    }
+
+    public async Task<IActionResult> OnPostCreateLocationAsync()
+    {
+        var result = await locationService.CreateLocationAsync(NewLocationName);
+        Options = await entryMaintenanceService.GetFormOptionsAsync();
+
+        if (!result.Succeeded)
+        {
+            LocationCreateFailed = true;
+            LocationCreateMessage = result.ErrorMessage ?? "Location could not be added.";
+            return Page();
+        }
+
+        LocationId = result.LocationId;
+        NewLocationName = null;
+        ModelState.Remove(nameof(LocationId));
+        ModelState.Remove(nameof(NewLocationName));
+        LocationCreateSuccessMessage =
+            $"Location '{result.LocationName}' was added and selected. Your inventory row has not been saved yet.";
+        return Page();
     }
 
     private void ApplyEditView(InventoryEntryEditView editView)
