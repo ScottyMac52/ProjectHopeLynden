@@ -37,5 +37,14 @@
     <None Include="..\..\src\ProjectHopeLynden.Web\Pages\Shared\_Layout.cshtml"
           Link="TestAssets\_Layout.cshtml"
           CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\ProjectHopeLynden.Web\Pages\Inventory\Maintain.cshtml"
+          Link="TestAssets\InventoryMaintain.cshtml"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\ProjectHopeLynden.Web\Pages\Inventory\Manage.cshtml"
+          Link="TestAssets\InventoryManage.cshtml"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\ProjectHopeLynden.Web\Pages\Inventory\Locations.cshtml"
+          Link="TestAssets\InventoryLocations.cshtml"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

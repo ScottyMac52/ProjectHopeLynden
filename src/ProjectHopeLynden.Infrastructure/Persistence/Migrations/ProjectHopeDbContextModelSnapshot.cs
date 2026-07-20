@@ -237,9 +237,17 @@ public sealed class ProjectHopeDbContextModelSnapshot : ModelSnapshot
                 .HasMaxLength(100)
                 .HasColumnType("TEXT");
 
+            entity.Property<string>("NormalizedName")
+                .ValueGeneratedOnAddOrUpdate()
+                .HasColumnType("TEXT")
+                .HasComputedColumnSql("upper(trim(Name))", false);
+
             entity.HasKey("Id");
 
             entity.HasIndex("Name")
+                .IsUnique();
+
+            entity.HasIndex("NormalizedName")
                 .IsUnique();
 
             entity.ToTable("Locations");

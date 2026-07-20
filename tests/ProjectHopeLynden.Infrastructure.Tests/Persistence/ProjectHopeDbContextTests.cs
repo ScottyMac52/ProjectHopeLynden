@@ -1,5 +1,7 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using ProjectHopeLynden.Domain.Inventory;
 using ProjectHopeLynden.Infrastructure.Persistence;
 using Xunit;
@@ -25,6 +27,44 @@ public sealed class ProjectHopeDbContextTests
         Assert.Contains("InventoryCountHistory", tableNames);
         Assert.Contains("IncomingOrders", tableNames);
         Assert.Contains("IncomingOrderLines", tableNames);
+    }
+
+    [Fact]
+    public async Task NormalizedLocationMigration_PreservesInventoryLocationRelationship()
+    {
+        await using var connection = await OpenConnectionAsync();
+        await using var context = CreateContext(connection);
+        var migrator = context.Database.GetService<IMigrator>();
+        await migrator.MigrateAsync("20260718190000_AddIncomingOrders");
+
+        var item = new Item { Name = "Green Beans" };
+        var category = new Category { Name = "Canned Vegetables" };
+        var location = new Location { Name = "Pantry Shelf" };
+        var entry = new InventoryEntry
+        {
+            Item = item,
+            Category = category,
+            Location = location,
+            CurrentQuantity = 24,
+            IsCommodity = true,
+            LastUpdatedAtUtc = new DateTime(2026, 7, 20, 12, 0, 0, DateTimeKind.Utc),
+        };
+        context.InventoryEntries.Add(entry);
+        await context.SaveChangesAsync();
+        var entryId = entry.Id;
+        var locationId = location.Id;
+
+        await migrator.MigrateAsync();
+        context.ChangeTracker.Clear();
+
+        var saved = await context.InventoryEntries
+            .AsNoTracking()
+            .Include(inventoryEntry => inventoryEntry.Location)
+            .SingleAsync(inventoryEntry => inventoryEntry.Id == entryId);
+        Assert.Equal(locationId, saved.LocationId);
+        Assert.Equal("Pantry Shelf", saved.Location.Name);
+        Assert.Equal(24, saved.CurrentQuantity);
+        Assert.True(saved.IsCommodity);
     }
 
     [Fact]

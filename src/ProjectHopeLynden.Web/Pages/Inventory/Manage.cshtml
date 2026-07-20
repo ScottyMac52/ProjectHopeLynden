@@ -12,6 +12,7 @@
     <div class="inventory-management-actions">
         <a class="button-link button-link--light" asp-page="/Inventory/Index">Spreadsheet overview</a>
         <a class="button-link button-link--light" asp-page="/Inventory/Maintain" asp-route-categoryId="@Model.CategoryId">Add inventory row</a>
+        <a class="button-link button-link--light" asp-page="/Inventory/Locations">Manage locations</a>
     </div>
 </section>
 
@@ -54,6 +55,7 @@
         <input id="newCategoryName" asp-for="NewCategoryName" autocomplete="off" placeholder="Category name" />
         <button type="submit">Add category</button>
     </form>
+    <a class="button-link manage-locations-link" asp-page="/Inventory/Locations">Manage locations</a>
 </section>
 
 @if (Model.Categories.Count == 0)

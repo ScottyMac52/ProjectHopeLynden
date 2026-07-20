@@ -74,7 +74,13 @@ public sealed class ProjectHopeDbContext(DbContextOptions<ProjectHopeDbContext> 
                 .HasMaxLength(100)
                 .IsRequired();
 
+            entity.Property<string>("NormalizedName")
+                .HasComputedColumnSql("upper(trim(Name))", stored: false);
+
             entity.HasIndex(location => location.Name)
+                .IsUnique();
+
+            entity.HasIndex("NormalizedName")
                 .IsUnique();
         });
     }

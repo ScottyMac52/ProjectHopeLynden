@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IInventoryTrendReportService, InventoryTrendReportService>();
         services.AddScoped<IInventoryEntryMaintenanceService, InventoryEntryMaintenanceService>();
         services.AddScoped<IInventoryCategoryService, InventoryCategoryService>();
+        services.AddScoped<IInventoryLocationService, InventoryLocationService>();
         services.AddScoped<IIncomingOrderService, IncomingOrderService>();
         services.AddScoped<InitialInventorySeeder>();
 

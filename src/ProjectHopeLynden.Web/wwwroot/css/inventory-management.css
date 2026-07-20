@@ -22,6 +22,15 @@
   color: var(--brand-blue-dark);
 }
 
+.status-message--success {
+  border-color: var(--brand-green);
+}
+
+.status-message--success p {
+  color: var(--brand-green);
+  font-weight: 800;
+}
+
 .management-toolbar {
   align-items: end;
   background: #ffffff;
@@ -64,6 +73,93 @@
   min-width: 0;
 }
 
+.manage-locations-link {
+  justify-self: end;
+}
+
+.location-field {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.inline-location-create {
+  background: var(--background-warm);
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.75rem;
+}
+
+.inline-location-create > label {
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.inline-location-create > div {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.inline-location-create input {
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  font: inherit;
+  min-width: 0;
+  padding: 0.55rem 0.65rem;
+  width: 100%;
+}
+
+.inline-location-create button {
+  white-space: nowrap;
+}
+
+.location-management-toolbar {
+  display: block;
+}
+
+.add-location-form {
+  align-items: end;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.add-location-form label {
+  font-weight: 800;
+  grid-column: 1 / -1;
+}
+
+.add-location-form input {
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  font: inherit;
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
+}
+
+.location-count {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.location-list {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.location-list li {
+  background: var(--background-warm);
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  font-weight: 700;
+  padding: 0.75rem;
+}
+
 .inventory-category__heading {
   align-items: center;
   display: flex;
@@ -77,6 +173,18 @@
 
 @media (max-width: 900px) {
   .management-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .manage-locations-link {
+    justify-self: start;
+  }
+}
+
+@media (max-width: 600px) {
+  .inline-location-create > div,
+  .add-location-form {
+    display: grid;
     grid-template-columns: 1fr;
   }
 }
