@@ -58,7 +58,7 @@ git tag v0.0.1.0
 git push origin v0.0.1.0
 ```
 
-The installer installs the ASP.NET Core server component and includes a checked-by-default option to preserve an existing Project Hope Lynden database if one is present. The current preservation script protects the conventional database locations under `{commonappdata}\ProjectHopeLynden\ProjectHopeLynden.db` and `{app}\ProjectHopeLynden.db` so we have a safe path before the EF Core storage location is finalized.
+The installer installs the ASP.NET Core server component and includes a checked-by-default option to preserve an existing Project Hope Lynden database if one is present. It also offers an unchecked **Enable Incoming Orders Feature** option that writes the corresponding feature flag before the Windows service starts. The current preservation script protects the conventional database locations under `{commonappdata}\ProjectHopeLynden\ProjectHopeLynden.db` and `{app}\ProjectHopeLynden.db` so we have a safe path before the EF Core storage location is finalized.
 
 ## Project Status
 
