@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("Install", "Stop", "Remove")]
+    [ValidateSet("Configure", "Install", "Stop", "Remove")]
     [string]$Action,
 
     [Parameter(Mandatory = $true)]
@@ -11,7 +11,14 @@ param(
     [string]$DisplayName,
 
     [Parameter(Mandatory = $false)]
-    [string]$ExecutablePath
+    [string]$ExecutablePath,
+
+    [Parameter(Mandatory = $false)]
+    [string]$ConfigPath,
+
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("true", "false")]
+    [string]$IncomingOrdersEnabled
 )
 
 Set-StrictMode -Version Latest
@@ -63,6 +70,55 @@ function Invoke-ServiceControl {
 }
 
 switch ($Action) {
+    "Configure" {
+        if ([string]::IsNullOrWhiteSpace($ConfigPath)) {
+            throw "ConfigPath is required when configuring application features."
+        }
+
+        if ([string]::IsNullOrWhiteSpace($IncomingOrdersEnabled)) {
+            throw "IncomingOrdersEnabled is required when configuring application features."
+        }
+
+        $resolvedConfigPath = [IO.Path]::GetFullPath($ConfigPath)
+        if (-not (Test-Path -LiteralPath $resolvedConfigPath -PathType Leaf)) {
+            throw "The Project Hope application configuration was not found: $resolvedConfigPath"
+        }
+
+        $temporaryConfigPath = $null
+        try {
+            $configuration = Get-Content -LiteralPath $resolvedConfigPath -Raw | ConvertFrom-Json
+            if ($null -eq $configuration) {
+                throw "The application configuration is empty."
+            }
+
+            if ($null -eq $configuration.PSObject.Properties["Features"]) {
+                $configuration | Add-Member -MemberType NoteProperty -Name Features -Value ([PSCustomObject]@{})
+            }
+
+            $features = $configuration.Features
+            $enableIncomingOrders = [bool]::Parse($IncomingOrdersEnabled)
+            if ($null -eq $features.PSObject.Properties["IncomingOrders"]) {
+                $features | Add-Member -MemberType NoteProperty -Name IncomingOrders -Value $enableIncomingOrders
+            }
+            else {
+                $features.IncomingOrders = $enableIncomingOrders
+            }
+
+            $temporaryConfigPath = "$resolvedConfigPath.tmp"
+            $configuration |
+                ConvertTo-Json -Depth 20 |
+                Set-Content -LiteralPath $temporaryConfigPath -Encoding UTF8
+            Move-Item -LiteralPath $temporaryConfigPath -Destination $resolvedConfigPath -Force
+        }
+        catch {
+            if ($null -ne $temporaryConfigPath -and (Test-Path -LiteralPath $temporaryConfigPath)) {
+                Remove-Item -LiteralPath $temporaryConfigPath -Force -ErrorAction SilentlyContinue
+            }
+
+            throw "The Incoming Orders feature setting could not be updated in '$resolvedConfigPath': $($_.Exception.Message)"
+        }
+    }
+
     "Stop" {
         Stop-ProjectHopeService
     }

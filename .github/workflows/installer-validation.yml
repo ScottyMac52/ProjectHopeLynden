@@ -31,6 +31,45 @@ jobs:
           Set-Content -Path publish/ProjectHopeLynden.Web.exe `
             -Value 'installer validation placeholder'
 
+      - name: Validate Incoming Orders feature configuration
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $configPath = Join-Path $env:RUNNER_TEMP 'project-hope-appsettings.json'
+          @'
+          {
+            "Urls": "http://*:5000",
+            "Features": {
+              "IncomingOrders": false
+            }
+          }
+          '@ | Set-Content -LiteralPath $configPath -Encoding UTF8
+
+          ./installer/ProjectHopeService.ps1 `
+            -Action Configure `
+            -ServiceName ProjectHopeLynden `
+            -ConfigPath $configPath `
+            -IncomingOrdersEnabled true
+
+          $enabled = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json
+          if (-not $enabled.Features.IncomingOrders) {
+            throw 'The installer helper did not enable Incoming Orders.'
+          }
+          if ($enabled.Urls -ne 'http://*:5000') {
+            throw 'The installer helper changed an unrelated setting.'
+          }
+
+          ./installer/ProjectHopeService.ps1 `
+            -Action Configure `
+            -ServiceName ProjectHopeLynden `
+            -ConfigPath $configPath `
+            -IncomingOrdersEnabled false
+
+          $disabled = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json
+          if ($disabled.Features.IncomingOrders) {
+            throw 'The installer helper did not disable Incoming Orders.'
+          }
+
       - name: Compile installer script
         shell: pwsh
         run: |

@@ -28,6 +28,7 @@ VersionInfoProductVersion={#AppVersion}
 
 [Tasks]
 Name: "preservedatabase"; Description: "Preserve the existing Project Hope Lynden database if one is present"; GroupDescription: "Database options:"; Flags: checkedonce
+Name: "enableincomingorders"; Description: "Enable Incoming Orders Feature"; GroupDescription: "Feature options:"; Flags: unchecked
 
 [Dirs]
 Name: "{commonappdata}\ProjectHopeLynden"; Permissions: users-modify
@@ -69,9 +70,26 @@ begin
   Result := ExpandConstant('{app}\tools\{#ServiceHelperName}');
 end;
 
+function GetInstalledAppSettingsPath: string;
+begin
+  Result := ExpandConstant('{app}\appsettings.json');
+end;
+
 function GetTemporaryServiceHelperPath: string;
 begin
   Result := ExpandConstant('{tmp}\{#ServiceHelperName}');
+end;
+
+function GetIncomingOrdersEnabledValue: string;
+begin
+  if IsTaskSelected('enableincomingorders') then
+  begin
+    Result := 'true';
+  end
+  else
+  begin
+    Result := 'false';
+  end;
 end;
 
 procedure BackupDatabaseIfPresent(DatabasePath: string; BackupPath: string);
@@ -119,6 +137,13 @@ begin
       ' -ExecutablePath "' + ExpandConstant('{app}\{#AppExeName}') + '"';
   end;
 
+  if ActionName = 'Configure' then
+  begin
+    Parameters := Parameters +
+      ' -ConfigPath "' + GetInstalledAppSettingsPath + '"' +
+      ' -IncomingOrdersEnabled "' + GetIncomingOrdersEnabledValue + '"';
+  end;
+
   Log('Running Project Hope service action: ' + ActionName);
 
   if not Exec(
@@ -156,6 +181,7 @@ begin
     RestoreDatabaseIfBackedUp(GetProgramDataDatabasePath, GetProgramDataBackupPath);
     RestoreDatabaseIfBackedUp(GetAppDatabasePath, GetAppBackupPath);
 
+    RunServiceHelper(GetInstalledServiceHelperPath, 'Configure');
     RunServiceHelper(GetInstalledServiceHelperPath, 'Install');
   end;
 end;
