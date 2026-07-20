@@ -102,14 +102,17 @@ else if (Model.Inventory is not null)
                             <th scope="col">Menu Item</th>
                             <th scope="col">Last Updated</th>
                             <th scope="col">History</th>
-                            <th scope="col">Details</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var entry in Model.Inventory.Entries)
                         {
                             <tr>
-                                <td>@entry.ItemName</td>
+                                <td>
+                                    <a asp-page="/Inventory/Maintain"
+                                       asp-route-inventoryEntryId="@entry.Id"
+                                       asp-route-returnUrl="@Url.Page("/Inventory/Manage", new { categoryId = Model.CategoryId })">@entry.ItemName<span class="visually-hidden"> (edit)</span></a>
+                                </td>
                                 <td>@entry.LocationName</td>
                                 <td>
                                     <form method="post" asp-page-handler="UpdateQuantity" class="quantity-form" aria-label="Update quantity for @entry.ItemName">
@@ -125,7 +128,6 @@ else if (Model.Inventory is not null)
                                 <td>@(entry.IsMenuItem ? "Yes" : "No")</td>
                                 <td>@entry.LastUpdatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
                                 <td><a asp-page="/Inventory/History" asp-route-inventoryEntryId="@entry.Id">View history</a></td>
-                                <td><a asp-page="/Inventory/Maintain" asp-route-inventoryEntryId="@entry.Id">Edit details</a></td>
                             </tr>
                         }
                     </tbody>

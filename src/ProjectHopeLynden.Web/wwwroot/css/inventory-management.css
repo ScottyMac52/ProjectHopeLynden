@@ -168,7 +168,7 @@
 }
 
 .inventory-table--manage {
-  min-width: 1050px;
+  min-width: 960px;
 }
 
 @media (max-width: 900px) {

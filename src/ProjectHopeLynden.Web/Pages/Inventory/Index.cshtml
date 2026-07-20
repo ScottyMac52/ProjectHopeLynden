@@ -11,7 +11,6 @@
     <p>@Model.Summary</p>
     <div class="inventory-toolbar inventory-toolbar--hero">
         <a class="button-link button-link--light" asp-page="/Inventory/Manage">Manage inventory</a>
-        <a class="button-link button-link--light" asp-page="/Inventory/Maintain">Add inventory row</a>
     </div>
 </section>
 
@@ -30,11 +29,14 @@
 }
 
 <section class="inventory-toolbar" aria-label="Inventory actions">
-    <form method="post" asp-page-handler="CreateCategory" class="category-create-form">
-        <label for="new-category-name">New category</label>
-        <input id="new-category-name" asp-for="NewCategoryName" autocomplete="off" placeholder="Category name" />
-        <button type="submit">Add category</button>
-    </form>
+    <div class="inventory-toolbar__primary">
+        <form method="post" asp-page-handler="CreateCategory" class="category-create-form">
+            <label for="new-category-name">New category</label>
+            <input id="new-category-name" asp-for="NewCategoryName" autocomplete="off" placeholder="Category name" />
+            <button type="submit">Add category</button>
+        </form>
+        <a class="button-link" asp-page="/Inventory/Maintain" asp-route-returnUrl="@Url.Page("/Inventory/Index")">Add Row</a>
+    </div>
     <a class="button-link button-link--secondary" asp-page="/Inventory/Manage">Open category editor</a>
 </section>
 
@@ -60,14 +62,13 @@ else
                         <th scope="col">Menu Item</th>
                         <th scope="col">Last Updated</th>
                         <th scope="col">History</th>
-                        <th scope="col">Edit</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var inventory in Model.CategoryInventories)
                     {
                         <tr class="spreadsheet-category-row" id="category-@inventory.CategoryId">
-                            <th colspan="8" scope="rowgroup">@inventory.CategoryName</th>
+                            <th colspan="7" scope="rowgroup">@inventory.CategoryName</th>
                             <td>
                                 <a asp-page="/Inventory/Maintain" asp-route-categoryId="@inventory.CategoryId">Add row</a>
                             </td>
@@ -76,7 +77,7 @@ else
                         @if (!inventory.HasEntries)
                         {
                             <tr class="spreadsheet-empty-row">
-                                <td colspan="9">No inventory entries recorded for this category.</td>
+                                <td colspan="8">No inventory entries recorded for this category.</td>
                             </tr>
                         }
                         else
@@ -84,7 +85,11 @@ else
                             @foreach (var entry in inventory.Entries)
                             {
                                 <tr>
-                                    <td>@entry.ItemName</td>
+                                    <td>
+                                        <a asp-page="/Inventory/Maintain"
+                                           asp-route-inventoryEntryId="@entry.Id"
+                                           asp-route-returnUrl="@(Url.Page("/Inventory/Index") + $"#category-{inventory.CategoryId}")">@entry.ItemName<span class="visually-hidden"> (edit)</span></a>
+                                    </td>
                                     <td>@entry.LocationName</td>
                                     <td>
                                         <form method="post" asp-page-handler="UpdateQuantity" class="spreadsheet-quantity-form" aria-label="Update quantity for @entry.ItemName">
@@ -100,7 +105,6 @@ else
                                     <td class="spreadsheet-table__center">@(entry.IsMenuItem ? "✓" : "")</td>
                                     <td>@entry.LastUpdatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
                                     <td><a asp-page="/Inventory/History" asp-route-inventoryEntryId="@entry.Id">History</a></td>
-                                    <td><a asp-page="/Inventory/Maintain" asp-route-inventoryEntryId="@entry.Id">Edit</a></td>
                                 </tr>
                             }
                         }

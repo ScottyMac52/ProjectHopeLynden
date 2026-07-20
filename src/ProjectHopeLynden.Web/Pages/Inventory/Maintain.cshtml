@@ -51,6 +51,7 @@ else
         <form method="post" asp-page-handler="Save" class="inventory-entry-form">
             <input type="hidden" asp-for="InventoryEntryId" />
             <input type="hidden" asp-for="CategoryId" />
+            <input type="hidden" asp-for="ReturnUrl" />
 
             <div class="form-grid">
                 <label>
@@ -124,7 +125,7 @@ else
 
             <div class="form-actions">
                 <button type="submit">Save inventory row</button>
-                <a asp-page="/Inventory/Manage" asp-route-categoryId="@(Model.SelectedCategoryId ?? Model.CategoryId)">Cancel</a>
+                <a href="@Model.CancelUrl">Cancel</a>
             </div>
         </form>
     </section>

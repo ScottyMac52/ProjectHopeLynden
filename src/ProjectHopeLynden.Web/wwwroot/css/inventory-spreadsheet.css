@@ -42,6 +42,13 @@
   gap: 0.5rem;
 }
 
+.inventory-toolbar__primary {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .category-create-form label {
   font-weight: 800;
 }
@@ -75,7 +82,7 @@
 
 .spreadsheet-table {
   border-collapse: collapse;
-  min-width: 1120px;
+  min-width: 1040px;
   width: 100%;
 }
 
@@ -152,6 +159,7 @@
 
 @media (max-width: 640px) {
   .inventory-toolbar,
+  .inventory-toolbar__primary,
   .category-create-form {
     align-items: stretch;
     flex-direction: column;
