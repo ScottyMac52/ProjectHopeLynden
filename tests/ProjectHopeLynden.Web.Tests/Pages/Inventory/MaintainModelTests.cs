@@ -154,6 +154,53 @@ public sealed class MaintainModelTests
     }
 
     [Fact]
+    public async Task OnPostSaveAsync_RedirectsToSafeLocalReturnUrl()
+    {
+        var result = new InventoryEntrySaveResult(true, null, InventoryEntryId: 14, CategoryId: 2);
+        var model = CreateModel(new StubInventoryEntryMaintenanceService(CreateOptions(), saveResult: result));
+        model.InventoryEntryId = 14;
+        model.SelectedCategoryId = 2;
+        model.ReturnUrl = "/Inventory/Search?searchTerm=beans";
+
+        var actionResult = await model.OnPostSaveAsync();
+
+        var redirect = Assert.IsType<LocalRedirectResult>(actionResult);
+        Assert.Equal("/Inventory/Search?searchTerm=beans", redirect.Url);
+    }
+
+    [Theory]
+    [InlineData("https://example.test/steal")]
+    [InlineData("//example.test/steal")]
+    [InlineData("/\\example.test/steal")]
+    [InlineData("/Inventory/Search\r\nLocation: https://example.test/steal")]
+    public async Task OnPostSaveAsync_RejectsUnsafeReturnUrlAndFallsBackToSavedCategory(string returnUrl)
+    {
+        var result = new InventoryEntrySaveResult(true, null, InventoryEntryId: 14, CategoryId: 2);
+        var model = CreateModel(new StubInventoryEntryMaintenanceService(CreateOptions(), saveResult: result));
+        model.InventoryEntryId = 14;
+        model.SelectedCategoryId = 2;
+        model.ReturnUrl = returnUrl;
+
+        var actionResult = await model.OnPostSaveAsync();
+
+        var redirect = Assert.IsType<RedirectToPageResult>(actionResult);
+        Assert.Equal("/Inventory/Manage", redirect.PageName);
+        Assert.Equal(2, redirect.RouteValues?["categoryId"]);
+    }
+
+    [Theory]
+    [InlineData("/Inventory/Index#category-2", "/Inventory/Index#category-2")]
+    [InlineData("https://example.test/steal", "/Inventory/Manage?categoryId=2")]
+    public void CancelUrl_UsesOnlySafeLocalReturnUrl(string returnUrl, string expected)
+    {
+        var model = CreateModel(new StubInventoryEntryMaintenanceService(CreateOptions()));
+        model.SelectedCategoryId = 2;
+        model.ReturnUrl = returnUrl;
+
+        Assert.Equal(expected, model.CancelUrl);
+    }
+
+    [Fact]
     public async Task OnPostSaveAsync_ReloadsOptionsWhenSaveFails()
     {
         var options = CreateOptions();

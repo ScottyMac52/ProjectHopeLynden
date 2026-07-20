@@ -62,14 +62,20 @@ else
                         <th scope="col">BB Date</th>
                         <th scope="col">Menu Item</th>
                         <th scope="col">Last Updated</th>
-                        <th scope="col">Actions</th>
+                        <th scope="col">History</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var row in Model.Results.Rows)
                     {
                         <tr>
-                            <td><strong>@row.ItemName</strong></td>
+                            <td>
+                                <strong>
+                                    <a asp-page="/Inventory/Maintain"
+                                       asp-route-inventoryEntryId="@row.InventoryEntryId"
+                                       asp-route-returnUrl="@Url.Page("/Inventory/Search", new { searchTerm = Model.SearchTerm })">@row.ItemName<span class="visually-hidden"> (edit)</span></a>
+                                </strong>
+                            </td>
                             <td>@row.CategoryName</td>
                             <td>@row.LocationName</td>
                             <td class="inventory-search-quantity">@row.CurrentQuantity.ToString("0.##")</td>
@@ -82,7 +88,6 @@ else
                             <td>@(row.IsMenuItem ? "Yes" : "No")</td>
                             <td>@row.LastUpdatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
                             <td class="inventory-search-actions">
-                                <a asp-page="/Inventory/Maintain" asp-route-inventoryEntryId="@row.InventoryEntryId">Edit</a>
                                 <a asp-page="/Inventory/History" asp-route-inventoryEntryId="@row.InventoryEntryId">History</a>
                             </td>
                         </tr>

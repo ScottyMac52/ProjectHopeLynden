@@ -34,6 +34,13 @@ public sealed class MaintainModel(
     [BindProperty(SupportsGet = true)]
     public int? CategoryId { get; set; }
 
+    [BindProperty(SupportsGet = true)]
+    public string? ReturnUrl { get; set; }
+
+    public string CancelUrl => IsSafeLocalReturnUrl(ReturnUrl)
+        ? ReturnUrl!
+        : BuildManageInventoryUrl(SelectedCategoryId ?? CategoryId);
+
     [BindProperty]
     public string? ItemName { get; set; }
 
@@ -103,6 +110,11 @@ public sealed class MaintainModel(
             return Page();
         }
 
+        if (IsSafeLocalReturnUrl(ReturnUrl))
+        {
+            return LocalRedirect(ReturnUrl!);
+        }
+
         return RedirectToPage("/Inventory/Manage", new { categoryId = result.CategoryId ?? SelectedCategoryId });
     }
 
@@ -138,4 +150,28 @@ public sealed class MaintainModel(
         IsCommodity = editView.IsCommodity;
         IsMenuItem = editView.IsMenuItem;
     }
+
+    private static bool IsSafeLocalReturnUrl(string? returnUrl)
+    {
+        if (string.IsNullOrWhiteSpace(returnUrl) ||
+            returnUrl.Contains('\r') ||
+            returnUrl.Contains('\n'))
+        {
+            return false;
+        }
+
+        if (returnUrl[0] == '/')
+        {
+            return returnUrl.Length == 1 || returnUrl[1] is not ('/' or '\\');
+        }
+
+        return returnUrl.Length > 1 &&
+               returnUrl[0] == '~' &&
+               returnUrl[1] == '/' &&
+               (returnUrl.Length == 2 || returnUrl[2] is not ('/' or '\\'));
+    }
+
+    private static string BuildManageInventoryUrl(int? categoryId) => categoryId.HasValue
+        ? $"/Inventory/Manage?categoryId={categoryId.Value}"
+        : "/Inventory/Manage";
 }
