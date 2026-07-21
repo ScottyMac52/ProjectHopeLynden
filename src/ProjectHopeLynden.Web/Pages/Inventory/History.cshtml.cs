@@ -1,10 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ProjectHopeLynden.Application.Inventory;
+using ProjectHopeLynden.Application.Reporting;
+using ProjectHopeLynden.Web.Reporting;
 
 namespace ProjectHopeLynden.Web.Pages.Inventory;
 
-public sealed class HistoryModel(IInventoryHistoryService inventoryHistoryService) : PageModel
+public sealed class HistoryModel(
+    IInventoryHistoryService inventoryHistoryService,
+    IReportPdfService? reportPdfService = null) : PageModel
 {
     public string PageTitle { get; } = "Inventory Count History";
 
@@ -28,4 +32,20 @@ public sealed class HistoryModel(IInventoryHistoryService inventoryHistoryServic
         History = await inventoryHistoryService.GetHistoryForEntryAsync(InventoryEntryId);
         EntryWasNotFound = History is null;
     }
+
+    public async Task<IActionResult> OnGetPdfAsync()
+    {
+        if (InventoryEntryId <= 0)
+        {
+            return NotFound();
+        }
+
+        var history = await inventoryHistoryService.GetHistoryForEntryAsync(InventoryEntryId);
+        return history is null
+            ? NotFound()
+            : new InlinePdfResult(RequirePdfService().CreateInventoryHistory(history, DateTime.UtcNow));
+    }
+
+    private IReportPdfService RequirePdfService() =>
+        reportPdfService ?? throw new InvalidOperationException("PDF reporting is not configured.");
 }

@@ -20,6 +20,11 @@
             @if (Model.HasSearched)
             {
                 <a class="button-link button-link--secondary" asp-page="/Inventory/Search">Clear</a>
+                <a class="button-link button-link--secondary"
+                   asp-page-handler="Pdf"
+                   asp-route-searchTerm="@Model.SearchTerm"
+                   target="_blank"
+                   rel="noopener">Generate PDF</a>
             }
         </div>
     </form>

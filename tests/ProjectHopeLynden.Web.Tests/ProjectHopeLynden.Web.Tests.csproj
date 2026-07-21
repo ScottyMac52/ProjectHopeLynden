@@ -40,6 +40,9 @@
     <None Include="..\..\src\ProjectHopeLynden.Web\Pages\Inventory\Maintain.cshtml"
           Link="TestAssets\InventoryMaintain.cshtml"
           CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\ProjectHopeLynden.Web\Pages\Inventory\History.cshtml"
+          Link="TestAssets\InventoryHistory.cshtml"
+          CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\ProjectHopeLynden.Web\Pages\Inventory\Index.cshtml"
           Link="TestAssets\InventoryIndex.cshtml"
           CopyToOutputDirectory="PreserveNewest" />
@@ -48,6 +51,15 @@
           CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\ProjectHopeLynden.Web\Pages\Inventory\Search.cshtml"
           Link="TestAssets\InventorySearch.cshtml"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\ProjectHopeLynden.Web\Pages\Reports\Commodity.cshtml"
+          Link="TestAssets\CommodityReport.cshtml"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\ProjectHopeLynden.Web\Pages\Reports\Trends.cshtml"
+          Link="TestAssets\TrendsReport.cshtml"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\ProjectHopeLynden.Web\Pages\IncomingOrders\Index.cshtml"
+          Link="TestAssets\IncomingOrdersIndex.cshtml"
           CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\src\ProjectHopeLynden.Web\Pages\Inventory\Locations.cshtml"
           Link="TestAssets\InventoryLocations.cshtml"

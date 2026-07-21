@@ -37,7 +37,10 @@
         </form>
         <a class="button-link" asp-page="/Inventory/Maintain" asp-route-returnUrl="@Url.Page("/Inventory/Index")">Add Row</a>
     </div>
-    <a class="button-link button-link--secondary" asp-page="/Inventory/Manage">Open category editor</a>
+    <div class="inventory-toolbar__primary">
+        <a class="button-link button-link--secondary" asp-page="/Inventory/Manage">Open category editor</a>
+        <a class="button-link button-link--secondary" asp-page-handler="Pdf" target="_blank" rel="noopener">Generate PDF</a>
+    </div>
 </section>
 
 @if (Model.CategoryInventories.Count == 0)
