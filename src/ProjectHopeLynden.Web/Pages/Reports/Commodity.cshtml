@@ -10,7 +10,7 @@
     <h1>@Model.PageTitle</h1>
     <p>@Model.Summary</p>
     <div class="commodity-report-actions">
-        <button type="button" onclick="window.print()">Print report</button>
+        <a class="button-link button-link--light" asp-page-handler="Pdf" target="_blank" rel="noopener">Generate PDF</a>
         <a class="button-link button-link--light" asp-page="/Inventory/Index">Back to spreadsheet</a>
     </div>
 </section>

@@ -1,13 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ProjectHopeLynden.Application.Inventory;
+using ProjectHopeLynden.Application.Reporting;
+using ProjectHopeLynden.Web.Reporting;
 
 namespace ProjectHopeLynden.Web.Pages.Inventory;
 
 public sealed class IndexModel(
     IInventoryQueryService inventoryQueryService,
     IInventoryQuantityService inventoryQuantityService,
-    IInventoryCategoryService? inventoryCategoryService = null) : PageModel
+    IInventoryCategoryService? inventoryCategoryService = null,
+    IReportPdfService? reportPdfService = null) : PageModel
 {
     public string PageTitle { get; } = "Inventory Spreadsheet";
 
@@ -26,6 +29,12 @@ public sealed class IndexModel(
     [BindProperty] public string? NewCategoryName { get; set; }
 
     public async Task OnGetAsync() => await LoadInventoryAsync();
+
+    public async Task<IActionResult> OnGetPdfAsync()
+    {
+        await LoadInventoryAsync();
+        return new InlinePdfResult(RequirePdfService().CreateInventorySpreadsheet(CategoryInventories, DateTime.UtcNow));
+    }
 
     public async Task<IActionResult> OnPostCreateCategoryAsync()
     {
@@ -97,4 +106,7 @@ public sealed class IndexModel(
 
         CategoryInventories = inventories;
     }
+
+    private IReportPdfService RequirePdfService() =>
+        reportPdfService ?? throw new InvalidOperationException("PDF reporting is not configured.");
 }

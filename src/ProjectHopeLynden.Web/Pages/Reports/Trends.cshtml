@@ -88,7 +88,14 @@
         <h2>Inventory snapshots and recorded movement by @groupingLabel.ToLowerInvariant()</h2>
         <p>Generated @Model.Report.GeneratedAtUtc.ToString("yyyy-MM-dd HH:mm") UTC</p>
     </div>
-    <button type="button" class="print-report-button" onclick="window.print()">Print report</button>
+    <a class="button-link print-report-button"
+       asp-page-handler="Pdf"
+       asp-route-groupBy="@Model.GroupBy"
+       asp-route-itemName="@Model.ItemName"
+       asp-route-categoryId="@Model.CategoryId"
+       asp-route-inventoryType="@Model.InventoryType"
+       target="_blank"
+       rel="noopener">Generate PDF</a>
 </section>
 
 @if (!Model.Report.HasData)

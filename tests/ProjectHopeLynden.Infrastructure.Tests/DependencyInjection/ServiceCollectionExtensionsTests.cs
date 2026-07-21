@@ -3,9 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 using ProjectHopeLynden.Application.Backup;
 using ProjectHopeLynden.Application.Inventory;
 using ProjectHopeLynden.Application.IncomingOrders;
+using ProjectHopeLynden.Application.Reporting;
 using ProjectHopeLynden.Infrastructure.DependencyInjection;
 using ProjectHopeLynden.Infrastructure.Persistence;
 using ProjectHopeLynden.Infrastructure.Persistence.Seeding;
+using ProjectHopeLynden.Infrastructure.Reporting;
 
 namespace ProjectHopeLynden.Infrastructure.Tests.DependencyInjection;
 
@@ -29,6 +31,8 @@ public sealed class ServiceCollectionExtensionsTests
         Assert.NotNull(provider.GetRequiredService<IInventoryEntryMaintenanceService>());
         Assert.NotNull(provider.GetRequiredService<IInventoryLocationService>());
         Assert.NotNull(provider.GetRequiredService<IIncomingOrderService>());
+        Assert.NotNull(provider.GetRequiredService<IReportPdfRenderer>());
+        Assert.NotNull(provider.GetRequiredService<IReportPdfService>());
         Assert.NotNull(provider.GetRequiredService<InitialInventorySeeder>());
     }
 

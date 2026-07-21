@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ProjectHopeLynden.Application.Inventory;
+using ProjectHopeLynden.Application.Reporting;
+using ProjectHopeLynden.Web.Reporting;
 
 namespace ProjectHopeLynden.Web.Pages.Reports;
 
 public sealed class TrendsModel(
     IInventoryTrendReportService trendReportService,
-    IInventoryQueryService inventoryQueryService) : PageModel
+    IInventoryQueryService inventoryQueryService,
+    IReportPdfService? reportPdfService = null) : PageModel
 {
     public string PageTitle { get; } = "Inventory Trends";
 
@@ -32,7 +35,16 @@ public sealed class TrendsModel(
     [BindProperty(SupportsGet = true)]
     public string InventoryType { get; set; } = "all";
 
-    public async Task OnGetAsync()
+    public Task OnGetAsync() => LoadReportAsync();
+
+    public async Task<IActionResult> OnGetPdfAsync()
+    {
+        await LoadReportAsync();
+        var categoryName = Categories.SingleOrDefault(category => category.Id == CategoryId)?.Name;
+        return new InlinePdfResult(RequirePdfService().CreateTrendsReport(Report, categoryName));
+    }
+
+    private async Task LoadReportAsync()
     {
         Categories = await inventoryQueryService.GetCategoriesAsync();
 
@@ -55,4 +67,7 @@ public sealed class TrendsModel(
 
         Report = await trendReportService.GetTrendReportAsync(request, DateTime.UtcNow);
     }
+
+    private IReportPdfService RequirePdfService() =>
+        reportPdfService ?? throw new InvalidOperationException("PDF reporting is not configured.");
 }

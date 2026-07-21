@@ -11,7 +11,10 @@
     <p class="eyebrow">Project Hope Food Bank of Lynden</p>
     <h1>Incoming Orders</h1>
     <p>Track expected deliveries and add verified receipts to inventory.</p>
-    <p><a class="button-link button-link--light" asp-page="/IncomingOrders/Edit">Add incoming order</a></p>
+    <p class="order-actions">
+        <a class="button-link button-link--light" asp-page="/IncomingOrders/Edit">Add incoming order</a>
+        <a class="button-link button-link--light" asp-page-handler="Pdf" target="_blank" rel="noopener">Generate PDF</a>
+    </p>
 </section>
 
 <section class="card incoming-orders-card" aria-label="Incoming orders">

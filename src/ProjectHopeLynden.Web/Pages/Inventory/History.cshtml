@@ -42,6 +42,13 @@ else if (Model.History is not null)
                 <dd>@Model.History.CurrentQuantity</dd>
             </div>
         </dl>
+        <p>
+            <a class="button-link"
+               asp-page-handler="Pdf"
+               asp-route-inventoryEntryId="@Model.InventoryEntryId"
+               target="_blank"
+               rel="noopener">Generate PDF</a>
+        </p>
         <p><a asp-page="/Inventory/Index" asp-route-categoryId="@Model.History.CategoryId">Back to @Model.History.CategoryName</a></p>
     </section>
 
